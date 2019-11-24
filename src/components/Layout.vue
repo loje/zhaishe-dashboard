@@ -81,12 +81,12 @@ export default {
       display: flex;
       width: 100%;
       .left-nav {
+        margin-right: 54px;
         width: 220px;
       }
       .main {
-        width: calc(100% - 266px);
+        width: calc(100% - 320px);
         height: calc(100vh - 162px);
-        background-color: #fff;
       }
     }
   }

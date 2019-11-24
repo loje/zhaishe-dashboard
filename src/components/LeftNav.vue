@@ -27,20 +27,39 @@ export default {
 
 <style lang="scss" scope>
   .nav {
+    margin-bottom: 50px;
     width: 100%;
     .title {
-      padding-left: 50px;
+      padding-left: 30px;
       width: 100%;
       height: 50px;
       line-height: 50px;
+      font-size: 18px;
       box-sizing: border-box;
+      color: #333;
+      &:hover {
+        background-color: #EFF1F2;
+      }
+      .avtive {
+        background-color: #EFF1F2;
+      }
     }
     .children {
       width: 100%;
       .child-title {
-        padding-left: 50px;
+        padding-left: 30px;
         width: 100%;
+        height: 50px;
+        line-height: 50px;
+        font-size: 14px;
+        color: #333;
         box-sizing: border-box;
+        &:hover {
+          background-color: #EFF1F2;
+        }
+        .avtive {
+          background-color: #EFF1F2;
+        }
       }
     }
   }

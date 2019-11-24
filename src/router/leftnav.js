@@ -6,12 +6,22 @@ const leftRoutes = [
     children: [
       {
         path: '',
-        name: '审核报名',
+        name: '发布活动',
         meta: { menu: true, keepAlive: true },
       },
       {
         path: '',
         name: '管理报名人',
+        meta: { menu: true, keepAlive: true },
+      },
+      {
+        path: '',
+        name: '渠道',
+        meta: { menu: true, keepAlive: true },
+      },
+      {
+        path: '',
+        name: '统计',
         meta: { menu: true, keepAlive: true },
       },
     ],
