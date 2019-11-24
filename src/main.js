@@ -20,7 +20,6 @@ Vue.config.productionTip = false;
 router.beforeEach((to, from, next) => {
   const userInfo = localStorage.getItem('userInfo');
   if (userInfo) {
-    console.log(userInfo);
     store.dispatch('getUser', JSON.parse(userInfo));
     next();
   } else {
