@@ -6,21 +6,21 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    name: 'layout',
+    path: '/login',
+    name: '登录',
+    meta: { menu: false, keepAlive: true },
+    component: () => import('@/views/Login/index')
+  },
+  {
+    name: '首页',
     component: () => import('@/components/Layout'),
-    path: '',
+    path: '/',
     children: [
       {
-        path: '/',
+        path: '',
         name: '首页',
         meta: { menu: false, keepAlive: true },
         component: () => import('@/views/index')
-      },
-      {
-        path: '/login',
-        name: '登录',
-        meta: { menu: false, keepAlive: true },
-        component: () => import('@/views/Login/index')
       },
       {
         path: '',

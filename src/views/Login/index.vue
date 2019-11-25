@@ -50,7 +50,6 @@ export default {
             // 登录失败（可能是密码错误）
           });
         } else {
-          console.log('error submit!!');
           return false;
         }
       });

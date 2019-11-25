@@ -80,13 +80,16 @@ export default {
     .layout-main {
       display: flex;
       width: 100%;
+      height: calc(100% - 162px);
       .left-nav {
         margin-right: 54px;
         width: 220px;
+        height: 100%;
+        overflow: auto;
       }
       .main {
         width: calc(100% - 320px);
-        height: calc(100vh - 162px);
+        height: 100%;
       }
     }
   }
