@@ -1,6 +1,6 @@
 const leftRoutes = [
   {
-    path: '',
+    path: '/',
     name: '活动管理',
     meta: { menu: true, keepAlive: true },
     children: [

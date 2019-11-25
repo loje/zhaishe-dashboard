@@ -5,7 +5,10 @@
         <div class="img" style="background-image: url(http://lc-vwzM34py.cn-n1.lcfile.com/93e2bac101ef97002df9/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20191112155535.png);"></div>
         <!--<span>设计师活动聚集地</span>-->
       </div>
-      <div class="user-info">{{$store.state.user.username}}</div>
+      <div class="top-right">
+        <span class="user-info">{{$store.state.user.username}}</span>
+        <el-link class="log-out" @click="logout">退出登录</el-link>
+      </div>
     </div>
     <div class="layout-main">
       <div class="left-nav">
@@ -31,6 +34,12 @@ export default {
   components: {
     LeftNav,
   },
+  methods: {
+    logout() {
+      localStorage.removeItem('userInfo');
+      location.reload();
+    },
+  },
 };
 </script>
 
@@ -42,7 +51,6 @@ export default {
 
     .layout-top {
       position: relative;
-      margin-bottom: 50px;
       width: 100%;
       height: 112px;
       background-color: #fff;
@@ -70,26 +78,36 @@ export default {
           vertical-align: middle;
         }
       }
-      .user-info {
+      .top-right {
         position: absolute;
         right: 52px;
         top: 0;
-        line-height: 112px;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .user-info {
+          margin-right: 15px;
+          color: #333;
+        }
       }
     }
     .layout-main {
       display: flex;
       width: 100%;
-      height: calc(100% - 162px);
+      height: calc(100% - 112px);
       .left-nav {
         margin-right: 54px;
+        padding-top: 50px;
         width: 220px;
         height: 100%;
         overflow: auto;
+        box-sizing: border-box;
       }
       .main {
+        padding-top: 50px;
         width: calc(100% - 320px);
         height: 100%;
+        box-sizing: border-box;
       }
     }
   }

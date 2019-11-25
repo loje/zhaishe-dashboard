@@ -15,6 +15,9 @@ AV.init({
 });
 Vue.prototype.$AV = AV;
 
+import moment from 'moment'
+Vue.prototype.$moment = moment
+
 Vue.config.productionTip = false;
 
 router.beforeEach((to, from, next) => {

@@ -4,7 +4,7 @@
       <div class="box">
         <div class="box-flex">
           <span class="box-t">平台用户</span>
-          <span class="box-num">1000</span>
+          <span class="box-num">{{allUserCount}}</span>
         </div>
       </div>
       <div class="box">
@@ -16,7 +16,7 @@
       <div class="box">
         <div class="box-flex">
           <span class="box-t">下载数</span>
-          <span class="box-num">1000</span>
+          <span class="box-num">{{downloadCount}}</span>
         </div>
       </div>
       <div class="box">
@@ -28,7 +28,7 @@
       <div class="box">
         <div class="box-flex">
           <span class="box-t">代理产品</span>
-          <span class="box-num">10</span>
+          <span class="box-num">{{productCount}}</span>
         </div>
       </div>
     </div>
@@ -39,23 +39,32 @@
         :header-row-style="{ height: '72px'}">
         <el-table-column
           label="活动标题"
+          prop="title"
           align="center">
         </el-table-column>
         <el-table-column
           label="报名人数"
+          prop="count"
           align="center">
         </el-table-column>
         <el-table-column
           align="center"
+          prop="pv"
           label="浏览量">
         </el-table-column>
         <el-table-column
           align="center"
+          prop="time"
           label="活动时间">
         </el-table-column>
         <el-table-column
           align="center"
+          prop="status"
           label="状态">
+          <template slot-scope="scope">
+            <span v-if="scope.row.status === 0">可报名</span>
+            <span v-else-if="scope.row.status === 1">报名结束</span>
+          </template>
         </el-table-column>
         <el-table-column
           align="center">
@@ -80,12 +89,64 @@
 export default {
   data() {
     return {
+      allUserCount: 0,
+      downloadCount: 0,
+      productCount: 0,
       tableData: [],
       current: 1,
       total: 0,
     }
   },
+  mounted() {
+    this.getUserCount();
+    this.getDownloadCount();
+    this.getProductCount();
+    this.getActivityList();
+  },
   methods: {
+    getUserCount() {
+      const that = this;
+      var query = new this.$AV.Query('_User');
+      query.equalTo('isCustomer', true);
+      query.count().then(function (count) {
+        that.allUserCount = count;
+      });
+    },
+    getDownloadCount() {
+      const that = this;
+      let count = 0;
+      var query = new this.$AV.Query('download');
+      query.find().then(function (data) {
+        for (let i = 0; i < data.length; i += 1) {
+          count += data[i].attributes.downloads;
+        }
+        that.downloadCount = count;
+      });
+    },
+    getProductCount() {
+      const that = this;
+      var query = new this.$AV.Query('product');
+      query.count().then(function (count) {
+        that.productCount = count;
+      });
+    },
+    getActivityList() {
+      const that = this;
+      let dataList = [];
+      var query = new this.$AV.Query('activity');
+      query.find().then(function (data) {
+        for (let i = 0; i < data.length; i += 1) {
+          dataList.push({
+            title: data[i].attributes.title,
+            count: data[i].attributes.count,
+            pv: data[i].attributes.pv,
+            time: that.$moment(data[i].attributes.time).format('YYYY-MM-DD hh:mm'),
+            status: data[i].attributes.status,
+          });
+        }
+        that.tableData = dataList;
+      });
+    },
     handleSizeChange() {},
     handleCurrentChange() {},
   },

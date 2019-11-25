@@ -27,7 +27,10 @@ export default {
     return {
       src: 'http://lc-vwzm34py.cn-n1.lcfile.com/93e2bac101ef97002df9/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20191112155535.png',
       form: {},
-      rules: {},
+      rules: {
+        username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+      },
     }
   },
   methods: {
