@@ -44,7 +44,7 @@ export default {
       &:hover {
         background-color: #EFF1F2;
       }
-      .avtive {
+      &.router-link-exact-active.router-link-active {
         background-color: #EFF1F2;
       }
     }
@@ -64,7 +64,10 @@ export default {
         &:hover {
           background-color: #EFF1F2;
         }
-        .avtive {
+        &.router-link-active {
+          background-color: #EFF1F2;
+        }
+        &.router-link-exact-active.router-link-active {
           background-color: #EFF1F2;
         }
       }

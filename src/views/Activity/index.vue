@@ -1,5 +1,6 @@
 <template>
-  <div class="home">
+  <div class="activity-layer">
+    <template v-if="$route.path === '/activity'">
     <div class="box-group">
       <div class="box">
         <div class="box-flex">
@@ -35,8 +36,9 @@
     <div class="layer-table">
       <el-table
         :data="tableData"
+        height="100%"
         style="width: 100%"
-        :header-row-style="{ height: '72px'}">
+        v-loading="loading">
         <el-table-column
           label="活动标题"
           prop="title">
@@ -70,7 +72,13 @@
           </template>
         </el-table-column>
         <el-table-column
-          align="center">
+          prop="toDo"
+          align="center"
+          min-width="150">
+          <template slot-scope="scope">
+            <el-button @click="edit(scope.row.cid)">编辑</el-button>
+            <el-button type="primary" @click="audit(scope.row.cid)">审核报名</el-button>
+          </template>
         </el-table-column>
       </el-table>
     </div>
@@ -85,6 +93,13 @@
         :total="total">
       </el-pagination>
     </div>
+    </template>
+    <template v-else>
+      <keep-alive>
+        <router-view v-if="$route.meta.keepAlive"></router-view>
+      </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive"></router-view>
+    </template>
   </div>
 </template>
 
@@ -98,6 +113,7 @@ export default {
       tableData: [],
       current: 1,
       total: 0,
+      loading: false,
     }
   },
   mounted() {
@@ -134,12 +150,15 @@ export default {
       });
     },
     getActivityList() {
+      this.loading = true;
       const that = this;
       let dataList = [];
       var query = new this.$AV.Query('activity');
       query.find().then(function (data) {
+        that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
           dataList.push({
+            cid: data[i].id,
             title: data[i].attributes.title,
             desc: data[i].attributes.desc,
             count: data[i].attributes.count,
@@ -149,16 +168,24 @@ export default {
           });
         }
         that.tableData = dataList;
+        
       });
     },
     handleSizeChange() {},
     handleCurrentChange() {},
+    edit(cid) {
+      // console.log(id);
+      this.$router.push({
+        path: '/activity/pulish',
+        query: { cid },
+      })
+    },
   },
 }
 </script>
 
 <style lang="scss" scope>
-  .home {
+  .activity-layer {
     width: 100%;
     height: 100%;
     .box-group {
@@ -190,9 +217,12 @@ export default {
       }
     }
     .layer-table {
+      padding: 15px;
       width: 100%;
       height: calc(100% - 231px);
       background-color:#fff;
+      overflow: auto;
+      box-sizing: border-box;
       .el-table::before {
         background-color: #fff;
       }

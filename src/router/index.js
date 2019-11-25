@@ -14,18 +14,19 @@ const routes = [
   {
     name: '首页',
     component: () => import('@/components/Layout'),
-    path: '/',
+    path: '',
     children: [
+      // {
+      //   path: '/',
+      //   name: '首页',
+      //   meta: { menu: false, keepAlive: true },
+      //   component: () => import('@/views/index')
+      // },
       {
-        path: '',
-        name: '首页',
-        meta: { menu: false, keepAlive: true },
-        component: () => import('@/views/index')
+        path: '/',
+        redirect: '/activity',
       },
-      {
-        path: '',
-        children: leftRoutes,
-      },
+      ...leftRoutes,
     ],
   },
 ]
