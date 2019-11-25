@@ -67,8 +67,9 @@
           prop="status"
           label="状态">
           <template slot-scope="scope">
-            <span v-if="scope.row.status === 0">可报名</span>
-            <span v-else-if="scope.row.status === 1">报名结束</span>
+            <span v-if="scope.row.status === 0">暂存中</span>
+            <span v-if="scope.row.status === 1">可报名</span>
+            <span v-else-if="scope.row.status === 2">报名结束</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -76,8 +77,11 @@
           align="center"
           min-width="150">
           <template slot-scope="scope">
-            <el-button @click="edit(scope.row.cid)">编辑</el-button>
-            <el-button type="primary" @click="audit(scope.row.cid)">审核报名</el-button>
+            <el-button-group>
+            <el-button size="medium" @click="edit(scope.row.cid)">编辑</el-button>
+            <el-button type="primary" size="medium" @click="audit(scope.row.cid)">审核报名</el-button>
+            <el-button type="danger" size="medium" icon="el-icon-delete" circle @click="del(scope.row.cid)" v-if="scope.row.count === 0"></el-button>
+            </el-button-group>
           </template>
         </el-table-column>
       </el-table>
@@ -116,11 +120,12 @@ export default {
       loading: false,
     }
   },
-  mounted() {
+  activated() {
     this.getUserCount();
     this.getDownloadCount();
     this.getProductCount();
     this.getActivityList();
+    this.getActivityCount();
   },
   methods: {
     getUserCount() {
@@ -168,7 +173,13 @@ export default {
           });
         }
         that.tableData = dataList;
-        
+      });
+    },
+    getActivityCount() {
+      const that = this;
+      var query = new this.$AV.Query('activity');
+      query.count().then(function (count) {
+        that.total = count;
       });
     },
     handleSizeChange() {},
@@ -179,6 +190,31 @@ export default {
         path: '/activity/pulish',
         query: { cid },
       })
+    },
+    del(cid) {
+      const that = this;
+      this.$confirm('此操作将永久删除该活动, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var activity = this.$AV.Object.createWithoutData('activity', cid);
+        activity.destroy().then(() => {
+          that.$message.success('删除成功！');
+          that.getActivityList();
+          that.getActivityCount();
+        });
+        this.$message({
+          type: 'success',
+          message: '删除成功!'
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });          
+      });
+      
     },
   },
 }

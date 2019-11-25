@@ -29,8 +29,8 @@
         <quill-editor v-model="form.content" ref="myQuillEditor" :options="editorOption"></quill-editor>
       </el-form-item>
       <el-form-item align="right">
-        <el-button @click="submitForm('save')">保存</el-button>
-        <el-button type="primary" @click="submitForm('post')">发布</el-button>
+        <el-button @click="submitForm('0')">保存</el-button>
+        <el-button type="primary" @click="submitForm('1')">发布</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -55,33 +55,65 @@ export default {
   components: {
     quillEditor
   },
+  mounted() {
+    this.getInfo();
+  },
   methods: {
-    submitForm() {
+    getInfo() {
+      const that = this;
+      var query = new this.$AV.Query('activity');
+      query.get(that.$route.query.cid).then(function (data) {
+        that.form = {
+          title: data.get('title'),
+          desc: data.get('desc'),
+          time: [ data.get('startTime'), data.get('endTime') ],
+          fee: data.get('fee'),
+          number: data.get('number'),
+          address: data.get('address'),
+          content: data.get('content'),
+        };
+      });
+    },
+    submitForm(status) {
       const that = this;
       this.$refs.form.validate((valid) => {
         if (valid) {
-          // alert('submit!');
-          console.log(this.form);
-                    // 声明 class
-          var Activity = this.$AV.Object.extend('activity');
-
-          // 构建对象
-          var activity = new Activity();
-
-          // 为属性赋值
-          activity.set(that.form);
-          // activity.set('priority', 2);
-
-          // 将对象保存到云端
-          activity.save().then(function (data) {
-            console.log(data);
-            that.$router.push('/activity');
-            // 成功保存之后，执行其他逻辑
-          }, function () {
-            // 异常处理
-          });
+          if (!that.$route.query.cid) {
+            let Activity = this.$AV.Object.extend('activity');
+            let activity = new Activity();
+            activity.set({
+              ...that.form,
+              status: Number(status),
+              startTime: that.form.time[0],
+              endTime: that.form.time[1],
+              time: undefined,
+            });
+            activity.save().then(function () {
+              that.$message.success('添加成功！');
+              that.$router.push('/activity');
+              // 成功保存之后，执行其他逻辑
+            }, function () {
+              // 异常处理
+            });
+          } else {
+            let activity = this.$AV.Object.createWithoutData('activity', that.$route.query.cid);
+            activity.set({
+              ...that.form,
+              status: Number(status),
+              startTime: that.form.time[0],
+              endTime: that.form.time[1],
+              time: undefined,
+            });
+            activity.save().then(function () {
+              that.$message.success('编辑成功！');
+              that.$router.push('/activity');
+              // 成功保存之后，执行其他逻辑
+            }, function () {
+              // 异常处理
+            });
+          }
+          
         } else {
-          console.log('error submit!!');
           return false;
         }
       });
