@@ -1,12 +1,12 @@
 <template>
   <div style="width: 100%">
     <template v-for="(items, $index) in leftNav">
-    <div class="nav" :key="$index">
+    <div class="nav" :key="$index" v-if="items.meta.menu === true">
       <router-link class="title" :to="items.path">{{items.name}}</router-link>
 
       <div class="children">
         <template v-for="(item, $i) in items.children">
-        <router-link class="child-title" :key="$i" :to="item.path">{{item.name}}</router-link>
+        <router-link class="child-title" :key="$i" :to="item.path" v-if="item.meta.menu">{{item.name}}</router-link>
         </template>
       </div>
     </div>
