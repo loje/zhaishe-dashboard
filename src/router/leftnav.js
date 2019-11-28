@@ -9,11 +9,12 @@ const leftRoutes = [
         path: '/activity/pulish',
         name: '发布活动',
         component: () => import('@/views/Activity/Pulish'),
-        // meta: { menu: true, keepAlive: true },
+        meta: { menu: true, keepAlive: true },
       },
       {
         path: '/activity/applicants',
         name: '管理报名人',
+        component: () => import('@/views/Activity/Applicants'),
         meta: { menu: true, keepAlive: true },
       },
       {

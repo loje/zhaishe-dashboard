@@ -185,7 +185,6 @@ export default {
     handleSizeChange() {},
     handleCurrentChange() {},
     edit(cid) {
-      // console.log(id);
       this.$router.push({
         path: '/activity/pulish',
         query: { cid },
