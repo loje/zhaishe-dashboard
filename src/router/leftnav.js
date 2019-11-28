@@ -69,6 +69,19 @@ const leftRoutes = [
     meta: { menu: true, keepAlive: true },
     children: [],
   },
+  {
+    path: '/system',
+    name: '系统管理',
+    meta: { menu: true, keepAlive: true },
+    component: () => import('@/views/System/index'),
+    children: [
+      {
+        path: '/system/images',
+        name: '网站图片',
+        component: () => import('@/views/System/Images'),
+      },
+    ],
+  },
 ];
 
 export default leftRoutes

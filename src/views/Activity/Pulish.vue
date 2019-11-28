@@ -1,11 +1,31 @@
 <template>
-  <div class="pulish-page">
+  <div class="pulish-page" v-loading="pulishLoading" id="pulish">
     <el-form :model="form" label-position="top" label-width="150px"  class="form" ref="form">
       <el-form-item label="活动标题">
         <el-input v-model="form.title" placeholder="请输入标题，最多10字"></el-input>
       </el-form-item>
       <el-form-item label="活动描述">
         <el-input v-model="form.desc" type="textarea" rows="3" placeholder="请输入"></el-input>
+      </el-form-item>
+      <el-form-item label="活动形式">
+        <el-select v-model="form.mode" placeholder="请选择活动形式">
+          <el-option v-for="(item, $index) in modeList" :key="$index" :label="item.label" :value="item.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="活动类型">
+        <el-select v-model="form.sort" placeholder="请选择活动类型">
+          <el-option v-for="(item, $index) in sortList" :key="$index" :label="item.label" :value="item.value"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="活动图片(123px * 123px)">
+        <div @click="importClick" class="el-upload el-upload--picture-card" v-loading="imgLoading">
+          <el-image :src="form.imgSrc" v-if="form.img" fit="contain" class="img" style="width: 100%; height: 100%;"></el-image>
+          <i class="el-icon-plus" v-else></i>
+          <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
+        </div>
+        <el-dialog :visible.sync="dialogVisible">
+          <img width="100%" :src="dialogImageUrl" alt="">
+        </el-dialog>
       </el-form-item>
       <el-form-item label="活动时间">
         <el-date-picker
@@ -50,73 +70,175 @@ export default {
     return {
       form: {},
       editorOption: {},
+      imgLoading: false,
+
+      dialogVisible: false,
+      dialogImageUrl: '',
+
+      pulishLoading: false,
+      modes: [],
+      modeList: [],
+      sorts: [],
+      sortList: [],
     }
   },
   components: {
     quillEditor
   },
   mounted() {
-    this.getInfo();
+    this.getModeList();
+    this.getSortList();
+
+    if (this.$route.query.cid) {
+      this.getInfo();
+    }
   },
   methods: {
     getInfo() {
       const that = this;
       var query = new this.$AV.Query('activity');
+      var img_query = new this.$AV.Query('_File');
+      var mode_query = new this.$AV.Query('activity_mode');
+
+      // var sort_query = new this.$AV.Query('activity_sort');
+
       query.get(that.$route.query.cid).then(function (data) {
-        that.form = {
-          title: data.get('title'),
-          desc: data.get('desc'),
-          time: [ data.get('startTime'), data.get('endTime') ],
-          fee: data.get('fee'),
-          number: data.get('number'),
-          address: data.get('address'),
-          content: data.get('content'),
-        };
+        // console.log(data.get('mode').id);
+        mode_query.get(data.get('mode').id).then((mode) => {
+          console.log(mode.get('mode'));
+          // that.form = {
+          //   ...that.form,
+          //   mode:
+          // };
+        });
+        img_query.get(data.get('img').id).then((d) => {
+          // mode_query.get(data.get('mode').id).then((mode) => {
+            // sort_query.get(data.get('sort').id).then((sort) => {
+          that.form = {
+            ...that.form,
+            title: data.get('title'),
+            desc: data.get('desc'),
+            img: data.get('img'),
+            imgSrc: d.get('url'),
+            // mode: that.modes[that.form.mode],
+            // sort: that.sorts[that.form.sort],
+            time: [ data.get('startTime'), data.get('endTime') ],
+            fee: data.get('fee'),
+            number: data.get('number'),
+            address: data.get('address'),
+            content: data.get('content'),
+          }
+            // });
+          // });
+        });
+      });
+    },
+    getModeList() {
+      const that = this;
+      const list = [];
+      var query = new this.$AV.Query('activity_mode');
+      query.find().then(function (data) {
+        for(let i = 0; i < data.length; i += 1) {
+          list.push({
+            label: data[i].attributes.mode,
+            value: i,
+          });
+        }
+        that.modes = data;
+        that.modeList = list;
+      });
+    },
+    getSortList() {
+      const that = this;
+      const list = [];
+      var query = new this.$AV.Query('activity_sort');
+      query.find().then(function (data) {
+        for(let i = 0; i < data.length; i += 1) {
+          list.push({
+            label: data[i].attributes.sortName,
+            value: i,
+          });
+        }
+        that.sortList = list;
+        that.sorts = data;
       });
     },
     submitForm(status) {
       const that = this;
       this.$refs.form.validate((valid) => {
         if (valid) {
+          that.pulishLoading = true;
           if (!that.$route.query.cid) {
             let Activity = this.$AV.Object.extend('activity');
             let activity = new Activity();
             activity.set({
               ...that.form,
+              mode: that.modes[that.form.mode],
+              sort: that.sorts[that.form.sort],
               status: Number(status),
               startTime: that.form.time[0],
               endTime: that.form.time[1],
               time: undefined,
+              imgSrc: undefined,
             });
             activity.save().then(function () {
+              that.pulishLoading = false;
               that.$message.success('添加成功！');
               that.$router.push('/activity');
               // 成功保存之后，执行其他逻辑
             }, function () {
+              that.pulishLoading = false;
               // 异常处理
             });
           } else {
             let activity = this.$AV.Object.createWithoutData('activity', that.$route.query.cid);
             activity.set({
               ...that.form,
+              mode: that.modes[that.form.mode],
+              sort: that.sorts[that.form.sort],
               status: Number(status),
               startTime: that.form.time[0],
               endTime: that.form.time[1],
               time: undefined,
+              imgSrc: undefined,
             });
             activity.save().then(function () {
+              that.pulishLoading = false;
               that.$message.success('编辑成功！');
               that.$router.push('/activity');
               // 成功保存之后，执行其他逻辑
             }, function () {
+              that.pulishLoading = false;
               // 异常处理
             });
           }
-          
         } else {
           return false;
         }
       });
+    },
+    importClick() {
+      this.imgLoading = false;
+      this.$refs.input.value = null;
+      this.$refs.input.click();
+    },
+    uploadFile(e) {
+      this.imgLoading = true;
+      const that = this;
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        var file = new this.$AV.File(localFile.name, localFile);
+        file.save().then(function (file) {
+          console.log(file.id);
+          that.imgLoading = false;
+          that.form.imgSrc = file.attributes.url;
+          that.form.img = file;
+        }, function (error) {
+          that.imgLoading = false;
+          console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+      }
     },
   },
 };
