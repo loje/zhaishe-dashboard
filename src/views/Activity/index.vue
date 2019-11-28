@@ -121,6 +121,7 @@ export default {
     }
   },
   activated() {
+    console.log('activated');
     this.getUserCount();
     this.getDownloadCount();
     this.getProductCount();
@@ -213,7 +214,14 @@ export default {
           message: '已取消删除'
         });          
       });
-      
+    },
+    audit(id) {
+      this.$router.push({
+        path: '/activity/audit',
+        query: {
+          id,
+        },
+      });
     },
   },
 }

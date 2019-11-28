@@ -18,6 +18,12 @@ const leftRoutes = [
         meta: { menu: true, keepAlive: true },
       },
       {
+        path: '/activity/audit',
+        name: '审核报名',
+        component: () => import('@/views/Activity/Audit'),
+        meta: { menu: false, keepAlive: true },
+      },
+      {
         path: '/activity/channel',
         name: '渠道',
         meta: { menu: true, keepAlive: true },
@@ -79,6 +85,7 @@ const leftRoutes = [
       {
         path: '/system/images',
         name: '网站图片',
+        meta: { menu: true, keepAlive: true },
         component: () => import('@/views/System/Images'),
       },
     ],

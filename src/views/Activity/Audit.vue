@@ -1,7 +1,7 @@
 <template>
   <div class="applicants">
     <div class="page-top">
-      <span class="top-title">管理活动人</span>
+      <span class="top-title">{{title}}</span>
       <div class="top-func">
         <el-button type="primary" class="add-btn" @click="dialogVisible = true">增加</el-button>
         <el-input class="search-input" v-model="searchText" placeholder="请输入内容"></el-input>
@@ -9,20 +9,20 @@
       </div>
     </div>
     <div class="layer-table">
-      <el-table :data="tableData">
+      <el-table :data="tableData" style="width: 100%">
         <el-table-column label="名字" prop="name" align="center"></el-table-column>
-        <el-table-column label="电话" prop="mobilePhone" align="center"></el-table-column>
-        <el-table-column label="邮箱" prop="email" align="center"></el-table-column>
+        <el-table-column label="电话" prop="mobilePhoneNumber" align="center"></el-table-column>
         <el-table-column label="微信" prop="wechatId" align="center"></el-table-column>
-        <el-table-column label="已参加" align="center" prop="joinList"></el-table-column>
-        <el-table-column label="累计缴费" align="center" prop="totalFee"></el-table-column>
-        <el-table-column label="操作" align="center">
-          <template>
-            <el-button type="warning">编辑</el-button>
-            <el-button type="danger">删除</el-button>
+        <el-table-column label="邮箱" prop="email" align="center" min-width="120"></el-table-column>
+        <el-table-column label="报名时间" prop="createTime" align="center" min-width="100"></el-table-column>
+        <el-table-column label="状态" align="center" min-width="200">
+          <template slot-scope="scope" prop="toDo">
+            <el-button type="primary" :disabled="scope.row.isApply" size="small">已报名</el-button>
+            <el-button type="primary" :disabled="scope.row.isWechat" size="small">已加微信</el-button>
+            <el-button type="primary" :disabled="scope.row.isPaid" size="small">已支付</el-button>
+
           </template>
         </el-table-column>
-
       </el-table>
     </div>
 
@@ -62,6 +62,7 @@
 export default {
   data() {
     return {
+      title: '',
       searchText: '',
       dialogVisible: false,
 
@@ -69,46 +70,36 @@ export default {
     }
   },
   mounted() {
-    this.getPerson();
+    this.getInfo();
   },
   methods: {
-    getPerson() {
+    getInfo() {
       const that = this;
+      var activityQuery = new this.$AV.Query('activity');
+      var activityPersonQuery = new this.$AV.Query('activity_person');
       var userQuery = new this.$AV.Query('_User');
       const arr = [];
 
-      userQuery.find().then((user) => {
-        for (let i = 0; i < user.length; i += 1) {
-          var activityPersonQuery = new that.$AV.Query('activity_person');
-          activityPersonQuery.equalTo('user', user[i]);
-          activityPersonQuery.find().then((ap) => {
-            let joinList = [];
-            let totalFee = 0;
-            let arrr = [];
-            for (let o = 0; o < ap.length; o += 1) {
-              var activityQuery = new that.$AV.Query('activity');
-              activityQuery.get(ap[o].get('activity').id).then((ac) => {
-                // arrr.push({
-                //   joinList: joinList.push(ac.get('title')),
-                //   totalFee: ac.get('fee') + totalFee,
-                // });
-                joinList.push(ac.get('title'));
-                // totalFee = ac.get('fee') + totalFee;
+      activityQuery.get(that.$route.query.id).then(function (data) {
+        that.title = data.get('title');
+        activityPersonQuery.equalTo('activity', data);
+        activityPersonQuery.find().then((d) => {
+          for (let i = 0; i < d.length; i += 1) {
+            userQuery.get(d[i].get('user').id).then((res) => {
+              arr.push({
+                name: res.get('name') || '',
+                mobilePhoneNumber: res.get('mobilePhoneNumber') || '',
+                wechatId: res.get('wechatId') || '',
+                email: res.get('email') || '',
+                createTime: that.$moment(d[i].createdAt).format('YYYY-MM-DD hh:mm'),
+                isApply: d[i].get('isApply'),
+                isWechat: d[i].get('isWechat'),
+                isPaid: d[i].get('isPaid'),
               });
-              console.log(arrr);
-            }
-            console.log(joinList);
-            arr.push({
-              name: user[i].get('name') || '',
-              mobilePhoneNumber: user[i].get('mobilePhoneNumber') || '',
-              wechatId: user[i].get('wechatId') || '',
-              email: user[i].get('email') || '',
-              joinList,
-              totalFee,
             });
-          });
-        }
-        this.tableData = arr;
+          }
+          that.tableData = arr;
+        });
       });
     },
   },
@@ -125,6 +116,10 @@ export default {
       padding-bottom: 50px;
       height: 40px;
       background-color: #fff;
+      .top-title {
+        line-height: 40px;
+        color: #333;
+      }
       .top-func {
         position: absolute;
         top: 0px;
@@ -155,5 +150,10 @@ export default {
         font-size: 12px;
       }
     }
+  }
+  .el-button--primary.is-disabled {
+    background-color: #EBEBEB;
+    color: #333;
+    border-color: #ebebeb;
   }
 </style>

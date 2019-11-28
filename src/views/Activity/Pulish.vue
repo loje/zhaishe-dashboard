@@ -98,18 +98,30 @@ export default {
       const that = this;
       var query = new this.$AV.Query('activity');
       var img_query = new this.$AV.Query('_File');
-      var mode_query = new this.$AV.Query('activity_mode');
 
-      // var sort_query = new this.$AV.Query('activity_sort');
+      var mode_query = new this.$AV.Query('activity_mode');
+      var sort_query = new this.$AV.Query('activity_sort');
 
       query.get(that.$route.query.cid).then(function (data) {
-        // console.log(data.get('mode').id);
         mode_query.get(data.get('mode').id).then((mode) => {
-          console.log(mode.get('mode'));
-          // that.form = {
-          //   ...that.form,
-          //   mode:
-          // };
+          for (let i = 0; i < that.modeList.length; i += 1) {
+            if (that.modeList[i].label === mode.get('mode')) {
+              that.form = {
+                ...that.form,
+                mode: i,
+              };
+            }
+          }
+        });
+        sort_query.get(data.get('sort').id).then((sort) => {
+          for (let i = 0; i < that.sortList.length; i += 1) {
+            if (that.sortList[i].label === sort.get('sortName')) {
+              that.form = {
+                ...that.form,
+                sort: i,
+              };
+            }
+          }
         });
         img_query.get(data.get('img').id).then((d) => {
           // mode_query.get(data.get('mode').id).then((mode) => {
@@ -176,8 +188,8 @@ export default {
               mode: that.modes[that.form.mode],
               sort: that.sorts[that.form.sort],
               status: Number(status),
-              startTime: that.form.time[0],
-              endTime: that.form.time[1],
+              startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
+              endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
               time: undefined,
               imgSrc: undefined,
             });
