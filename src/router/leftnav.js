@@ -26,7 +26,14 @@ const leftRoutes = [
       {
         path: '/activity/channel',
         name: '渠道',
+        component: () => import('@/views/Activity/Channel'),
         meta: { menu: true, keepAlive: true },
+      },
+      {
+        path: '/activity/channel/item',
+        name: '渠道',
+        component: () => import('@/views/Activity/ChannelView'),
+        meta: { menu: false },
       },
       {
         path: '/activity/statistical',
