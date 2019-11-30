@@ -1,50 +1,27 @@
 <template>
   <div class="activity-layer">
-    <template v-if="$route.path === '/activity'">
-    <div class="box-group">
-      <div class="box">
-        <div class="box-flex">
-          <span class="box-t">平台用户</span>
-          <span class="box-num">{{allUserCount}}</span>
-        </div>
-      </div>
-      <div class="box">
-        <div class="box-flex">
-          <span class="box-t">付费用户</span>
-          <span class="box-num">1000</span>
-        </div>
-      </div>
-      <div class="box">
-        <div class="box-flex">
-          <span class="box-t">下载数</span>
-          <span class="box-num">{{downloadCount}}</span>
-        </div>
-      </div>
-      <div class="box">
-        <div class="box-flex">
-          <span class="box-t">活动参与人数</span>
-          <span class="box-num">1000</span>
-        </div>
-      </div>
-      <div class="box">
-        <div class="box-flex">
-          <span class="box-t">代理产品</span>
-          <span class="box-num">{{productCount}}</span>
-        </div>
+    <div class="page-top">
+      <span class="top-title">
+        <el-breadcrumb separator-class="el-icon-arrow-right">
+          <el-breadcrumb-item>活动列表</el-breadcrumb-item>
+        </el-breadcrumb>
+      </span>
+      <div class="top-func">
+        <el-button type="primary" icon="el-icon-plus" @click="$router.push('/activity/pulish')">新建活动</el-button>
       </div>
     </div>
     <div class="layer-table">
       <el-table
         :data="tableData"
-        height="100%"
         style="width: 100%"
         v-loading="loading">
         <el-table-column
           label="活动标题"
-          prop="title">
+          prop="title"
+          min-width="250">
           <template slot-scope="scope">
             <div class="title">{{scope.row.title}}</div>
-            <div class="desc">{{scope.row.desc}}</div>
+            <!-- <div class="desc">{{scope.row.desc}}</div> -->
           </template>
         </el-table-column>
         <el-table-column
@@ -59,28 +36,41 @@
         </el-table-column>
         <el-table-column
           align="center"
-          prop="time"
-          label="活动时间">
+          label="活动时间"
+          min-width="200">
+          <template slot-scope="scope">
+            <div>开始时间：{{scope.row.startTime}}</div>
+            <div>结束时间：{{scope.row.endTime}}</div>
+          </template>
         </el-table-column>
         <el-table-column
           align="center"
           prop="status"
           label="状态">
           <template slot-scope="scope">
-            <span v-if="scope.row.status === 0">暂存中</span>
-            <span v-if="scope.row.status === 1">可报名</span>
-            <span v-else-if="scope.row.status === 2">报名结束</span>
+            <div class="state" v-if="scope.row.status === 0">
+              <span class="icon" style="background-color: #999;"></span>
+              <span class="text">暂存中</span>
+            </div>
+            <div class="state" v-else-if="scope.row.status === 1">
+              <span class="icon" style="background-color: #FFCB2B;"></span>
+              <span class="text">可报名</span>
+            </div>
+            <div class="state" v-else-if="scope.row.status === 2">
+              <span class="icon" style="background-color: #999;"></span>
+              <span class="text">报名结束</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column
           prop="toDo"
           align="center"
-          min-width="150">
+          width="280">
           <template slot-scope="scope">
-            <el-button-group>
-            <el-button size="medium" @click="edit(scope.row.cid)">编辑</el-button>
-            <el-button type="primary" size="medium" @click="audit(scope.row.cid)">审核报名</el-button>
-            <el-button type="danger" size="medium" icon="el-icon-delete" circle @click="del(scope.row.cid)" v-if="scope.row.count === 0"></el-button>
+            <el-button type="primary" size="small" icon="el-icon-finished" @click="audit(scope.row.id)">审核报名</el-button>
+            <el-button-group style="margin-left: 15px;">
+            <el-button size="small" icon="el-icon-edit" @click="edit(scope.row.id)">编辑</el-button>
+            <el-button type="danger" size="small" icon="el-icon-delete" @click="del(scope.row.id)" v-if="scope.row.count === 0">删除</el-button>
             </el-button-group>
           </template>
         </el-table-column>
@@ -97,13 +87,6 @@
         :total="total">
       </el-pagination>
     </div>
-    </template>
-    <template v-else>
-      <keep-alive>
-        <router-view v-if="$route.meta.keepAlive"></router-view>
-      </keep-alive>
-      <router-view v-if="!$route.meta.keepAlive"></router-view>
-    </template>
   </div>
 </template>
 
@@ -111,65 +94,36 @@
 export default {
   data() {
     return {
-      allUserCount: 0,
-      downloadCount: 0,
-      productCount: 0,
       tableData: [],
       current: 1,
       total: 0,
       loading: false,
     }
   },
-  activated() {
-    console.log('activated');
-    this.getUserCount();
-    this.getDownloadCount();
-    this.getProductCount();
+  mounted() {
+
     this.getActivityList();
     this.getActivityCount();
   },
   methods: {
-    getUserCount() {
-      const that = this;
-      var query = new this.$AV.Query('_User');
-      query.equalTo('isCustomer', true);
-      query.count().then(function (count) {
-        that.allUserCount = count;
-      });
-    },
-    getDownloadCount() {
-      const that = this;
-      let count = 0;
-      var query = new this.$AV.Query('download');
-      query.find().then(function (data) {
-        for (let i = 0; i < data.length; i += 1) {
-          count += data[i].attributes.downloads;
-        }
-        that.downloadCount = count;
-      });
-    },
-    getProductCount() {
-      const that = this;
-      var query = new this.$AV.Query('product');
-      query.count().then(function (count) {
-        that.productCount = count;
-      });
-    },
     getActivityList() {
       this.loading = true;
       const that = this;
       let dataList = [];
       var query = new this.$AV.Query('activity');
-      query.find().then(function (data) {
+      query.equalTo('notDelete', true);
+      query.ascending('updatedAt');
+      query.find().then((data) => {
         that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
           dataList.push({
-            cid: data[i].id,
+            id: data[i].id,
             title: data[i].attributes.title,
             desc: data[i].attributes.desc,
             count: data[i].attributes.count,
             pv: data[i].attributes.pv,
-            time: that.$moment(data[i].attributes.time).format('YYYY-MM-DD hh:mm'),
+            startTime: that.$moment(data[i].attributes.startTime).format('YYYY-MM-DD hh:mm'),
+            endTime: that.$moment(data[i].attributes.endTime).format('YYYY-MM-DD hh:mm'),
             status: data[i].attributes.status,
           });
         }
@@ -185,30 +139,28 @@ export default {
     },
     handleSizeChange() {},
     handleCurrentChange() {},
-    edit(cid) {
+    edit(id) {
       this.$router.push({
         path: '/activity/pulish',
-        query: { cid },
+        query: { id },
       })
     },
-    del(cid) {
+    del(id) {
       const that = this;
       this.$confirm('此操作将永久删除该活动, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var activity = this.$AV.Object.createWithoutData('activity', cid);
-        activity.destroy().then(() => {
+        var activity = this.$AV.Object.createWithoutData('activity', id);
+        activity.set('notDelete', false);
+        activity.save().then(() => {
           that.$message.success('删除成功！');
           that.getActivityList();
           that.getActivityCount();
         });
-        this.$message({
-          type: 'success',
-          message: '删除成功!'
-        });
-      }).catch(() => {
+      }).catch((error) => {
+        console.log(error);
         this.$message({
           type: 'info',
           message: '已取消删除'
@@ -228,44 +180,63 @@ export default {
 </script>
 
 <style lang="scss" scope>
+  .state {
+    .icon {
+      display: inline-block;
+      margin-right: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      vertical-align: middle;
+    }
+    .text {
+      display: inline-block;
+      vertical-align: middle;
+    }
+  }
   .activity-layer {
-    width: 100%;
-    height: 100%;
-    .box-group {
-      display: flex;
-      width: 100%;
-      margin-bottom: 37px;
-      justify-content: space-between;
-      .box {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 300px;
-        height: 100px;
-        background-color: #fff;
-        text-align: center;
-        .box-flex {
-          .box-t {
-            line-height: 17px;
-            color: #999;
-          }
-          .box-num {
-            margin-left: 20px;
-            font-size: 40px;
-            line-height: 40px;
-            font-family: PingFang SC Regular;
-            color: #333;
-          }
+    .page-top {
+      position: relative;
+      margin-bottom: 15px;
+      padding: 15px;
+      height: 40px;
+      line-height: 40px;
+      background-color: #fff;
+      .top-title {
+        display: inline-block;
+        height: 40px;
+        line-height: 40px;
+        color: #999;
+        .el-breadcrumb {
+          line-height: 40px;
+        }
+      }
+      .top-func {
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        .add-btn {
+          width: 120px;
+        }
+        .search-input {
+          margin-left: 30px;
+          width: 170px;
+        }
+        .search-btn {
+          padding: 0 20px;
         }
       }
     }
     .layer-table {
       padding: 15px;
       width: 100%;
-      height: calc(100% - 231px);
+      height: calc(100% - 133px);
       background-color:#fff;
       overflow: auto;
       box-sizing: border-box;
+      .table-func {
+        text-align: right;
+      }
       .el-table::before {
         background-color: #fff;
       }

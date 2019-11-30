@@ -90,41 +90,39 @@ export default {
   },
   methods: {
     getPerson() {
-      const that = this;
-      var userQuery = new this.$AV.Query('_User');
-      userQuery.find().then((user) => {
-        const arr = [];
+      // const that = this;
+      // var userQuery = new this.$AV.Query('_User');
+      // userQuery.find().then((user) => {
+      //   const arr = [];
+      //   for (let i = 0; i < user.length; i += 1) {
+      //     var activityPersonQuery = new that.$AV.Query('activity_person');
+      //     activityPersonQuery.equalTo('user', user[i]);
+      //     activityPersonQuery.find().then((ap) => {
+      //       arr.push({
+      //         name: user[i].get('name') || '',
+      //         mobilePhoneNumber: user[i].get('mobilePhoneNumber') || '',
+      //         wechatId: user[i].get('wechatId') || '',
+      //         email: user[i].get('email') || '',
+      //         totalFee: 0,
+      //         joinList: [],
+      //         userId: user[i].id,
+      //       });
+      //       for (let o = 0; o < ap.length; o += 1) {
+      //         var activityQuery = new that.$AV.Query('activity');
+      //         activityQuery.get(ap[o].get('activity').id).then((ac) => {
+      //           arr[i].totalFee = ac.get('fee') + arr[i].totalFee;
+      //           arr[i].joinList.push({
+      //             label: ac.get('title'),
+      //             value: ac.id,
+      //           });
+      //         });
+      //       }
+      //       // console.log(arr[i].joinList);
+      //     });
+      //   }
 
-        for (let i = 0; i < user.length; i += 1) {
-          arr.push({
-            name: user[i].get('name') || '',
-            mobilePhoneNumber: user[i].get('mobilePhoneNumber') || '',
-            wechatId: user[i].get('wechatId') || '',
-            email: user[i].get('email') || '',
-            totalFee: 0,
-            joinList: [],
-            userId: user[i].id,
-          });
-
-          var activityPersonQuery = new that.$AV.Query('activity_person');
-          activityPersonQuery.equalTo('user', user[i]);
-          activityPersonQuery.find().then((ap) => {
-            for (let o = 0; o < ap.length; o += 1) {
-              var activityQuery = new that.$AV.Query('activity');
-              activityQuery.get(ap[o].get('activity').id).then((ac) => {
-                arr[i].totalFee = ac.get('fee') + arr[i].totalFee;
-                arr[i].joinList.push({
-                  label: ac.get('title'),
-                  value: ac.id,
-                });
-              });
-            }
-            // console.log(arr[i].joinList);
-          });
-        }
-
-        this.tableData = arr;
-      });
+      //   this.tableData = arr;
+      // });
     },
 
     getActivityList() {
@@ -197,17 +195,21 @@ export default {
 
 <style lang="scss" scope>
   .applicants {
-    padding: 25px;
-    background-color: #fff;
+    // padding: 15px;
     box-sizing: border-box;
     .page-top {
       position: relative;
-      padding-bottom: 50px;
+      padding: 15px;
       height: 40px;
       background-color: #fff;
+      margin-bottom: 15px;
+      .top-title {
+        line-height: 40px;
+        color: #999;
+      }
       .top-func {
         position: absolute;
-        top: 0px;
+        top: 15px;
         right: 25px;
         .add-btn {
           width: 120px;

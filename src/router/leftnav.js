@@ -1,19 +1,31 @@
 const leftRoutes = [
   {
+    path: '/home',
+    name: '首页',
+    meta: { menu: true, keepAlive: true },
+    component: () => import('@/views/Home/index')
+  },
+  {
     path: '/activity',
     name: '活动管理',
     meta: { menu: true, keepAlive: true },
-    component: () => import('@/views/Activity/index'),
+    component: () => import('@/components/Black'),
     children: [
+      {
+        path: '/activity',
+        name: '活动列表',
+        component: () => import('@/views/Activity/index'),
+        meta: { menu: true },
+      },
       {
         path: '/activity/pulish',
         name: '发布活动',
         component: () => import('@/views/Activity/Pulish'),
-        meta: { menu: true, keepAlive: true },
+        meta: { menu: false },
       },
       {
         path: '/activity/applicants',
-        name: '管理报名人',
+        name: '所有报名记录',
         component: () => import('@/views/Activity/Applicants'),
         meta: { menu: true, keepAlive: true },
       },
@@ -46,6 +58,7 @@ const leftRoutes = [
     path: '/product',
     name: '代理产品',
     meta: { menu: true, keepAlive: true },
+    component: () => import('@/components/Black'),
     children: [
       {
         path: '/product/item',
@@ -63,11 +76,19 @@ const leftRoutes = [
     path: '/member',
     name: '会员管理',
     meta: { menu: true, keepAlive: true },
+    component: () => import('@/components/Black'),
     children: [
+      {
+        path: '/member',
+        name: '会员列表',
+        component: () => import('@/views/Member/index'),
+        meta: { menu: true },
+      },
       {
         path: '/member/item',
         name: '添加会员',
-        meta: { menu: true, keepAlive: true },
+        component: () => import('@/views/Member/Item'),
+        meta: { menu: false },
       },
     ],
   },
@@ -75,19 +96,22 @@ const leftRoutes = [
     path: '/material',
     name: '素材管理',
     meta: { menu: true, keepAlive: true },
+    component: () => import('@/components/Black'),
     children: [],
   },
   {
     path: '/master',
     name: '大咖管理',
     meta: { menu: true, keepAlive: true },
+    component: () => import('@/components/Black'),
     children: [],
   },
   {
     path: '/system',
     name: '系统管理',
     meta: { menu: true, keepAlive: true },
-    component: () => import('@/views/System/index'),
+    // component: () => import('@/views/System/index'),
+    component: () => import('@/components/Black'),
     children: [
       {
         path: '/system/images',

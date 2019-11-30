@@ -79,17 +79,23 @@ export default {
 
 <style lang="scss" scope>
   .channel {
-    padding: 25px;
-    background-color: #fff;
+    // padding: 25px;
+    // background-color: #fff;
     box-sizing: border-box;
     .page-top {
       position: relative;
-      padding-bottom: 50px;
+      margin-bottom: 15px;
+      padding: 15px;
       height: 40px;
+      line-height: 40px;
       background-color: #fff;
+      .top-title {
+        line-height: 40px;
+        color: #999;
+      }
       .top-func {
         position: absolute;
-        top: 0px;
+        top: 15px;
         right: 25px;
         .del-btn {
           width: 120px;

@@ -14,18 +14,14 @@
       <div class="left-nav">
         <LeftNav></LeftNav>
       </div>
-      <div class="main">
-        <keep-alive>
-          <router-view v-if="$route.meta.keepAlive"></router-view>
-        </keep-alive>
-        <router-view v-if="!$route.meta.keepAlive"></router-view>
-      </div>
+      <Black class="main"></Black>
     </div>
   </div>
 </template>
 
 <script>
 import LeftNav from '@/components/LeftNav'
+import Black from '@/components/Black'
 
 export default {
   data() {
@@ -33,6 +29,7 @@ export default {
   },
   components: {
     LeftNav,
+    Black,
   },
   methods: {
     logout() {
@@ -52,19 +49,20 @@ export default {
     .layout-top {
       position: relative;
       width: 100%;
-      height: 112px;
+      height: 64px;
       background-color: #fff;
       .logo {
         width: 167px;
-        line-height: 112px;
+        line-height: 64px;
         cursor: pointer;
         .img {
           display: inline-block;
           margin-left: 29px;
           width: 167px;
-          height: 47px;
+          height: 32px;
           vertical-align: middle;
-          background-size: 100%;
+          background-size: contain;
+          background-repeat: no-repeat;
         }
         span {
           display: inline-block;
@@ -94,18 +92,18 @@ export default {
     .layout-main {
       display: flex;
       width: 100%;
-      height: calc(100% - 112px);
+      height: calc(100% - 64px);
       .left-nav {
-        margin-right: 54px;
-        padding-top: 50px;
-        width: 220px;
+        padding-top: 24px;
+        width: 256px;
         height: 100%;
         overflow: auto;
         box-sizing: border-box;
+        background-color: #fff;
       }
       .main {
-        padding-top: 50px;
-        width: calc(100% - 320px);
+        padding: 24px;
+        width: calc(100% - 256px);
         height: 100%;
         box-sizing: border-box;
       }

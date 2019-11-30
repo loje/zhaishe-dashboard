@@ -1,33 +1,31 @@
 <template>
   <div class="pulish-page" v-loading="pulishLoading" id="pulish">
-    <el-form :model="form" label-position="top" label-width="150px"  class="form" ref="form">
-      <el-form-item label="活动标题">
+    <el-form :model="form" label-position="right" label-width="150px" :rules="rules" class="form" ref="form">
+      <el-form-item label="活动标题" prop="title">
         <el-input v-model="form.title" placeholder="请输入标题，最多10字"></el-input>
       </el-form-item>
-      <el-form-item label="活动描述">
+      <el-form-item label="活动描述" prop="desc">
         <el-input v-model="form.desc" type="textarea" rows="3" placeholder="请输入"></el-input>
       </el-form-item>
-      <el-form-item label="活动形式">
+      <el-form-item label="活动形式" prop="mode">
         <el-select v-model="form.mode" placeholder="请选择活动形式">
           <el-option v-for="(item, $index) in modeList" :key="$index" :label="item.label" :value="item.value"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="活动类型">
+      <el-form-item label="活动类型" prop="sort">
         <el-select v-model="form.sort" placeholder="请选择活动类型">
           <el-option v-for="(item, $index) in sortList" :key="$index" :label="item.label" :value="item.value"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="活动图片(123px * 123px)">
+      <el-form-item label="活动图片" prop="imgSrc">
+        <div style="line-height: 40px; color:#999;">(123px * 123px)</div>
         <div @click="importClick" class="el-upload el-upload--picture-card" v-loading="imgLoading">
           <el-image :src="form.imgSrc" v-if="form.img" fit="contain" class="img" style="width: 100%; height: 100%;"></el-image>
           <i class="el-icon-plus" v-else></i>
           <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
         </div>
-        <el-dialog :visible.sync="dialogVisible">
-          <img width="100%" :src="dialogImageUrl" alt="">
-        </el-dialog>
       </el-form-item>
-      <el-form-item label="活动时间">
+      <el-form-item label="活动时间" prop="time">
         <el-date-picker
           v-model="form.time"
           type="datetimerange"
@@ -36,20 +34,20 @@
           end-placeholder="结束日期">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="活动费用">
-        <el-input-number v-model="form.fee" placeholder="请输入" controls-position="right" :min="0.01"></el-input-number>
+      <el-form-item label="活动费用" prop="fee">
+        <el-input-number v-model="form.fee" placeholder="免费" controls-position="right" :min="0.00"></el-input-number>
       </el-form-item>
-      <el-form-item label="活动人数">
-        <el-input-number v-model="form.number" controls-position="right" :min="1"></el-input-number>
+      <el-form-item label="活动人数" prop="number">
+        <el-input-number v-model="form.number" placeholder="不限" controls-position="right" :min="0"></el-input-number>
       </el-form-item>
-      <el-form-item label="活动地点">
-        <el-input v-model="form.address" placeholder="请输入"></el-input>
+      <el-form-item label="活动地点" prop="address">
+        <el-input v-model="form.address" placeholder="地点不限"></el-input>
       </el-form-item>
-      <el-form-item label="活动详情（插入图片即可）">
-        <quill-editor v-model="form.content" ref="myQuillEditor" :options="editorOption"></quill-editor>
+      <el-form-item label="活动详情" prop="content">
+        <quill-editor v-model="form.content" ref="myQuillEditor" :options="editorOption" style="width: 100%;"></quill-editor>
       </el-form-item>
       <el-form-item align="right">
-        <el-button @click="submitForm('0')">保存</el-button>
+        <el-button @click="submitForm('0')">设为暂存</el-button>
         <el-button type="primary" @click="submitForm('1')">发布</el-button>
       </el-form-item>
     </el-form>
@@ -68,12 +66,20 @@ import 'quill/dist/quill.bubble.css'
 export default {
   data() {
     return {
-      form: {},
+      form: {
+        fee: 0,
+      },
+      rules: {
+        title: [{required: true, message: '请输入', trigger: 'blur'}],
+        desc: [{required: true, message: '请输入', trigger: 'blur'}],
+        mode: [{required: true, message: '请输入', trigger: 'blur'}],
+        sort: [{required: true, message: '请输入', trigger: 'blur'}],
+        imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
+        // address: [{required: true, message: '请输入活动地址', trigger: 'blur'}],
+        content: [{required: true, message: '请输入', trigger: 'blur'}],
+      },
       editorOption: {},
       imgLoading: false,
-
-      dialogVisible: false,
-      dialogImageUrl: '',
 
       pulishLoading: false,
       modes: [],
@@ -192,6 +198,9 @@ export default {
               endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
               time: undefined,
               imgSrc: undefined,
+              fee: that.form.fee ? that.form.fee : 0,
+              number: that.form.number ? that.form.number : 0,
+              address: that.form.address ? that.form.address : '',
             });
             activity.save().then(function () {
               that.pulishLoading = false;
@@ -209,10 +218,13 @@ export default {
               mode: that.modes[that.form.mode],
               sort: that.sorts[that.form.sort],
               status: Number(status),
-              startTime: that.form.time[0],
-              endTime: that.form.time[1],
+              startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
+              endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
               time: undefined,
               imgSrc: undefined,
+              fee: that.form.fee ? that.form.fee : 0,
+              number: that.form.number ? that.form.number : 0,
+              address: that.form.address ? that.form.address : '',
             });
             activity.save().then(function () {
               that.pulishLoading = false;
@@ -265,11 +277,12 @@ export default {
     overflow: auto;
     box-sizing: border-box;
     .form {
-      width: 770px;
+      width: 100%;
+      max-width: 900px;
       /deep/ .el-form-item__content{
         line-height: normal;
         /deep/.ql-editor{
-          height: 300px;
+          height: 600px;
         }
       }
     }

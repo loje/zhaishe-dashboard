@@ -24,7 +24,7 @@ const routes = [
       // },
       {
         path: '/',
-        redirect: '/activity',
+        redirect: '/home',
       },
       ...leftRoutes,
     ],
@@ -36,5 +36,10 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
+
+const routerPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push(location) {
+  return routerPush.call(this, location).catch(error=> error)
+}
 
 export default router
