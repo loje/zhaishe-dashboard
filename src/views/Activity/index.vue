@@ -159,8 +159,7 @@ export default {
           that.getActivityList();
           that.getActivityCount();
         });
-      }).catch((error) => {
-        console.log(error);
+      }).catch(() => {
         this.$message({
           type: 'info',
           message: '已取消删除'

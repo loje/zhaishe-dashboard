@@ -95,7 +95,7 @@ export default {
     this.getModeList();
     this.getSortList();
 
-    if (this.$route.query.cid) {
+    if (this.$route.query.id) {
       this.getInfo();
     }
   },
@@ -108,7 +108,7 @@ export default {
       var mode_query = new this.$AV.Query('activity_mode');
       var sort_query = new this.$AV.Query('activity_sort');
 
-      query.get(that.$route.query.cid).then(function (data) {
+      query.get(that.$route.query.id).then(function (data) {
         mode_query.get(data.get('mode').id).then((mode) => {
           for (let i = 0; i < that.modeList.length; i += 1) {
             if (that.modeList[i].label === mode.get('mode')) {
@@ -186,7 +186,7 @@ export default {
       this.$refs.form.validate((valid) => {
         if (valid) {
           that.pulishLoading = true;
-          if (!that.$route.query.cid) {
+          if (!that.$route.query.id) {
             let Activity = this.$AV.Object.extend('activity');
             let activity = new Activity();
             activity.set({
@@ -212,7 +212,7 @@ export default {
               // 异常处理
             });
           } else {
-            let activity = this.$AV.Object.createWithoutData('activity', that.$route.query.cid);
+            let activity = this.$AV.Object.createWithoutData('activity', that.$route.query.id);
             activity.set({
               ...that.form,
               mode: that.modes[that.form.mode],
@@ -253,13 +253,12 @@ export default {
         var localFile  = e.target.files[0];
         var file = new this.$AV.File(localFile.name, localFile);
         file.save().then(function (file) {
-          console.log(file.id);
           that.imgLoading = false;
           that.form.imgSrc = file.attributes.url;
           that.form.img = file;
-        }, function (error) {
+        }, function () {
           that.imgLoading = false;
-          console.error(error);
+          // console.error(error);
           // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
         });
       }
