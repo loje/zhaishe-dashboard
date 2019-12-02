@@ -9,7 +9,7 @@
         </el-breadcrumb>
       </div>
       <div class="top-func">
-        <el-button type="primary" class="add-btn" @click="showDialog">增加</el-button>
+        <el-button type="primary" class="add-btn" icon="el-icon-plus" @click="showDialog">添加</el-button>
         <el-input class="search-input" v-model="searchText" placeholder="暂不可用" :disabled="true"></el-input>
         <el-button type="text" class="search-btn" @click="dataSearch" :disabled="true">搜索</el-button>
       </div>
@@ -66,7 +66,7 @@
           <el-input type="text" :disabled="true" v-model="dialog.form.wechatId"></el-input>
         </el-form-item>
         <el-form-item align="right">
-          <el-button type="primary" @click="submitForm">添加</el-button>
+          <el-button type="primary" @click="submitForm">提交</el-button>
           <el-button @click="dialogVisible = false">取消</el-button>
         </el-form-item>
       </el-form>

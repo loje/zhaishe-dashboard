@@ -125,7 +125,6 @@ export default {
       let dataList = [];
       var query = new this.$AV.Query('activity');
       const skip = that.pageSize * (that.current - 1);
-      console.log(that.pageSize, that.current, skip);
       query.equalTo('notDelete', true);
       query.limit(that.pageSize);
       query.skip(skip);
@@ -140,8 +139,8 @@ export default {
             desc: data[i].attributes.desc,
             count: data[i].attributes.count,
             pv: data[i].attributes.pv,
-            startTime: that.$moment(data[i].attributes.startTime).format('YYYY-MM-DD hh:mm'),
-            endTime: that.$moment(data[i].attributes.endTime).format('YYYY-MM-DD hh:mm'),
+            startTime: that.$moment(data[i].attributes.startTime).format('YYYY-MM-DD HH:mm'),
+            endTime: that.$moment(data[i].attributes.endTime).format('YYYY-MM-DD HH:mm'),
             status: data[i].attributes.status,
           });
         }

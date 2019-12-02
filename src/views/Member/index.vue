@@ -64,7 +64,7 @@
           <el-input type="text" v-model="dialog.form.password" :disabled="true" placeholder="默认为123456"></el-input>
         </el-form-item>
         <el-form-item align="right">
-          <el-button type="primary" @click="submitForm">添加</el-button>
+          <el-button type="primary" @click="submitForm">提交</el-button>
           <el-button @click="dialogVisible = false">取消</el-button>
         </el-form-item>
       </el-form>

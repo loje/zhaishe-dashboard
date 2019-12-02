@@ -3,7 +3,7 @@
     <div class="page-top">
       <span class="top-title">管理活动人</span>
       <div class="top-func">
-        <!-- <el-button type="primary" class="add-btn" @click="showItem">增加</el-button> -->
+        <!-- <el-button type="primary" class="add-btn" icon="el-icon-plus" @click="showItem">添加</el-button> -->
         <el-input class="search-input" v-model="searchText" placeholder="请输入内容"></el-input>
         <el-button type="text" class="search-btn">搜索</el-button>
       </div>
@@ -60,7 +60,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm">添加</el-button>
+          <el-button type="primary" @click="submitForm">提交</el-button>
           <el-button @click="dialogVisible = false">取消</el-button>
         </el-form-item>
       </el-form>
