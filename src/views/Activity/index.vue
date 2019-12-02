@@ -8,6 +8,12 @@
       </span>
       <div class="top-func">
         <el-button type="primary" icon="el-icon-plus" @click="$router.push('/activity/pulish')">新建活动</el-button>
+
+        <div class="input-group">
+          <el-input type="text" placeholder="请输入内容" v-model="searchText" clearable>
+            <el-button slot="append" icon="el-icon-search" @click="dataSearch" class="el-button--primary"></el-button>
+          </el-input>
+        </div>
       </div>
     </div>
     <div class="layer-table">
@@ -81,8 +87,8 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="current"
-        :page-sizes="[5, 10, 20, 50]"
-        :page-size="100"
+        :page-sizes="[1, 5, 10, 20, 50]"
+        :page-size="pageSize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="total">
       </el-pagination>
@@ -94,6 +100,11 @@
 export default {
   data() {
     return {
+      searchText: '',
+
+      pageSize: 10,
+      // limit: 0,
+      skip: 0,
       tableData: [],
       current: 1,
       total: 0,
@@ -101,17 +112,24 @@ export default {
     }
   },
   mounted() {
-
     this.getActivityList();
     this.getActivityCount();
   },
   methods: {
+    dataSearch() {
+      this.getActivityList();
+    },
     getActivityList() {
       this.loading = true;
       const that = this;
       let dataList = [];
       var query = new this.$AV.Query('activity');
+      const skip = that.pageSize * (that.current - 1);
+      console.log(that.pageSize, that.current, skip);
       query.equalTo('notDelete', true);
+      query.limit(that.pageSize);
+      query.skip(skip);
+      query.contains('title', that.searchText);
       query.ascending('updatedAt');
       query.find().then((data) => {
         that.loading = false;
@@ -137,8 +155,15 @@ export default {
         that.total = count;
       });
     },
-    handleSizeChange() {},
-    handleCurrentChange() {},
+    handleSizeChange(page) {
+      this.current = 1;
+      this.pageSize = page;
+      this.getActivityList();
+    },
+    handleCurrentChange(current) {
+      this.current = current;
+      this.getActivityList();
+    },
     edit(id) {
       this.$router.push({
         path: '/activity/pulish',
@@ -217,13 +242,17 @@ export default {
         .add-btn {
           width: 120px;
         }
-        .search-input {
-          margin-left: 30px;
-          width: 170px;
+        .input-group {
+          margin-left: 15px;
+          display: inline-block;
         }
-        .search-btn {
-          padding: 0 20px;
-        }
+        // .search-input {
+        //   margin-left: 30px;
+        //   width: 170px;
+        // }
+        // .search-btn {
+        //   padding: 0 20px;
+        // }
       }
     }
     .layer-table {

@@ -1,6 +1,11 @@
 body {
     margin: 0;
 }
+.el-input-group__append {
+    background-color: #FFCB2B;
+    border-color: #FFCB2B;
+    color: #333;
+}
 .el-button--primary {
     color: #333;
 }
