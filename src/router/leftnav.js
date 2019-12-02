@@ -33,7 +33,7 @@ const leftRoutes = [
         path: '/activity/audit',
         name: '审核报名',
         component: () => import('@/views/Activity/Audit'),
-        meta: { menu: false, keepAlive: true },
+        meta: { menu: false },
       },
       {
         path: '/activity/channel',

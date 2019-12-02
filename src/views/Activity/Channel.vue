@@ -12,13 +12,12 @@
       <el-table :data="tableData" @selection-change="handleSelectionChange">
         <el-table-column type="selection"></el-table-column>
         <el-table-column label="渠道名字" prop="title" align="center"></el-table-column>
-        <el-table-column label="渠道数量" align="center"></el-table-column>
-        <el-table-column label="报名数量" align="center"></el-table-column>
+        <el-table-column label="渠道数量" align="center" prop="channelCount"></el-table-column>
+        <el-table-column label="报名数量" align="center" prop="applyCount"></el-table-column>
         <el-table-column label="时间" align="center">
           <template slot-scope="scope">
-            <div>{{scope.row.starttime}}</div>
-            <div>{{scope.row.endtime}}</div>
-
+            <div>{{scope.row.startTime}}</div>
+            <div>{{scope.row.endTime}}</div>
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center">
@@ -51,15 +50,24 @@ export default {
       const that = this;
       let dataList = [];
       var query = new this.$AV.Query('activity');
+      var channelQuery = new this.$AV.Query('channel');
+      // var activityPersonQuery = new this.$AV.Query('activity_person');
+
       query.find().then(function (data) {
         that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
-          dataList.push({
-            id: data[i].id,
-            title: data[i].attributes.title,
-            starttime: that.$moment(data[i].attributes.starttime).format('YYYY-MM-DD hh:mm'),
-            endtime: that.$moment(data[i].attributes.endtime).format('YYYY-MM-DD hh:mm'),
+          channelQuery.equalTo('activity', data[i]);
+          channelQuery.count().then((count) => {
+            dataList.push({
+              id: data[i].id,
+              title: data[i].attributes.title,
+              channelCount: count,
+              applyCount: 'a',
+              startTime: that.$moment(data[i].attributes.startTime).format('YYYY-MM-DD hh:mm'),
+              endTime: that.$moment(data[i].attributes.endTime).format('YYYY-MM-DD hh:mm'),
+            });
           });
+          
         }
         that.tableData = dataList;
       });
@@ -79,8 +87,6 @@ export default {
 
 <style lang="scss" scope>
   .channel {
-    // padding: 25px;
-    // background-color: #fff;
     box-sizing: border-box;
     .page-top {
       position: relative;

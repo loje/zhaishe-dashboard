@@ -3,7 +3,7 @@
     <div class="page-top">
       <span class="top-title">渠道管理 / {{$route.query.title}}</span>
       <div class="top-func">
-        <el-button type="primary" class="add-btn" @click="dialogVisible = true">增加</el-button>
+        <el-button type="primary" class="add-btn" @click="showDialog">增加</el-button>
         <el-input class="search-input" v-model="searchText" placeholder="请输入内容"></el-input>
         <el-button type="text" class="search-btn">搜索</el-button>
       </div>
@@ -29,23 +29,28 @@
         </el-table-column>
       </el-table>
     </div>
-    <el-dialog title="增加渠道" :visible.sync="dialogVisible" width="25%" center>
-      <el-form :model="itemform" label-position="right" label-width="80px">
-        <el-form-item label="渠道名字">
-          <el-input v-model="itemform.name" type="text"></el-input>
+    <el-dialog title="增加渠道" :visible.sync="dialogVisible" width="38%" center>
+      <el-form :model="itemform" label-position="right" label-width="80px" style="width:100%;">
+        <el-form-item label="渠道名字" prop="name">
+          <el-select v-model="itemform.name" filterable @change="selectChange" style="width: 100%;">
+            <el-option v-for="(item, $index) in userList" :key="$index" :label="item.name" :value="$index">
+              <span style="float: left">{{ item.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">微信号：{{ item.wechatId }}</span>
+            </el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item label="渠道数量">
-          <el-input v-model="itemform.name" type="text"></el-input>
+        <el-form-item label="报名数量" prop="num">
+          <el-input-number v-model="itemform.num" controls-position="right"></el-input-number>
         </el-form-item>
-        <el-form-item label="时间限制">
-          <el-input v-model="itemform.name" type="text"></el-input>
+        <el-form-item label="时间限制" prop="time">
+          <el-date-picker v-model="itemform.time" type="datetimerange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
         </el-form-item>
-        <el-form-item label="费用">
-          <el-input v-model="itemform.name" type="text"></el-input>
+        <el-form-item label="费用" prop="fee">
+          <el-input-number v-model="itemform.fee" controls-position="right"></el-input-number>
         </el-form-item>
-        <el-form-item label="渠道码">
-          <el-input v-model="itemform.name" type="text" :disabled="true">
-            <el-button type="primary" slot="append">生成</el-button>
+        <el-form-item label="渠道码" prop="coupon">
+          <el-input v-model="itemform.coupon" type="text" :disabled="true">
+            <!-- <el-button type="primary" slot="append">生成</el-button> -->
           </el-input>
         </el-form-item>
         <el-form-item align="right">
@@ -66,11 +71,41 @@ export default {
       multipleSelection: [],
       dialogVisible: false,
       itemform: {},
+      userList: [],
+      dialog: {
+        loading: false,
+        selectUser: '',
+        form: {},
+        rules: {},
+      },
     }
   },
   methods: {
     handleSelectionChange(val) {
       this.multipleSelection = val;
+    },
+    getUserList() {
+      this.dialog.loading = true;
+      const that = this;
+      that.userList = [];
+      var userQuery = new this.$AV.Query('_User');
+      userQuery.find().then((res) => {
+        that.dialog.loading = false;
+        for (let i = 0; i < res.length; i += 1) {
+          that.userList.push({
+            id: res[i].id,
+            ...res[i].attributes,
+          });
+        }
+      });
+    },
+    selectChange(i) {
+      this.dialog.form = this.userList[i];
+    },
+    showDialog() {
+      this.dialogVisible = true;
+      this.itemform.coupon = this.$route.query.id.Substring(0,7);
+      this.getUserList();
     },
     edit() {},
     del() {},
