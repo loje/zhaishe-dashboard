@@ -28,8 +28,10 @@
         </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
+            <el-button-group>
             <el-button type="primary" @click="edit(scope.row.id)" size="small">修改</el-button>
             <el-button type="danger" @click="del(scope.row.id)" size="small">删除</el-button>
+            </el-button-group>
           </template>
         </el-table-column>
       </el-table>

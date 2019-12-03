@@ -26,8 +26,15 @@
           prop="title"
           min-width="250">
           <template slot-scope="scope">
-            <div class="title">{{scope.row.title}}</div>
+            <!-- <div class="title">{{scope.row.title}}</div> -->
             <!-- <div class="desc">{{scope.row.desc}}</div> -->
+            <el-popover
+              placement="top-start"
+              trigger="hover">
+              <el-image :src="scope.row.img" style="width: 150px;" fit="contain"></el-image>
+              <!-- <el-button type="text" class="title" slot="reference">{{scope.row.title}}</el-button> -->
+              <div class="title" slot="reference">{{scope.row.title}}</div>
+            </el-popover>
           </template>
         </el-table-column>
         <el-table-column
@@ -70,13 +77,13 @@
         </el-table-column>
         <el-table-column
           prop="toDo"
-          align="center"
+          align="left"
           width="280">
           <template slot-scope="scope">
             <el-button type="primary" size="small" icon="el-icon-finished" @click="audit(scope.row.id)">审核报名</el-button>
             <el-button-group style="margin-left: 15px;">
             <el-button size="small" icon="el-icon-edit" @click="edit(scope.row.id)">编辑</el-button>
-            <el-button type="danger" size="small" icon="el-icon-delete" @click="del(scope.row.id)" v-if="scope.row.count === 0">删除</el-button>
+            <el-button type="danger" size="small" icon="el-icon-delete" @click="del(scope.row.id)" :disabled="scope.row.count > 0">删除</el-button>
             </el-button-group>
           </template>
         </el-table-column>
@@ -103,7 +110,6 @@ export default {
       searchText: '',
 
       pageSize: 10,
-      // limit: 0,
       skip: 0,
       tableData: [],
       current: 1,
@@ -129,20 +135,29 @@ export default {
       query.limit(that.pageSize);
       query.skip(skip);
       query.contains('title', that.searchText);
-      query.ascending('updatedAt');
+      query.descending('updatedAt');
       query.find().then((data) => {
         that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
-          dataList.push({
-            id: data[i].id,
-            title: data[i].attributes.title,
-            desc: data[i].attributes.desc,
-            count: data[i].attributes.count,
-            pv: data[i].attributes.pv,
-            startTime: that.$moment(data[i].attributes.startTime).format('YYYY-MM-DD HH:mm'),
-            endTime: that.$moment(data[i].attributes.endTime).format('YYYY-MM-DD HH:mm'),
-            status: data[i].attributes.status,
-          });
+          var activityPersonQuery = new this.$AV.Query('activity_person');
+          activityPersonQuery.equalTo('activity', data[i]);
+          // activityPersonQuery.equalTo('isApply', true);
+          activityPersonQuery.count().then((count) => {
+            var img_query = new this.$AV.Query('_File');
+            img_query.get(data[i].get('img').id).then((d) => {
+              dataList.push({
+                id: data[i].id,
+                img: d.get('url'),
+                title: data[i].get('title'),
+                desc: data[i].get('desc'),
+                count: count,
+                pv: data[i].get('pv'),
+                startTime: that.$moment(data[i].get('startTime')).format('YYYY-MM-DD HH:mm'),
+                endTime: that.$moment(data[i].get('endTime')).format('YYYY-MM-DD HH:mm'),
+                status: data[i].get('status'),
+              });
+            });
+          })
         }
         that.tableData = dataList;
       });

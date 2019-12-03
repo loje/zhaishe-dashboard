@@ -51,8 +51,8 @@
         <el-form-item label="名字">
           <el-select v-model="dialog.selectUser" filterable @change="selectChange" style="width: 100%;">
             <el-option v-for="(item, $index) in userList" :key="$index" :label="item.name" :value="$index">
-              <span style="float: left">{{ item.name }}</span>
-              <span style="float: right; color: #8492a6; font-size: 13px">微信号：{{ item.wechatId }}</span>
+              <span style="float: left">{{ item.name || item.username }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px" v-if="item.wechatId">微信号：{{ item.wechatId }}</span>
             </el-option>
           </el-select>
         </el-form-item>
@@ -104,34 +104,77 @@ export default {
         this.loading = true;
 
         const that = this;
-        var activityQuery = new this.$AV.Query('activity');
-        var activityPersonQuery = new this.$AV.Query('activity_person');
-        var userQuery = new this.$AV.Query('_User');
-        const arr = [];
+        let arr = [];
 
-        activityQuery.get(that.$route.query.id).then(function (data) {
-          that.title = data.get('title');
-          activityPersonQuery.equalTo('activity', data);
-          activityPersonQuery.find().then((d) => {
-            that.loading = false;
-            for (let i = 0; i < d.length; i += 1) {
-              userQuery.get(d[i].get('user').id).then((res) => {
-                arr.push({
-                  id: d[i].id,
-                  name: res.get('name') || '',
-                  mobilePhoneNumber: res.get('mobilePhoneNumber') || '',
-                  wechatId: res.get('wechatId') || '',
-                  email: res.get('email') || '',
-                  createTime: that.$moment(d[i].createdAt).format('YYYY-MM-DD hh:mm'),
-                  isApply: d[i].get('isApply'),
-                  isWechat: d[i].get('isWechat'),
-                  isPaid: d[i].get('isPaid'),
-                });
-              });
-            }
-            that.tableData = arr;
-          });
+        var activityQuery = new this.$AV.Query('activity');
+        activityQuery.get(that.$route.query.id).then((act) => {
+          that.loading = false;
+          that.title = act.get('title');
         });
+
+        // var userQuery = new that.$AV.Query('_User');
+        // userQuery.exists('name');
+        // userQuery.exists('mobilePhoneNumber');
+        // userQuery.exists('wechatId');
+        // userQuery.exists('email');
+
+        activityQuery.exists('title');
+
+        var activityPersonQuery = new this.$AV.Query('activity_person');
+        // activityPersonQuery.matchesQuery('user', userQuery);
+        activityPersonQuery.matchesQuery('activity', activityQuery);
+        // activityPersonQuery.equalTo('activity', this.$AV.Object.createWithoutData('activity', that.$route.query.id));
+        activityPersonQuery.find().then((ap) => {
+          console.log(ap);
+          // for (let i = 0; i < ap.length; i += 1) {
+          //   var userQuery = new that.$AV.Query('_User');
+          //   userQuery.get(ap[i].get('user').id).then((user) => {
+          //     arr.push({
+          //       id: ap[i].id,
+          //       name: user.get('name') || '',
+          //       mobilePhoneNumber: user.get('mobilePhoneNumber') || '',
+          //       wechatId: user.get('wechatId') || '',
+          //       email: user.get('email') || '',
+          //       createTime: that.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
+          //       isApply: ap[i].get('isApply'),
+          //       isWechat: ap[i].get('isWechat'),
+          //       isPaid: ap[i].get('isPaid'),
+          //     });
+          //   });
+          // }
+          that.tableData = arr;
+        });
+
+
+        // const that = this;
+        // var activityQuery = new this.$AV.Query('activity');
+        // var activityPersonQuery = new this.$AV.Query('activity_person');
+        // var userQuery = new this.$AV.Query('_User');
+        // const arr = [];
+
+        // activityQuery.get(that.$route.query.id).then(function (data) {
+        //   that.title = data.get('title');
+        //   activityPersonQuery.equalTo('activity', data);
+        //   activityPersonQuery.find().then((d) => {
+        //     that.loading = false;
+        //     for (let i = 0; i < d.length; i += 1) {
+        //       userQuery.get(d[i].get('user').id).then((res) => {
+        //         arr.push({
+        //           id: d[i].id,
+        //           name: res.get('name') || '',
+        //           mobilePhoneNumber: res.get('mobilePhoneNumber') || '',
+        //           wechatId: res.get('wechatId') || '',
+        //           email: res.get('email') || '',
+        //           createTime: that.$moment(d[i].createdAt).format('YYYY-MM-DD hh:mm'),
+        //           isApply: d[i].get('isApply'),
+        //           isWechat: d[i].get('isWechat'),
+        //           isPaid: d[i].get('isPaid'),
+        //         });
+        //       });
+        //     }
+        //     that.tableData = arr;
+        //   });
+        // });
       }
     },
     getUserList() {

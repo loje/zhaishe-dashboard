@@ -201,6 +201,7 @@ export default {
               fee: that.form.fee ? that.form.fee : 0,
               number: that.form.number ? that.form.number : 0,
               address: that.form.address ? that.form.address : '',
+              notDelete: true,
             });
             activity.save().then(function () {
               that.pulishLoading = false;

@@ -54,24 +54,20 @@ export default {
       const that = this;
       let dataList = [];
       var query = new this.$AV.Query('activity');
-
+      query.ascending('updatedAt');
       query.find().then(function (data) {
         that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
           var channelQuery = new that.$AV.Query('channel');
           channelQuery.equalTo('activity', data[i]);
           channelQuery.find().then((channel) => {
-            var activityPersonQuery = new that.$AV.Query('activity_person');
-            activityPersonQuery.equalTo('activity', data[i]);
-            activityPersonQuery.find().then((ap) => {
-              dataList.push({
-                id: data[i].id,
-                title: data[i].attributes.title,
-                channelCount: channel.length,
-                applyCount: ap.length,
-                startTime: that.$moment(data[i].attributes.startTime).format('YYYY-MM-DD HH:mm'),
-                endTime: that.$moment(data[i].attributes.endTime).format('YYYY-MM-DD HH:mm'),
-              });
+
+            dataList.push({
+              id: data[i].id,
+              title: data[i].get('title'),
+              startTime: that.$moment(data[i].attributes.startTime).format('YYYY-MM-DD HH:mm'),
+              endTime: that.$moment(data[i].attributes.endTime).format('YYYY-MM-DD HH:mm'),
+              channelCount: channel.length,
             });
           });
         }

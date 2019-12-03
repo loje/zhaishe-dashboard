@@ -2,7 +2,7 @@
   <div class="layout">
     <div class="layout-top">
       <div class="logo" @click="$router.push('/')">
-        <div class="img" style="background-image: url(http://lc-vwzM34py.cn-n1.lcfile.com/93e2bac101ef97002df9/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20191112155535.png);"></div>
+        <!-- <div class="img" style="background-image: url(http://lc-vwzM34py.cn-n1.lcfile.com/93e2bac101ef97002df9/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20191112155535.png);"></div> -->
         <!--<span>设计师活动聚集地</span>-->
       </div>
       <div class="top-right">
