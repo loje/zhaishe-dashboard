@@ -26,15 +26,14 @@
           prop="title"
           min-width="250">
           <template slot-scope="scope">
-            <!-- <div class="title">{{scope.row.title}}</div> -->
-            <!-- <div class="desc">{{scope.row.desc}}</div> -->
-            <el-popover
+            <div class="title">{{scope.row.title}}</div>
+            <div class="desc">{{scope.row.desc}}</div>
+            <!-- <el-popover
               placement="top-start"
               trigger="hover">
               <el-image :src="scope.row.img" style="width: 150px;" fit="contain" ></el-image>
-              <!-- <el-button type="text" class="title" slot="reference">{{scope.row.title}}</el-button> -->
               <div class="title" slot="reference">{{scope.row.title}}</div>
-            </el-popover>
+            </el-popover> -->
           </template>
         </el-table-column>
         <el-table-column
@@ -130,44 +129,46 @@ export default {
       const that = this;
       let dataList = [];
       var query = new this.$AV.Query('activity');
-      const skip = that.pageSize * (that.current - 1);
-      query.equalTo('notDelete', true);
-      query.limit(that.pageSize);
-      query.skip(skip);
-      query.contains('title', that.searchText);
-      query.descending('updatedAt');
+      // const skip = that.pageSize * (that.current - 1);
+      // query.equalTo('notDelete', true);
+      // query.limit(that.pageSize);
+      // query.skip(skip);
+      // query.contains('title', that.searchText);
+      // query.descending('updatedAt');
       query.find().then((data) => {
         that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
-          var activityPersonQuery = new this.$AV.Query('activity_person');
-          activityPersonQuery.equalTo('activity', data[i]);
-          // activityPersonQuery.equalTo('isApply', true);
-          activityPersonQuery.count().then((count) => {
-            var img_query = new this.$AV.Query('_File');
-            img_query.get(data[i].get('img').id).then((d) => {
-              dataList.push({
-                id: data[i].id,
-                img: d.get('url'),
-                title: data[i].get('title'),
-                desc: data[i].get('desc'),
-                count: count,
-                pv: data[i].get('pv'),
-                startTime: that.$moment(data[i].get('startTime')).format('YYYY-MM-DD HH:mm'),
-                endTime: that.$moment(data[i].get('endTime')).format('YYYY-MM-DD HH:mm'),
-                status: data[i].get('status'),
-              });
-            });
-          })
+          // var activityPersonQuery = new this.$AV.Query('activity_person');
+          // activityPersonQuery.equalTo('activity', data[i]);
+          // // activityPersonQuery.equalTo('isApply', true);
+          // activityPersonQuery.count().then((count) => {
+          //   // var img_query = new this.$AV.Query('_File');
+          //   // img_query.get(data[i].get('img').id).then((d) => {
+              
+          //   // });
+            
+          // })
+          dataList.push({
+            id: data[i].id,
+            // img: d.get('url'),
+            title: data[i].get('title'),
+            desc: data[i].get('desc'),
+            // count: count,
+            pv: data[i].get('pv'),
+            startTime: that.$moment(data[i].get('startTime')).format('YYYY-MM-DD HH:mm'),
+            endTime: that.$moment(data[i].get('endTime')).format('YYYY-MM-DD HH:mm'),
+            status: data[i].get('status'),
+          });
         }
         that.tableData = dataList;
       });
     },
     getActivityCount() {
-      const that = this;
-      var query = new this.$AV.Query('activity');
-      query.count().then(function (count) {
-        that.total = count;
-      });
+      // const that = this;
+      // var query = new this.$AV.Query('activity');
+      // query.count().then(function (count) {
+      //   that.total = count;
+      // });
     },
     handleSizeChange(page) {
       this.current = 1;

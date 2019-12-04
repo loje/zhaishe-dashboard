@@ -18,9 +18,9 @@
         </el-select>
       </el-form-item>
       <el-form-item label="活动图片" prop="imgSrc">
-        <div style="line-height: 40px; color:#999;">(123px * 123px)</div>
+        <div style="line-height: 40px; color:#999;">(图片长宽1比1)</div>
         <div @click="importClick" class="el-upload el-upload--picture-card" v-loading="imgLoading">
-          <el-image :src="form.imgSrc" v-if="form.img" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
+          <el-image :src="form.imgSrc" v-if="form.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
           <i class="el-icon-plus" v-else></i>
           <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
         </div>
@@ -83,17 +83,43 @@ export default {
 
       pulishLoading: false,
       modes: [],
-      modeList: [],
+      modeList: [
+        {
+          label: '线下活动',
+          value: 1,
+        },
+        {
+          label: '线上直播',
+          value: 2,
+        },
+      ],
       sorts: [],
-      sortList: [],
+      sortList: [
+        {
+          label: '宅设主办',
+          value: 1,
+        },
+        {
+          label: '推荐活动',
+          value: 2,
+        },
+        {
+          label: '合作活动',
+          value: 3,
+        },
+        {
+          label: '探讨会',
+          value: 4,
+        },
+      ],
     }
   },
   components: {
     quillEditor
   },
   mounted() {
-    this.getModeList();
-    this.getSortList();
+    // this.getModeList();
+    // this.getSortList();
 
     if (this.$route.query.id) {
       this.getInfo();
@@ -103,52 +129,19 @@ export default {
     getInfo() {
       const that = this;
       var query = new this.$AV.Query('activity');
-      var img_query = new this.$AV.Query('_File');
-
-      var mode_query = new this.$AV.Query('activity_mode');
-      var sort_query = new this.$AV.Query('activity_sort');
-
       query.get(that.$route.query.id).then(function (data) {
-        mode_query.get(data.get('mode').id).then((mode) => {
-          for (let i = 0; i < that.modeList.length; i += 1) {
-            if (that.modeList[i].label === mode.get('mode')) {
-              that.form = {
-                ...that.form,
-                mode: i,
-              };
-            }
-          }
-        });
-        sort_query.get(data.get('sort').id).then((sort) => {
-          for (let i = 0; i < that.sortList.length; i += 1) {
-            if (that.sortList[i].label === sort.get('sortName')) {
-              that.form = {
-                ...that.form,
-                sort: i,
-              };
-            }
-          }
-        });
-        img_query.get(data.get('img').id).then((d) => {
-          // mode_query.get(data.get('mode').id).then((mode) => {
-            // sort_query.get(data.get('sort').id).then((sort) => {
-          that.form = {
-            ...that.form,
-            title: data.get('title'),
-            desc: data.get('desc'),
-            img: data.get('img'),
-            imgSrc: d.get('url'),
-            // mode: that.modes[that.form.mode],
-            // sort: that.sorts[that.form.sort],
-            time: [ data.get('startTime'), data.get('endTime') ],
-            fee: data.get('fee'),
-            number: data.get('number'),
-            address: data.get('address'),
-            content: data.get('content'),
-          }
-            // });
-          // });
-        });
+        that.form = {
+          title: data.get('title'),
+          desc: data.get('desc'),
+          imgSrc: data.get('imgSrc'),
+          mode: that.modeList[data.get('mode') - 1].value,
+          sort: that.sortList[data.get('sort') - 1].value,
+          time: [ data.get('startTime'), data.get('endTime') ],
+          fee: data.get('fee'),
+          number: data.get('number'),
+          address: data.get('address'),
+          content: data.get('content'),
+        }
       });
     },
     getModeList() {
@@ -191,13 +184,12 @@ export default {
             let activity = new Activity();
             activity.set({
               ...that.form,
-              mode: that.modes[that.form.mode],
-              sort: that.sorts[that.form.sort],
+              mode: that.modeList[that.form.mode].value,
+              sort: that.sortList[that.form.sort].value,
               status: Number(status),
               startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
               endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
               time: undefined,
-              imgSrc: undefined,
               fee: that.form.fee ? that.form.fee : 0,
               number: that.form.number ? that.form.number : 0,
               address: that.form.address ? that.form.address : '',
@@ -216,13 +208,12 @@ export default {
             let activity = this.$AV.Object.createWithoutData('activity', that.$route.query.id);
             activity.set({
               ...that.form,
-              mode: that.modes[that.form.mode],
-              sort: that.sorts[that.form.sort],
+              mode: that.modeList[that.form.mode].value,
+              sort: that.sortList[that.form.sort].value,
               status: Number(status),
               startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
               endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
               time: undefined,
-              imgSrc: undefined,
               fee: that.form.fee ? that.form.fee : 0,
               number: that.form.number ? that.form.number : 0,
               address: that.form.address ? that.form.address : '',
@@ -256,7 +247,7 @@ export default {
         file.save().then(function (file) {
           that.imgLoading = false;
           that.form.imgSrc = file.attributes.url;
-          that.form.img = file;
+          // that.form.img = file;
         }, function () {
           that.imgLoading = false;
           // console.error(error);
