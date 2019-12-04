@@ -2,7 +2,7 @@
   <div class="login-layer">
     <div class="login-box">
       <div class="logo">
-        <el-image :src="src" class="img"></el-image>
+        <el-image :src="src" class="img" lazy></el-image>
       </div>
 
       <el-form :model="form" :rules="rules" ref="form" class="login-form">

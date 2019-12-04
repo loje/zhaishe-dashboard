@@ -31,7 +31,7 @@
             <el-popover
               placement="top-start"
               trigger="hover">
-              <el-image :src="scope.row.img" style="width: 150px;" fit="contain"></el-image>
+              <el-image :src="scope.row.img" style="width: 150px;" fit="contain" ></el-image>
               <!-- <el-button type="text" class="title" slot="reference">{{scope.row.title}}</el-button> -->
               <div class="title" slot="reference">{{scope.row.title}}</div>
             </el-popover>
