@@ -173,8 +173,8 @@ export default {
           // const applylist = that.itemform.applylist;
           var activityPersonQuery = new that.$AV.Query('activity_person');
           activityPersonQuery.equalTo('user', user);
-          activityPersonQuery.find().then((act) => {
-            console.log(act);
+          activityPersonQuery.find().then(() => {
+            // console.log(act);
             // // console.log(applylist);
             // for (let i = 0; i < act.length; i += 1) {
             //   // 查询提交的报名记录中是否在数据库中是否不存在，不存在则
@@ -184,7 +184,7 @@ export default {
             // }
           });
         } else {
-          console.log('error submit!!');
+          // console.log('error submit!!');
           return false;
         }
       });

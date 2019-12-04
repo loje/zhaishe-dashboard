@@ -120,7 +120,6 @@ export default {
       var channelQuery = new this.$AV.Query('channel');
       channelQuery.equalTo('notDelete', true);
       channelQuery.find().then((d) => {
-        console.log(d);
         that.loading = false;
         for (let i = 0; i < d.length; i += 1) {
           var userQuery = new this.$AV.Query('_User');

@@ -184,8 +184,6 @@ export default {
             let activity = new Activity();
             activity.set({
               ...that.form,
-              mode: that.modeList[that.form.mode].value,
-              sort: that.sortList[that.form.sort].value,
               status: Number(status),
               startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
               endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,

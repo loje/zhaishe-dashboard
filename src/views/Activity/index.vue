@@ -26,14 +26,15 @@
           prop="title"
           min-width="250">
           <template slot-scope="scope">
-            <div class="title">{{scope.row.title}}</div>
-            <div class="desc">{{scope.row.desc}}</div>
-            <!-- <el-popover
+            <el-popover
               placement="top-start"
               trigger="hover">
-              <el-image :src="scope.row.img" style="width: 150px;" fit="contain" ></el-image>
-              <div class="title" slot="reference">{{scope.row.title}}</div>
-            </el-popover> -->
+              <el-image :src="scope.row.img" style="width: 150px;" fit="contain"></el-image>
+              <template slot="reference">
+                <div class="title">{{scope.row.title}}</div>
+                <div class="desc">{{scope.row.desc}}</div>
+              </template>
+            </el-popover>
           </template>
         </el-table-column>
         <el-table-column
@@ -79,7 +80,7 @@
           align="left"
           width="280">
           <template slot-scope="scope">
-            <el-button type="primary" size="small" icon="el-icon-finished" @click="audit(scope.row.id)">审核报名</el-button>
+            <el-button type="primary" size="small" icon="el-icon-finished" @click="audit(scope.row.id, scope.row.title)">审核报名</el-button>
             <el-button-group style="margin-left: 15px;">
             <el-button size="small" icon="el-icon-edit" @click="edit(scope.row.id)">编辑</el-button>
             <el-button type="danger" size="small" icon="el-icon-delete" @click="del(scope.row.id)" :disabled="scope.row.count > 0">删除</el-button>
@@ -129,46 +130,41 @@ export default {
       const that = this;
       let dataList = [];
       var query = new this.$AV.Query('activity');
-      // const skip = that.pageSize * (that.current - 1);
-      // query.equalTo('notDelete', true);
-      // query.limit(that.pageSize);
-      // query.skip(skip);
-      // query.contains('title', that.searchText);
-      // query.descending('updatedAt');
+      const skip = that.pageSize * (that.current - 1);
+      query.equalTo('notDelete', true);
+      query.limit(that.pageSize);
+      query.skip(skip);
+      query.contains('title', that.searchText);
+      query.descending('updatedAt');
       query.find().then((data) => {
         that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
-          // var activityPersonQuery = new this.$AV.Query('activity_person');
-          // activityPersonQuery.equalTo('activity', data[i]);
-          // // activityPersonQuery.equalTo('isApply', true);
-          // activityPersonQuery.count().then((count) => {
-          //   // var img_query = new this.$AV.Query('_File');
-          //   // img_query.get(data[i].get('img').id).then((d) => {
-              
-          //   // });
-            
-          // })
-          dataList.push({
-            id: data[i].id,
-            // img: d.get('url'),
-            title: data[i].get('title'),
-            desc: data[i].get('desc'),
-            // count: count,
-            pv: data[i].get('pv'),
-            startTime: that.$moment(data[i].get('startTime')).format('YYYY-MM-DD HH:mm'),
-            endTime: that.$moment(data[i].get('endTime')).format('YYYY-MM-DD HH:mm'),
-            status: data[i].get('status'),
+          var activityPersonQuery = new this.$AV.Query('activity_person');
+          activityPersonQuery.equalTo('isApply', true);
+          activityPersonQuery.equalTo('activity', this.$AV.Object.createWithoutData('activity', data[i].id));
+          activityPersonQuery.count().then((count) => {
+            dataList.push({
+              id: data[i].id,
+              img: data[i].get('imgSrc'),
+              title: data[i].get('title'),
+              desc: data[i].get('desc'),
+              count: count,
+              pv: data[i].get('pv'),
+              startTime: that.$moment(data[i].get('startTime')).format('YYYY-MM-DD HH:mm'),
+              endTime: that.$moment(data[i].get('endTime')).format('YYYY-MM-DD HH:mm'),
+              status: data[i].get('status'),
+            });
           });
         }
         that.tableData = dataList;
       });
     },
     getActivityCount() {
-      // const that = this;
-      // var query = new this.$AV.Query('activity');
-      // query.count().then(function (count) {
-      //   that.total = count;
-      // });
+      const that = this;
+      var query = new this.$AV.Query('activity');
+      query.count().then(function (count) {
+        that.total = count;
+      });
     },
     handleSizeChange(page) {
       this.current = 1;
@@ -206,11 +202,12 @@ export default {
         });          
       });
     },
-    audit(id) {
+    audit(id, title) {
       this.$router.push({
         path: '/activity/audit',
         query: {
           id,
+          title
         },
       });
     },

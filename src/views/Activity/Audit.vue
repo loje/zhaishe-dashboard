@@ -5,7 +5,7 @@
         <el-breadcrumb separator-class="el-icon-arrow-right">
           <el-breadcrumb-item :to="{ path: '/activity' }">活动列表</el-breadcrumb-item>
           <el-breadcrumb-item>审核报名</el-breadcrumb-item>
-          <el-breadcrumb-item v-loading="loading">{{title}}</el-breadcrumb-item>
+          <el-breadcrumb-item v-loading="loading">{{$route.query.title}}</el-breadcrumb-item>
         </el-breadcrumb>
       </div>
       <div class="top-func">
@@ -79,7 +79,6 @@ export default {
   data() {
     return {
       loading: false,
-      title: '',
       searchText: '',
       dialogVisible: false,
 
@@ -106,75 +105,29 @@ export default {
         const that = this;
         let arr = [];
 
-        var activityQuery = new this.$AV.Query('activity');
-        activityQuery.get(that.$route.query.id).then((act) => {
-          that.loading = false;
-          that.title = act.get('title');
-        });
-
-        // var userQuery = new that.$AV.Query('_User');
-        // userQuery.exists('name');
-        // userQuery.exists('mobilePhoneNumber');
-        // userQuery.exists('wechatId');
-        // userQuery.exists('email');
-
-        activityQuery.exists('title');
+        var userQuery = new this.$AV.Query('_User');
 
         var activityPersonQuery = new this.$AV.Query('activity_person');
-        // activityPersonQuery.matchesQuery('user', userQuery);
-        activityPersonQuery.matchesQuery('activity', activityQuery);
-        // activityPersonQuery.equalTo('activity', this.$AV.Object.createWithoutData('activity', that.$route.query.id));
+        activityPersonQuery.equalTo('activity', this.$AV.Object.createWithoutData('activity', that.$route.query.id));
         activityPersonQuery.find().then((ap) => {
-          console.log(ap);
-          // for (let i = 0; i < ap.length; i += 1) {
-          //   var userQuery = new that.$AV.Query('_User');
-          //   userQuery.get(ap[i].get('user').id).then((user) => {
-          //     arr.push({
-          //       id: ap[i].id,
-          //       name: user.get('name') || '',
-          //       mobilePhoneNumber: user.get('mobilePhoneNumber') || '',
-          //       wechatId: user.get('wechatId') || '',
-          //       email: user.get('email') || '',
-          //       createTime: that.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
-          //       isApply: ap[i].get('isApply'),
-          //       isWechat: ap[i].get('isWechat'),
-          //       isPaid: ap[i].get('isPaid'),
-          //     });
-          //   });
-          // }
+          that.loading = false;
+          for (let i = 0; i < ap.length; i += 1) {
+            userQuery.get(ap[i].get('user').id).then((user) => {
+              arr.push({
+                id: ap[i].id,
+                name: user.get('name') || '',
+                mobilePhoneNumber: user.get('mobilePhoneNumber') || '',
+                wechatId: user.get('wechatId') || '',
+                email: user.get('email') || '',
+                createTime: that.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
+                isApply: ap[i].get('isApply'),
+                isWechat: ap[i].get('isWechat'),
+                isPaid: ap[i].get('isPaid'),
+              });
+            });
+          }
           that.tableData = arr;
         });
-
-
-        // const that = this;
-        // var activityQuery = new this.$AV.Query('activity');
-        // var activityPersonQuery = new this.$AV.Query('activity_person');
-        // var userQuery = new this.$AV.Query('_User');
-        // const arr = [];
-
-        // activityQuery.get(that.$route.query.id).then(function (data) {
-        //   that.title = data.get('title');
-        //   activityPersonQuery.equalTo('activity', data);
-        //   activityPersonQuery.find().then((d) => {
-        //     that.loading = false;
-        //     for (let i = 0; i < d.length; i += 1) {
-        //       userQuery.get(d[i].get('user').id).then((res) => {
-        //         arr.push({
-        //           id: d[i].id,
-        //           name: res.get('name') || '',
-        //           mobilePhoneNumber: res.get('mobilePhoneNumber') || '',
-        //           wechatId: res.get('wechatId') || '',
-        //           email: res.get('email') || '',
-        //           createTime: that.$moment(d[i].createdAt).format('YYYY-MM-DD hh:mm'),
-        //           isApply: d[i].get('isApply'),
-        //           isWechat: d[i].get('isWechat'),
-        //           isPaid: d[i].get('isPaid'),
-        //         });
-        //       });
-        //     }
-        //     that.tableData = arr;
-        //   });
-        // });
       }
     },
     getUserList() {
@@ -245,7 +198,7 @@ export default {
             });
           });
         } else {
-          console.log('error submit!!');
+          // console.log('error submit!!');
           return false;
         }
       });
