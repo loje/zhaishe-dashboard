@@ -9,15 +9,15 @@
       </span>
       <div class="top-func">
         <el-button type="primary" class="add-btn" icon="el-icon-plus" @click="showDialog">添加</el-button>
-        <el-input class="search-input" v-model="searchText" placeholder="请输入内容"></el-input>
-        <el-button type="text" class="search-btn">搜索</el-button>
+        <el-input class="search-input" v-model="searchText" placeholder="暂未开放" :disabled="true"></el-input>
+        <el-button type="text" class="search-btn" :disabled="true">搜索</el-button>
       </div>
     </div>
     <div class="layer-table">
       <el-table :data="tableData" @selection-change="handleSelectionChange">
         <el-table-column type="selection"></el-table-column>
-        <el-table-column label="渠道名字" prop="name" align="center"></el-table-column>
-        <el-table-column label="报名数量" prop="applyNum" align="center"></el-table-column>
+        <el-table-column label="渠道人名字" prop="name"></el-table-column>
+        <el-table-column label="可报名数" prop="applyNum" align="center"></el-table-column>
         <el-table-column label="报名费用" prop="fee" align="center"></el-table-column>
         <el-table-column label="优惠码" prop="coupon" align="center"></el-table-column>
         <el-table-column label="有效时间" prop="time" align="center">
@@ -26,38 +26,39 @@
             <div>{{scope.row.endTime}}</div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="right">
           <template slot-scope="scope">
             <el-button-group>
-            <el-button type="primary" @click="edit(scope.row.id)" size="small">修改</el-button>
-            <el-button type="danger" @click="del(scope.row.id)" size="small">删除</el-button>
+            <el-button type="primary" @click="edit(scope.row)" size="small">修改</el-button>
+            <el-button type="danger" @click="del(scope.row.id)" size="small" v-if="scope.row.notDelete === true">删除</el-button>
+            <el-button type="info" @click="replace(scope.row.id)" size="small" v-else>恢复</el-button>
             </el-button-group>
           </template>
         </el-table-column>
       </el-table>
     </div>
-    <el-dialog title="增加渠道" :visible.sync="dialogVisible" width="38%" center>
+    <el-dialog title="增加渠道" :visible.sync="dialogVisible" width="38%" center @close="closedialog">
       <el-form :model="dialog.form" :rules="dialog.rules" label-position="right" label-width="80px" ref="dialogform" style="width:100%;" v-loading="dialog.loading">
-        <el-form-item label="渠道名字" prop="name">
-          <el-select v-model="dialog.form.selectUser" filterable @change="selectChange" style="width: 100%;">
+        <el-form-item label="渠道用户" prop="name">
+          <el-select v-model="dialog.form.selectUser" filterable @change="selectChange" :disabled="idEdit" style="width: 100%;">
             <el-option v-for="(item, $index) in userList" :key="$index" :label="item.name" :value="$index">
               <span style="float: left">{{ item.name }}</span>
               <span style="float: right; color: #8492a6; font-size: 13px">微信号：{{ item.wechatId }}</span>
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="报名数量" prop="applyNum">
+        <el-form-item label="可报名数" prop="applyNum">
           <el-input-number v-model="dialog.form.applyNum" controls-position="right"></el-input-number>
         </el-form-item>
         <el-form-item label="时间限制" prop="time">
           <el-date-picker v-model="dialog.form.time" type="datetimerange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
         </el-form-item>
-        <el-form-item label="费用" prop="fee">
+        <el-form-item label="报名费用" prop="fee">
           <el-input-number v-model="dialog.form.fee" controls-position="right"></el-input-number>
         </el-form-item>
-        <el-form-item label="提示:">提交后生成专属优惠码</el-form-item>
         <el-form-item label="优惠码" prop="coupon">
-          <el-tag type="warning" effect="light" style="letter-spacing: 4px; font-size: 18px;">{{dialog.form.coupon}}</el-tag>
+          <el-tag type="warning" effect="light" style="letter-spacing: 4px; font-size: 18px;" v-if="dialog.form.coupon">{{dialog.form.coupon}}</el-tag>
+          <span v-else style="color:#999;">请选择渠道用户</span>
         </el-form-item>
         <el-form-item align="right">
           <el-button type="primary" @click="submitForm">确定</el-button>
@@ -83,15 +84,17 @@ export default {
         loading: false,
         form: {},
         rules: {
-          selectUser: [{required: true, message: '请选择渠道管理者', trigger: 'blur'}],
+          name: [{required: true, message: '请选择渠道用户', trigger: 'blur'}],
           applyNum: [{required: true, message: '请输入报名数量', trigger: 'blur'}],
           time: [{required: true, message: '请选择限制时间', trigger: 'blur'}],
           fee: [{required: true, message: '请输入费用', trigger: 'blur'}],
         },
       },
+      idEdit: false,
     }
   },
   mounted() {
+    this.getUserList();
     this.getlist();
   },
   methods: {
@@ -118,7 +121,7 @@ export default {
       this.loading = true;
       const arr = [];
       var channelQuery = new this.$AV.Query('channel');
-      channelQuery.equalTo('notDelete', true);
+      // channelQuery.equalTo('notDelete', true);
       channelQuery.find().then((d) => {
         that.loading = false;
         for (let i = 0; i < d.length; i += 1) {
@@ -127,11 +130,13 @@ export default {
             arr.push({
               id: d[i].id,
               name: res.get('name') || '',
+              userId: res.id,
               applyNum: d[i].get('applyNum') || '',
               fee: d[i].get('fee') || '',
               coupon: d[i].get('coupon') || '',
               startTime: that.$moment(d[i].attributes.startTime).format('YYYY-MM-DD HH:mm'),
               endTime: that.$moment(d[i].attributes.endTime).format('YYYY-MM-DD HH:mm'),
+              notDelete: d[i].get('notDelete')
             });
           });
         }
@@ -146,12 +151,33 @@ export default {
     },
     showDialog() {
       this.dialogVisible = true;
-      this.getUserList();
     },
-    edit() {},
+    edit(data) {
+      this.showDialog();
+      for (let i = 0; i < this.userList.length; i += 1) {
+        if (this.userList[i].id === data.userId) {
+          this.dialog.form.selectUser = i;
+        }
+      }
+
+      this.dialog.form = {
+        ...this.dialog.form,
+        applyNum: data.applyNum,
+        time: [data.startTime, data.endTime],
+        fee: data.fee,
+        coupon: data.coupon,
+        name: data.userId,
+      };
+      this.idEdit = true;
+    },
+    closedialog() {
+      this.dialog.form = {};
+      this.idEdit = false;
+      this.$refs.dialogform.clearValidate();
+    },
     del(id) {
       const that = this;
-      this.$confirm('此操作将永久删除该用户的渠道, 是否继续?', '提示', {
+      this.$confirm('此操作将删除该用户的渠道, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -160,6 +186,26 @@ export default {
         channel.set('notDelete', false);
         channel.save().then(() => {
           that.$message.success('删除成功！');
+          that.getlist();
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });          
+      });
+    },
+    replace(id) {
+      const that = this;
+      this.$confirm('此操作将恢复该用户的渠道, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var channel = this.$AV.Object.createWithoutData('channel', id);
+        channel.set('notDelete', true);
+        channel.save().then(() => {
+          that.$message.success('恢复成功！');
           that.getlist();
         });
       }).catch(() => {

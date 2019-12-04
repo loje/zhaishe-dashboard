@@ -15,16 +15,16 @@
     <div class="layer-table">
       <el-table :data="tableData" @selection-change="handleSelectionChange">
         <el-table-column type="selection"></el-table-column>
-        <el-table-column label="渠道名字" prop="title" align="center"></el-table-column>
-        <el-table-column label="渠道数量" align="center" prop="channelCount"></el-table-column>
-        <el-table-column label="报名数量" align="center" prop="applyCount"></el-table-column>
+        <el-table-column label="活动名字" prop="title"></el-table-column>
+        <el-table-column label="渠道人数量" align="center" prop="channelCount"></el-table-column>
+        <!-- <el-table-column label="报名数量" align="center" prop="applyCount"></el-table-column> -->
         <el-table-column label="时间" align="center">
           <template slot-scope="scope">
             <div>{{scope.row.startTime}}</div>
             <div>{{scope.row.endTime}}</div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="right">
           <template slot-scope="scope">
             <el-button type="primary" @click="view(scope.row.id, scope.row.title)" size="small" icon="el-icon-view">查看</el-button>
             <!-- <el-button type="danger" @click="del(scope.row.id)" size="small">删除</el-button> -->
@@ -61,7 +61,6 @@ export default {
           var channelQuery = new that.$AV.Query('channel');
           channelQuery.equalTo('activity', data[i]);
           channelQuery.find().then((channel) => {
-
             dataList.push({
               id: data[i].id,
               title: data[i].get('title'),

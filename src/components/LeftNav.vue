@@ -1,16 +1,5 @@
 <template>
   <div style="width: 100%">
-    <!-- <template v-for="(items, $index) in leftNav">
-    <div class="nav" :key="$index" v-if="items.meta.menu === true">
-      <router-link class="title" :to="items.path">{{items.name}}</router-link>
-
-      <div class="children">
-        <template v-for="(item, $i) in items.children">
-        <router-link class="child-title" :key="$i" :to="item.path" v-if="item.meta.menu">{{item.name}}</router-link>
-        </template>
-      </div>
-    </div>
-    </template> -->
     <el-menu
       :default-openeds="['0', '1', '2', '3', '4', '5']"
       class="el-menu-vertical-demo"
@@ -23,12 +12,7 @@
         <i class="el-icon-menu"></i>
         <span slot="title">{{items.name}}</span>
       </el-menu-item>
-      <!-- <el-submenu :index="$index.toString()" :key="$index" v-if="items.meta.menu === true && !items.children">
-        <template slot="title">
-          <i class="el-icon-menu"></i>
-          <span>{{items.name}}</span>
-        </template>
-      </el-submenu> -->
+
       <el-submenu :index="$index.toString()" :key="$index" v-else-if="items.meta.menu === true && items.children">
         <template slot="title">
           <i class="el-icon-menu"></i>
@@ -36,7 +20,7 @@
         </template>
         <el-menu-item-group>
           <template v-for="(item, $i) in items.children">
-          <el-menu-item :index="$i.toString()" :key="$i" @click="$router.push(item.path)" v-if="item.meta.menu">{{item.name}}</el-menu-item>
+          <el-menu-item :index="$i.toString()" :key="$i" @click="$router.push(item.path)" v-if="item.meta.menu" :style="{backgroundColor: $route.path === item.path ?  '#fffaea' : ''}">{{item.name}}</el-menu-item>
           </template>
         </el-menu-item-group>
       </el-submenu>

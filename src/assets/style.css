@@ -1,5 +1,6 @@
 body {
     margin: 0;
+    font-size: 14px;
 }
 .el-input-group__append {
     background-color: #FFCB2B;

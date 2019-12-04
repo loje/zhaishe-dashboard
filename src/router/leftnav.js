@@ -27,7 +27,7 @@ const leftRoutes = [
         path: '/activity/applicants',
         name: '所有报名记录',
         component: () => import('@/views/Activity/Applicants'),
-        meta: { menu: true, keepAlive: true },
+        meta: { menu: false, keepAlive: true },
       },
       {
         path: '/activity/audit',
