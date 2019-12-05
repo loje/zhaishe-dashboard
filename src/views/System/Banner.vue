@@ -1,0 +1,292 @@
+<template>
+  <div class="swiper-layer">
+    <div class="swiper-box">
+      <div class="box-left">
+        <swiper v-if="bannerLeft && bannerLeft.length > 0" :options="leftSwiperOption" ref="leftSwiper">
+          <template v-for="(item, $index) in bannerLeft">
+          <swiper-slide :key="$index">
+            <div class="img" :style="{backgroundImage:`url(${item.imgSrc})`}"></div>
+          </swiper-slide>
+          </template>
+        </swiper>
+      </div>
+      <div class="box-right">
+        <swiper v-if="bannerRight && bannerRight.length > 0" :options="rightSwiperOption" ref="rightSwiper">
+          <template v-for="(item, $index) in bannerRight">
+          <swiper-slide :key="$index">
+            <div class="img" :style="{backgroundImage:`url(${item.imgSrc})`}"></div>
+          </swiper-slide>
+          </template>
+        </swiper>
+      </div>
+    </div>
+
+    <div class="profile">
+      <el-divider content-position="left">左侧轮播图</el-divider>
+      <template v-if="bannerLeft.length > 0">
+        <template v-for="(item, $index) in bannerLeft">
+        <div class="el-upload el-upload--picture-card" :key="$index + 'left'">
+          <div class="hover" @click="del(item.id)">
+            <i class="el-icon-delete"></i>
+          </div>
+          <el-image :src="item.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
+        </div>
+        </template>
+      </template>
+      <div @click="importLeftClick" class="el-upload el-upload--picture-card" v-loading="imgLeftLoading">
+        <i class="el-icon-plus"></i>
+        <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadLeftFile" class="el-upload__input" :multiple="false" name="file" ref="leftInput" type="file">
+      </div>
+
+      <el-divider content-position="left">右侧轮播图</el-divider>
+      <template v-if="bannerRight.length > 0">
+        <template v-for="(item, $index) in bannerRight">
+        <div class="el-upload el-upload--picture-card" :key="$index + 'right'">
+          <div class="hover" @click="del(item.id)">
+            <i class="el-icon-delete"></i>
+          </div>
+          <el-image :src="item.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
+        </div>
+        </template>
+      </template>
+      <div @click="importRightClick" class="el-upload el-upload--picture-card" v-loading="imgRightLoading">
+        <i class="el-icon-plus"></i>
+        <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadRightFile" class="el-upload__input" :multiple="false" name="file" ref="rightInput" type="file">
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import '@/assets/swiper.css'
+import { swiper, swiperSlide } from 'vue-awesome-swiper'
+
+export default {
+  components: {
+    swiper,
+    swiperSlide,
+  },
+  data() {
+    return {
+      leftSwiperOption: {
+        // some swiper options/callbacks
+        // 所有的参数同 swiper 官方 api 参数
+        // ...
+        autoplay: true,
+        loop : true,
+        delay: 1000,
+        pagination: {
+          el: '.swiper-pagination',
+        }
+      },
+      rightSwiperOption: {
+        autoplay: true,
+        loop : true,
+        delay: 1000,
+        direction : 'vertical',
+        slidesPerView : 2,
+        pagination: {
+          el: '.swiper-pagination',
+        }
+      },
+      bannerLeft: [],
+      bannerRight: [],
+      imgLeftLoading: false,
+      imgRightLoading: false,
+    }
+  },
+  computed: {
+    swiper() {
+      return this.$refs.leftSwiper.swiper;
+    }
+  },
+  mounted() {
+    this.getBanner();
+  },
+  methods: {
+    getBanner() {
+      var query = new this.$AV.Query('banner');
+      let bannerLeft = [];
+      let bannerRight = [];
+
+      query.find().then((res) => {
+        for (let i = 0; i < res.length; i += 1) {
+          if (res[i].get('position') && res[i].get('position') === 'left') {
+            bannerLeft.push({
+              id: res[i].id,
+              imgSrc: res[i].get('imgSrc')
+            });
+          }
+          if (res[i].get('position') && res[i].get('position') === 'right') {
+            bannerRight.push({
+              id: res[i].id,
+              imgSrc: res[i].get('imgSrc')
+            });
+          }
+        }
+        this.bannerLeft = bannerLeft;
+        this.bannerRight = bannerRight;
+      });
+    },
+    importLeftClick() {
+      this.imgLeftLoading = false;
+      this.$refs.leftInput.value = null;
+      this.$refs.leftInput.click();
+    },
+    importRightClick() {
+      this.imgRightLoading = false;
+      this.$refs.rightInput.value = null;
+      this.$refs.rightInput.click();
+    },
+    uploadLeftFile(e) {
+      this.imgLeftLoading = true;
+      const that = this;
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        var file = new this.$AV.File(localFile.name, localFile);
+        file.save().then(function (file) {
+          var newBanner = new that.$AV.Object('banner');
+          newBanner.set('position', 'left');
+          newBanner.set('imgSrc', file.attributes.url);
+          newBanner.save().then((res) => {
+            that.imgLeftLoading = false;
+            that.bannerLeft.push({
+              id: res.id,
+              imgSrc: file.attributes.url,
+            });
+            that.$refs.leftSwiper.update();
+          });
+        }, function () {
+          that.imgLeftLoading = false;
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+        that.getBanner();
+      }
+    },
+    uploadRightFile(e) {
+      this.imgRightLoading = true;
+      const that = this;
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        var file = new this.$AV.File(localFile.name, localFile);
+        file.save().then(function (file) {
+          var newBanner = new that.$AV.Object('banner');
+          newBanner.set('position', 'right');
+          newBanner.set('imgSrc', file.attributes.url);
+          newBanner.save().then((res) => {
+            that.imgRightLoading = false;
+            that.bannerRight.push({
+              id: res.id,
+              imgSrc: file.attributes.url,
+            });
+            that.$refs.rightSwiper.update();
+          });
+        }, function () {
+          that.imgRightLoading = false;
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+        that.getBanner();
+      }
+    },
+    del(id) {
+      const that = this;
+      this.$confirm('此操作将永久删除该图片, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error'
+      }).then(() => {
+        var banner = that.$AV.Object.createWithoutData('banner', id);
+        banner.destroy().then(() => {
+          that.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+          that.getBanner();
+          that.$refs.leftSwiper.update();
+          that.$refs.rightSwiper.update();
+        });
+        
+      }).catch(() => {
+        // this.$message({
+        //   type: 'info',
+        //   message: '已取消删除'
+        // });          
+      });
+    },
+  },
+}
+</script>
+
+<style lang="scss" scope>
+  .swiper-box {
+    display: flex;
+    width: 1200px;
+    height: 340px;
+    border-radius: 10px;
+    overflow: hidden;
+    .box-left {
+      width: 760px;
+      height: 100%;
+      background-color: #707A81;
+      background-position: 50%;
+      background-size: cover;
+      .swiper-container{
+        width: 100%;
+        height: 100%;
+        .img {
+          width: 100%;
+          height: 100%;
+          background-position: 50%;
+          background-size: cover;
+        }
+      }
+    }
+    .box-right {
+      width: 440px;
+      .swiper-container{
+        width: 100%;
+        height: 100%;
+        .img {
+          width: 100%;
+          height: 100%;
+          background-position: 50%;
+          background-size: cover;
+        }
+      }
+    }
+  }
+  .swiper-pagination-bullet-active {
+    background-color: #fff;
+  }
+
+  .profile {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #fff;
+    .el-upload--picture-card{
+      position: relative;
+      margin-bottom: 10px;
+      margin-right: 10px;
+      .hover {
+        position: absolute;
+        left: 0;
+        right: 0;
+        background-color: rgba(0,0,0,0.25);
+        z-index: 1;
+        i {
+          color: rgba(255,255,255,0.75);
+        }
+      }
+      .el-image {
+        position: absolute;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
+    }
+  }
+</style>

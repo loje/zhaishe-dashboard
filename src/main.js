@@ -19,6 +19,11 @@ Vue.prototype.$AV = AV;
 import moment from 'moment'
 Vue.prototype.$moment = moment
 
+import VueAwesomeSwiper from 'vue-awesome-swiper'
+// require styles
+import './assets/swiper.css'
+Vue.use(VueAwesomeSwiper, /* { default global options } */)
+
 Vue.config.productionTip = false;
 
 router.beforeEach((to, from, next) => {

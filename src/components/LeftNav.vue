@@ -1,7 +1,7 @@
 <template>
   <div style="width: 100%">
     <el-menu
-      :default-openeds="['0', '1', '2', '3', '4', '5']"
+      :default-openeds="['0', '1', '2', '3', '4', '5', '6']"
       class="el-menu-vertical-demo"
       @open="handleOpen"
       @close="handleClose"

@@ -32,7 +32,7 @@
               <el-image :src="scope.row.img" style="width: 150px;" fit="contain"></el-image>
               <template slot="reference">
                 <div class="title">{{scope.row.title}}</div>
-                <div class="desc">{{scope.row.desc}}</div>
+                <div class="desc" style="font-size:12px;color:#999;">{{scope.row.desc}}</div>
               </template>
             </el-popover>
           </template>
@@ -40,7 +40,12 @@
         <el-table-column
           label="报名人数"
           prop="count"
-          align="center">
+          align="center"
+          width="200">
+          <template slot-scope="scope">
+            <el-progress :percentage="scope.row.count/scope.row.num * 100" :show-text="false" :stroke-width="12" style="display: inline-block; width: 80px;"></el-progress>
+            <span style="margin-left:10px;font-size: 12px;">{{scope.row.count}} / {{scope.row.num}}</span>
+          </template>
         </el-table-column>
         <el-table-column
           align="center"
@@ -52,8 +57,8 @@
           label="活动时间"
           min-width="200">
           <template slot-scope="scope">
-            <div>开始时间：{{scope.row.startTime}}</div>
-            <div>结束时间：{{scope.row.endTime}}</div>
+            <div style="font-size:12px;">开始时间：{{scope.row.startTime}}</div>
+            <div style="font-size:12px;">结束时间：{{scope.row.endTime}}</div>
           </template>
         </el-table-column>
         <el-table-column
@@ -117,7 +122,7 @@ export default {
       loading: false,
     }
   },
-  mounted() {
+  activated() {
     this.getActivityList();
     this.getActivityCount();
   },
@@ -149,6 +154,7 @@ export default {
               title: data[i].get('title'),
               desc: data[i].get('desc'),
               count: count,
+              num: data[i].get('number'),
               pv: data[i].get('pv'),
               startTime: that.$moment(data[i].get('startTime')).format('YYYY-MM-DD HH:mm'),
               endTime: that.$moment(data[i].get('endTime')).format('YYYY-MM-DD HH:mm'),
@@ -258,13 +264,6 @@ export default {
           margin-left: 15px;
           display: inline-block;
         }
-        // .search-input {
-        //   margin-left: 30px;
-        //   width: 170px;
-        // }
-        // .search-btn {
-        //   padding: 0 20px;
-        // }
       }
     }
     .layer-table {
@@ -276,6 +275,9 @@ export default {
       box-sizing: border-box;
       .table-func {
         text-align: right;
+      }
+      .el-table td div {
+        font-size: 14px;
       }
       .el-table::before {
         background-color: #fff;

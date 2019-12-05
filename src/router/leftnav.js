@@ -3,7 +3,7 @@ const leftRoutes = [
     path: '/home',
     name: '首页',
     meta: { menu: true, keepAlive: true },
-    component: () => import('@/views/Home/index')
+    component: () => import('@/views/Home/index'),
   },
   {
     path: '/activity',
@@ -15,7 +15,7 @@ const leftRoutes = [
         path: '/activity',
         name: '活动列表',
         component: () => import('@/views/Activity/index'),
-        meta: { menu: true },
+        meta: { menu: true, keepAlive: true },
       },
       {
         path: '/activity/pulish',
@@ -50,14 +50,14 @@ const leftRoutes = [
       {
         path: '/activity/statistical',
         name: '统计',
-        meta: { menu: true, keepAlive: true },
+        meta: { menu: false, keepAlive: true },
       },
     ],
   },
   {
     path: '/product',
     name: '代理产品',
-    meta: { menu: true, keepAlive: true },
+    meta: { menu: false, keepAlive: true },
     component: () => import('@/components/Black'),
     children: [
       {
@@ -95,14 +95,14 @@ const leftRoutes = [
   {
     path: '/material',
     name: '素材管理',
-    meta: { menu: true, keepAlive: true },
+    meta: { menu: false, keepAlive: true },
     component: () => import('@/components/Black'),
     children: [],
   },
   {
     path: '/master',
     name: '大咖管理',
-    meta: { menu: true, keepAlive: true },
+    meta: { menu: false, keepAlive: true },
     component: () => import('@/components/Black'),
     children: [],
   },
@@ -110,9 +110,14 @@ const leftRoutes = [
     path: '/system',
     name: '系统管理',
     meta: { menu: true, keepAlive: true },
-    // component: () => import('@/views/System/index'),
     component: () => import('@/components/Black'),
     children: [
+      {
+        path: '/system/banner',
+        name: 'Banner管理',
+        component: () => import('@/views/System/Banner'),
+        meta: { menu: true, keepAlive: true },
+      },
       {
         path: '/system/images',
         name: '网站图片',
