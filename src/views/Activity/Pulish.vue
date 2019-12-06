@@ -131,7 +131,7 @@ export default {
       that.pulishLoading = true;
       var query = new this.$AV.Query('activity');
       query.get(that.$route.query.id).then(function (data) {
-        // that.pulishLoading = false;
+        that.pulishLoading = false;
         that.form = {
           title: data.get('title'),
           desc: data.get('desc'),
