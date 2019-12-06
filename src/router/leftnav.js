@@ -55,6 +55,20 @@ const leftRoutes = [
     ],
   },
   {
+    path: '/download',
+    name: '资源管理',
+    meta: { menu: true, keepAlive: true },
+    component: () => import('@/components/Black'),
+    children: [
+      {
+        path: '/list',
+        name: '资源列表',
+        component: () => import('@/views/Download/index'),
+        meta: { menu: true },
+      },
+    ],
+  },
+  {
     path: '/product',
     name: '代理产品',
     meta: { menu: false, keepAlive: true },

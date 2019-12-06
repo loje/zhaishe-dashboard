@@ -18,10 +18,11 @@ export default {
     getList() {
       const that = this;
       var query = new this.$AV.Query('_File');
+      query.descending('createdAt');
       query.find().then(function (data) {
         for (let i = 0; i < data.length; i += 1) {
           that.list.push({
-            url: data[i].attributes.url,
+            url: data[i].get('url'),
           });
         }
         // students 是包含满足条件的 Student 对象的数组
