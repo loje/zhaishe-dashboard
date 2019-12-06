@@ -1,6 +1,6 @@
 <template>
-  <div class="pulish-page" v-loading="pulishLoading" id="pulish">
-    <el-form :model="form" label-position="right" label-width="150px" :rules="rules" class="form" ref="form">
+  <div class="pulish-page" id="pulish">
+    <el-form :model="form" label-position="right" label-width="150px" :rules="rules" class="form" ref="form" v-loading="pulishLoading">
       <el-form-item label="活动标题" prop="title">
         <el-input v-model="form.title" placeholder="请输入标题，最多10字"></el-input>
       </el-form-item>
@@ -128,8 +128,10 @@ export default {
   methods: {
     getInfo() {
       const that = this;
+      that.pulishLoading = true;
       var query = new this.$AV.Query('activity');
       query.get(that.$route.query.id).then(function (data) {
+        // that.pulishLoading = false;
         that.form = {
           title: data.get('title'),
           desc: data.get('desc'),
@@ -206,8 +208,6 @@ export default {
             let activity = this.$AV.Object.createWithoutData('activity', that.$route.query.id);
             activity.set({
               ...that.form,
-              mode: that.modeList[that.form.mode].value,
-              sort: that.sortList[that.form.sort].value,
               status: Number(status),
               startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
               endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
