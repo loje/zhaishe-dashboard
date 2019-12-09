@@ -26,8 +26,9 @@
       <template v-if="bannerLeft.length > 0">
         <template v-for="(item, $index) in bannerLeft">
         <div class="el-upload el-upload--picture-card" :key="$index + 'left'">
-          <div class="hover" @click="del(item.id)">
-            <i class="el-icon-delete"></i>
+          <div class="hover">
+            <i class="el-icon-delete" @click="del(item.id)"></i>
+            <i class="el-icon-link" @click="setlink(item)"></i>
           </div>
           <el-image :src="item.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
         </div>
@@ -42,8 +43,9 @@
       <template v-if="bannerRight.length > 0">
         <template v-for="(item, $index) in bannerRight">
         <div class="el-upload el-upload--picture-card" :key="$index + 'right'">
-          <div class="hover" @click="del(item.id)">
-            <i class="el-icon-delete"></i>
+          <div class="hover">
+            <i class="el-icon-delete" @click="del(item.id)"></i>
+            <i class="el-icon-link" @click="setlink(item)"></i>
           </div>
           <el-image :src="item.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
         </div>
@@ -54,6 +56,21 @@
         <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadRightFile" class="el-upload__input" :multiple="false" name="file" ref="rightInput" type="file">
       </div>
     </div>
+
+    <el-dialog title="设置链接"
+      :visible.sync="dialogVisible"
+      v-loading="dialogLoading"
+      @close="dialogClose"
+      width="600px">
+      <el-image :src="dialog.src" style="border-radius: 10px;"></el-image>
+      <el-input type="text" v-model="dialog.link" placeholder="开头请输入http://">
+        <template slot="prepend">指向链接：</template>
+      </el-input>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="confilm">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -93,6 +110,14 @@ export default {
       bannerRight: [],
       imgLeftLoading: false,
       imgRightLoading: false,
+
+      dialogVisible: false,
+      dialogLoading: false,
+      dialog: {
+        id: '',
+        link: '',
+        src: '',
+      },
     }
   },
   computed: {
@@ -104,6 +129,28 @@ export default {
     this.getBanner();
   },
   methods: {
+    confilm() {
+      this.dialogLoading = true;
+      var banner = this.$AV.Object.createWithoutData('banner', this.dialog.id);
+      banner.set('link', this.dialog.link);
+      banner.save().then(() => {
+        this.dialogLoading = false;
+        this.dialog = {
+          id: '',
+          link: '',
+          src: '',
+        };
+        this.getBanner();
+      });
+    },
+    dialogClose() {
+      this.dialog = {
+        id: '',
+        link: '',
+        src: '',
+      };
+      this.getBanner();
+    },
     getBanner() {
       var query = new this.$AV.Query('banner');
       let bannerLeft = [];
@@ -114,13 +161,15 @@ export default {
           if (res[i].get('position') && res[i].get('position') === 'left') {
             bannerLeft.push({
               id: res[i].id,
-              imgSrc: res[i].get('imgSrc')
+              imgSrc: res[i].get('imgSrc'),
+              link: res[i].get('link')
             });
           }
           if (res[i].get('position') && res[i].get('position') === 'right') {
             bannerRight.push({
               id: res[i].id,
-              imgSrc: res[i].get('imgSrc')
+              imgSrc: res[i].get('imgSrc'),
+              link: res[i].get('link')
             });
           }
         }
@@ -215,6 +264,12 @@ export default {
         // });          
       });
     },
+    setlink(item) {
+      this.dialogVisible = true;
+      this.dialog.id = item.id;
+      this.dialog.src = item.imgSrc;
+      this.dialog.link = item.link;
+    },
   },
 }
 </script>
@@ -273,10 +328,23 @@ export default {
         position: absolute;
         left: 0;
         right: 0;
-        background-color: rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        opacity: 0;
+        transition: opacity 0.25s;
         z-index: 1;
+        &:hover {
+          opacity: 1;
+        }
         i {
+          flex: 1;
           color: rgba(255,255,255,0.75);
+          &:hover {
+            color: #FFCB2B;
+          }
         }
       }
       .el-image {

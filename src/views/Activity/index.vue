@@ -82,10 +82,15 @@
         </el-table-column>
         <el-table-column
           prop="toDo"
-          align="left"
-          width="280">
+          width="500"
+          label="操作">
           <template slot-scope="scope">
+            <el-button type="info" size="small" icon="el-icon-s-flag" v-if="scope.row.isTop === true" @click="setTop(scope.row.id, false)">取消置顶</el-button>
+            <el-button type="primary" size="small" icon="el-icon-s-flag" v-else @click="setTop(scope.row.id, true)">首页置顶</el-button>
+
             <el-button type="primary" size="small" icon="el-icon-finished" @click="audit(scope.row.id, scope.row.title)">审核报名</el-button>
+            <el-button type="primary" size="small" icon="el-icon-finished" @click="note(scope.row.id, scope.row.title)">会后笔记</el-button>
+
             <el-button-group style="margin-left: 15px;">
             <el-button size="small" icon="el-icon-edit" @click="edit(scope.row.id)">编辑</el-button>
             <el-button type="danger" size="small" icon="el-icon-delete" @click="del(scope.row.id)" :disabled="scope.row.count > 0">删除</el-button>
@@ -105,10 +110,28 @@
         :total="total">
       </el-pagination>
     </div>
+
+    <el-dialog :title="dialogTitle + ' - 会后笔记'"
+      :visible.sync="dialogVisible"
+      v-loading="dialogLoading"
+      width="900px">
+      <quill-editor v-model="dialogContent" ref="myQuillEditor" style="padding-bottom:66px;width: 100%;height:600px;"></quill-editor>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="confilm">确 定</el-button>
+        </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import {
+  quillEditor
+} from 'vue-quill-editor'
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+
 export default {
   data() {
     return {
@@ -120,15 +143,46 @@ export default {
       current: 1,
       total: 0,
       loading: false,
+
+      dialogVisible: false,
+      dialogContent: '',
+      dialogId: '',
+      dialogTitle: '',
+      dialogLoading: false,
+
+      isTops: 0,
     }
+  },
+  components: {
+    quillEditor
   },
   activated() {
     this.getActivityList();
     this.getActivityCount();
+    this.getIsTop();
   },
   methods: {
+    setTop(id, boolean) {
+      if (this.isTops < 4) {
+        var activity = this.$AV.Object.createWithoutData('activity', id);
+        activity.set('isTop', boolean);
+        activity.save().then(() => {
+          this.getActivityList();
+          this.getIsTop();
+        });
+      } else {
+        this.$message.error('已置顶满四个');
+      }
+    },
     dataSearch() {
       this.getActivityList();
+    },
+    getIsTop() {
+      var query = new this.$AV.Query('activity');
+      query.equalTo('isTop', true);
+      query.count().then((count) => {
+        this.isTops = count;
+      });
     },
     getActivityList() {
       this.loading = true;
@@ -159,6 +213,7 @@ export default {
               startTime: that.$moment(data[i].get('startTime')).format('YYYY-MM-DD HH:mm'),
               endTime: that.$moment(data[i].get('endTime')).format('YYYY-MM-DD HH:mm'),
               status: data[i].get('status'),
+              isTop: data[i].get('isTop'),
             });
           });
         }
@@ -215,6 +270,30 @@ export default {
           id,
           title
         },
+      });
+    },
+    note(id, title) {
+      this.dialogTitle = title;
+      this.dialogId = id;
+      this.dialogVisible = true;
+
+      this.dialogLoading = true;
+      var query = new this.$AV.Query('activity');
+      query.get(id).then((data) => {
+        this.dialogLoading = false;
+        this.dialogContent = data.get('note');
+      });
+    },
+    confilm() {
+      this.dialogLoading = true;
+      let activity = this.$AV.Object.createWithoutData('activity', this.dialogId);
+      activity.set('note', this.dialogContent);
+      activity.save().then(() => {
+        this.dialogLoading = false;
+        this.dialogTitle = '';
+        this.dialogId = '';
+        this.dialogVisible = false;
+        this.$message.success('编辑成功！');
       });
     },
   },

@@ -10,8 +10,8 @@
       </div>
       <div class="top-func">
         <el-button type="primary" class="add-btn" icon="el-icon-plus" @click="showDialog">添加</el-button>
-        <el-input class="search-input" v-model="searchText" placeholder="暂不可用" :disabled="true"></el-input>
-        <el-button type="text" class="search-btn" @click="dataSearch" :disabled="true">搜索</el-button>
+        <el-input class="search-input" v-model="searchText" placeholder="名字/电话/微信号" clearable></el-input>
+        <el-button type="text" class="search-btn" @click="getlist">搜索</el-button>
       </div>
     </div>
     <div class="layer-table">
@@ -97,7 +97,6 @@ export default {
     this.getlist();
   },
   methods: {
-    dataSearch() {},
     getlist() {
       if (this.$route.query.id) {
         this.loading = true;
@@ -113,17 +112,33 @@ export default {
           that.loading = false;
           for (let i = 0; i < ap.length; i += 1) {
             userQuery.get(ap[i].get('user').id).then((user) => {
-              arr.push({
-                id: ap[i].id,
-                name: user.get('name') || '',
-                mobilePhoneNumber: user.get('mobilePhoneNumber') || '',
-                wechatId: user.get('wechatId') || '',
-                email: user.get('email') || '',
-                createTime: that.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
-                isApply: ap[i].get('isApply'),
-                isWechat: ap[i].get('isWechat'),
-                isPaid: ap[i].get('isPaid'),
-              });
+              if (that.searchText) {
+                if (user.get('name').indexOf(that.searchText) != -1 || user.get('mobilePhoneNumber').indexOf(that.searchText) != -1 || user.get('wechatId').indexOf(that.searchText) != -1) {
+                  arr.push({
+                    id: ap[i].id,
+                    name: user.get('name') || '',
+                    mobilePhoneNumber: user.get('mobilePhoneNumber') || '',
+                    wechatId: user.get('wechatId') || '',
+                    email: user.get('email') || '',
+                    createTime: that.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
+                    isApply: ap[i].get('isApply'),
+                    isWechat: ap[i].get('isWechat'),
+                    isPaid: ap[i].get('isPaid'),
+                  });
+                }
+              } else {
+                arr.push({
+                  id: ap[i].id,
+                  name: user.get('name') || '',
+                  mobilePhoneNumber: user.get('mobilePhoneNumber') || '',
+                  wechatId: user.get('wechatId') || '',
+                  email: user.get('email') || '',
+                  createTime: that.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
+                  isApply: ap[i].get('isApply'),
+                  isWechat: ap[i].get('isWechat'),
+                  isPaid: ap[i].get('isPaid'),
+                });
+              }
             });
           }
           that.tableData = arr;
