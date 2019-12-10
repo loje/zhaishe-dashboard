@@ -117,9 +117,6 @@ export default {
     quillEditor
   },
   mounted() {
-    // this.getModeList();
-    // this.getSortList();
-
     if (this.$route.query.id) {
       this.getInfo();
     }
@@ -145,45 +142,15 @@ export default {
         }
       });
     },
-    getModeList() {
-      const that = this;
-      const list = [];
-      var query = this.$Bmob.Query('activity_mode');
-      query.find().then(function (data) {
-        for(let i = 0; i < data.length; i += 1) {
-          list.push({
-            label: data[i].attributes.mode,
-            value: i,
-          });
-        }
-        that.modes = data;
-        that.modeList = list;
-      });
-    },
-    getSortList() {
-      const that = this;
-      const list = [];
-      var query = this.$Bmob.Query('activity_sort');
-      query.find().then(function (data) {
-        for(let i = 0; i < data.length; i += 1) {
-          list.push({
-            label: data[i].attributes.sortName,
-            value: i,
-          });
-        }
-        that.sortList = list;
-        that.sorts = data;
-      });
-    },
+
     submitForm(status) {
       const that = this;
       this.$refs.form.validate((valid) => {
         if (valid) {
           that.pulishLoading = true;
           if (!that.$route.query.id) {
-            let Activity = this.$Bmob.Object.extend('activity');
-            let activity = new Activity();
-            activity.set({
+            const query = that.$Bmob.Query('activity');
+            query.set({
               ...that.form,
               status: Number(status),
               startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
@@ -193,19 +160,58 @@ export default {
               number: that.form.number ? that.form.number : 0,
               address: that.form.address ? that.form.address : '',
               notDelete: true,
-            });
-            activity.save().then(function () {
+            })
+            query.save().then(() => {
               that.pulishLoading = false;
               that.$message.success('添加成功！');
               that.$router.push('/activity');
-              // 成功保存之后，执行其他逻辑
-            }, function () {
-              that.pulishLoading = false;
-              // 异常处理
             });
+            // let Activity = this.$Bmob.Object.extend('activity');
+            // let activity = new Activity();
+            // activity.set({
+            //   ...that.form,
+            //   status: Number(status),
+            //   startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
+            //   endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
+            //   time: undefined,
+            //   fee: that.form.fee ? that.form.fee : 0,
+            //   number: that.form.number ? that.form.number : 0,
+            //   address: that.form.address ? that.form.address : '',
+            //   notDelete: true,
+            // });
+            // activity.save().then(function () {
+            //   that.pulishLoading = false;
+            //   that.$message.success('添加成功！');
+            //   that.$router.push('/activity');
+            //   // 成功保存之后，执行其他逻辑
+            // }, function () {
+            //   that.pulishLoading = false;
+            //   // 异常处理
+            // });
           } else {
-            let activity = this.$Bmob.Object.createWithoutData('activity', that.$route.query.id);
-            activity.set({
+            // let activity = this.$Bmob.Object.createWithoutData('activity', that.$route.query.id);
+            // activity.set({
+            //   ...that.form,
+            //   status: Number(status),
+            //   startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
+            //   endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
+            //   time: undefined,
+            //   fee: that.form.fee ? that.form.fee : 0,
+            //   number: that.form.number ? that.form.number : 0,
+            //   address: that.form.address ? that.form.address : '',
+            // });
+            // activity.save().then(function () {
+            //   that.pulishLoading = false;
+            //   that.$message.success('编辑成功！');
+            //   that.$router.push('/activity');
+            //   // 成功保存之后，执行其他逻辑
+            // }, function () {
+            //   that.pulishLoading = false;
+            //   // 异常处理
+            // });
+            const query = that.$Bmob.Query('activity');
+            query.set('id', that.$route.query.id)
+            query.set({
               ...that.form,
               status: Number(status),
               startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
@@ -214,15 +220,12 @@ export default {
               fee: that.form.fee ? that.form.fee : 0,
               number: that.form.number ? that.form.number : 0,
               address: that.form.address ? that.form.address : '',
-            });
-            activity.save().then(function () {
+              notDelete: true,
+            })
+            query.save().then(() => {
               that.pulishLoading = false;
               that.$message.success('编辑成功！');
               that.$router.push('/activity');
-              // 成功保存之后，执行其他逻辑
-            }, function () {
-              that.pulishLoading = false;
-              // 异常处理
             });
           }
         } else {
@@ -237,7 +240,6 @@ export default {
     },
     uploadFile(e) {
       // console.log(e.target.files);
-      const that = this;
       if (e.target.files) {
         var localFile  = e.target.files[0];
         if (e.target.files[0].size > 5*1024*100) {
@@ -246,12 +248,12 @@ export default {
         }
         this.imgLoading = true;
         var file = this.$Bmob.File(localFile.name, localFile);
-        file.save().then(function (file) {
-          that.imgLoading = false;
-          that.form.imgSrc = file.attributes.url;
+        file.save().then((file) => {
+          this.imgLoading = false;
+          this.form.imgSrc = file[0].url;
           // that.form.img = file;
-        }, function () {
-          that.imgLoading = false;
+        }, () => {
+          this.imgLoading = false;
           // console.error(error);
           // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
         });

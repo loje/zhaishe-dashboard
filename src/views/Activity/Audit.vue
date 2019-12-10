@@ -98,65 +98,59 @@ export default {
   },
   methods: {
     getlist() {
+      this.loading = true;
+      let arr = [];
       if (this.$route.query.id) {
-        this.loading = true;
-
-        const that = this;
-        let arr = [];
-
-        var userQuery = this.$Bmob.Query('_User');
-
         var activityPersonQuery = this.$Bmob.Query('activity_person');
-        activityPersonQuery.equalTo('activity', this.$Bmob.Object.createWithoutData('activity', that.$route.query.id));
+        activityPersonQuery.order('-createdAt');
         activityPersonQuery.find().then((ap) => {
-          that.loading = false;
+          this.loading = false;
           for (let i = 0; i < ap.length; i += 1) {
-            userQuery.get(ap[i].get('user').id).then((user) => {
-              if (that.searchText) {
-                if (user.get('name').indexOf(that.searchText) != -1 || user.get('mobilePhoneNumber').indexOf(that.searchText) != -1 || user.get('wechatId').indexOf(that.searchText) != -1) {
+            if (ap[i].activity.objectId === this.$route.query.id) {
+              const userQuery = this.$Bmob.Query('_User');
+              userQuery.get(ap[i].user.objectId).then((user) => {
+                if (this.searchText != '') {
+                  if (this.searchText === user.name || this.searchText === user.mobilePhoneNumber  || this.searchText === user.wechatId) {
+                    arr.push({
+                      id: ap[i].objectId,
+                      name: user.name,
+                      mobilePhoneNumber: user.mobilePhoneNumber,
+                      wechatId: user.wechatId,
+                      email: user.email,
+                      createTime: this.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
+                      isApply: ap[i].isApply,
+                      isWechat: ap[i].isWechat,
+                      isPaid: ap[i].isPaid,
+                    });
+                  }
+                } else {
                   arr.push({
-                    id: ap[i].id,
-                    name: user.get('name') || '',
-                    mobilePhoneNumber: user.get('mobilePhoneNumber') || '',
-                    wechatId: user.get('wechatId') || '',
-                    email: user.get('email') || '',
-                    createTime: that.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
-                    isApply: ap[i].get('isApply'),
-                    isWechat: ap[i].get('isWechat'),
-                    isPaid: ap[i].get('isPaid'),
+                    id: ap[i].objectId,
+                    name: user.name,
+                    mobilePhoneNumber: user.mobilePhoneNumber,
+                    wechatId: user.wechatId,
+                    email: user.email,
+                    createTime: this.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
+                    isApply: ap[i].isApply,
+                    isWechat: ap[i].isWechat,
+                    isPaid: ap[i].isPaid,
                   });
                 }
-              } else {
-                arr.push({
-                  id: ap[i].id,
-                  name: user.get('name') || '',
-                  mobilePhoneNumber: user.get('mobilePhoneNumber') || '',
-                  wechatId: user.get('wechatId') || '',
-                  email: user.get('email') || '',
-                  createTime: that.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
-                  isApply: ap[i].get('isApply'),
-                  isWechat: ap[i].get('isWechat'),
-                  isPaid: ap[i].get('isPaid'),
-                });
-              }
-            });
+              });
+            }
           }
-          that.tableData = arr;
+          this.tableData = arr;
         });
       }
     },
     getUserList() {
       this.dialog.loading = true;
-      const that = this;
-      that.userList = [];
+      this.userList = [];
       var userQuery = this.$Bmob.Query('_User');
       userQuery.find().then((res) => {
-        that.dialog.loading = false;
+        this.dialog.loading = false;
         for (let i = 0; i < res.length; i += 1) {
-          that.userList.push({
-            id: res[i].id,
-            ...res[i].attributes,
-          });
+          this.userList.push(res[i]);
         }
       });
     },
@@ -168,50 +162,99 @@ export default {
       this.dialog.form = this.userList[i];
     },
     submitForm() {
-      const that = this;
       this.$refs.dialogForm.validate((valid) => {
         if (valid) {
           this.dialog.loading = true;
-          var activityPersonQuery = this.$Bmob.Query('activity_person');
-          activityPersonQuery.equalTo('activity', this.$Bmob.Object.createWithoutData('activity', that.$route.query.id));
-          activityPersonQuery.equalTo('user', this.$Bmob.Object.createWithoutData('_User', this.userList[this.dialog.selectUser].id));
-          activityPersonQuery.find().then((res) => {
-            that.dialog.loading = false;
+          
+          const query = this.$Bmob.Query('activity_person');
+          query.equalTo('user', '==', this.userList[this.dialog.selectUser].objectId);
+          query.find().then((res) => {
+            console.log(res);
+            this.dialog.loading = false;
             if (res.length > 0) {
-              if (res[0].get('isApply') === false) {
-                that.$confirm('该用户已存在取消的报名记录, 是否重新报名?', '提示', {
+              if (res[0].isApply === false) {
+                this.$confirm('该用户已存在取消的报名记录, 是否重新报名?', '提示', {
                   confirmButtonText: '确定',
                   cancelButtonText: '取消',
                   type: 'warning'
                 }).then(() => {
-                  that.$message({
-                    type: 'success',
-                    message: '报名成功!'
+                  query.set('id', res[0].objectId);
+                  query.set('isApply', true);
+                  query.save().then(() => {
+                    this.$message({
+                      type: 'success',
+                      message: '报名成功!'
+                    });
+                    this.dialogVisible = false;
+                    this.getlist();
                   });
-                  that.getlist();
-                }).catch(() => {
-                  // that.$message({
-                  //   type: 'info',
-                  //   message: '已取消操作'
-                  // });          
                 });
               } else {
-                that.$message.error('该用户已报名本次活动');
+                this.$message.error('该用户已报名本次活动');
                 return false;
               }
+            } else {
+              const userPointer = this.$Bmob.Pointer('_User')
+              const userID = userPointer.set(this.userList[this.dialog.selectUser].objectId)
+              query.set('user', userID);
+              const activityPointer = this.$Bmob.Pointer('activity')
+              const activityID = activityPointer.set(this.$route.query.id)
+              query.set('activity', activityID);
+              query.set('isApply', true);
+              query.save().then(res => {
+                console.log(res)
+                this.$message({
+                  type: 'success',
+                  message: '报名成功!'
+                });
+                this.dialogVisible = false;
+                this.getlist();
+              });
             }
-
-            var newActivityPerson = this.$Bmob.Object('activity_person');
-            newActivityPerson.set('activity', that.$Bmob.Object.createWithoutData('activity', that.$route.query.id));
-            newActivityPerson.set('user', that.$Bmob.Object.createWithoutData('_User', that.userList[that.dialog.selectUser].id));
-            newActivityPerson.set('isApply', true);
-
-            newActivityPerson.save().then(() => {
-              that.$message.success('添加成功');
-              that.dialogVisible = false;
-              that.getlist();
-            });
           });
+
+
+
+          // var activityPersonQuery = this.$Bmob.Query('activity_person');
+          // activityPersonQuery.equalTo('activity', this.$Bmob.Object.createWithoutData('activity', that.$route.query.id));
+          // activityPersonQuery.equalTo('user', this.$Bmob.Object.createWithoutData('_User', this.userList[this.dialog.selectUser].id));
+          // activityPersonQuery.find().then((res) => {
+          //   that.dialog.loading = false;
+          //   if (res.length > 0) {
+          //     if (res[0].get('isApply') === false) {
+          //       that.$confirm('该用户已存在取消的报名记录, 是否重新报名?', '提示', {
+          //         confirmButtonText: '确定',
+          //         cancelButtonText: '取消',
+          //         type: 'warning'
+          //       }).then(() => {
+          //         that.$message({
+          //           type: 'success',
+          //           message: '报名成功!'
+          //         });
+          //         that.getlist();
+          //       }).catch(() => {
+          //         // that.$message({
+          //         //   type: 'info',
+          //         //   message: '已取消操作'
+          //         // });          
+          //       });
+          //     } else {
+          //       that.$message.error('该用户已报名本次活动');
+          //       return false;
+          //     }
+          //   }
+
+          //   var newActivityPerson = this.$Bmob.Object('activity_person');
+          //   newActivityPerson.set('activity', that.$Bmob.Object.createWithoutData('activity', that.$route.query.id));
+          //   newActivityPerson.set('user', that.$Bmob.Object.createWithoutData('_User', that.userList[that.dialog.selectUser].id));
+          //   newActivityPerson.set('isApply', true);
+
+          //   newActivityPerson.save().then(() => {
+          //     that.$message.success('添加成功');
+          //     that.dialogVisible = false;
+          //     that.getlist();
+          //   });
+          // });
         } else {
           // console.log('error submit!!');
           return false;
@@ -224,10 +267,11 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
-        updateActivityPerson.set('isApply', false);
-        updateActivityPerson.save().then(() => {
-          this.$message.success('取消成功！');
+        const query = this.$Bmob.Query('activity_person');
+        query.set('id', id); //需要修改的objectId
+        query.set('isApply', false);
+        query.save().then(res => {
+          console.log(res)
           this.getlist();
         });
       }).catch(() => {
@@ -243,10 +287,11 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
-        updateActivityPerson.set('isApply', true);
-        updateActivityPerson.save().then(() => {
-          this.$message.success('重新报名成功！');
+        const query = this.$Bmob.Query('activity_person');
+        query.set('id', id); //需要修改的objectId
+        query.set('isApply', true);
+        query.save().then(res => {
+          console.log(res)
           this.getlist();
         });
       }).catch(() => {
@@ -262,17 +307,13 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
-        updateActivityPerson.set('isWechat', true);
-        updateActivityPerson.save().then(() => {
-          this.$message.success('已确认！');
+        const query = this.$Bmob.Query('activity_person');
+        query.set('id', id); //需要修改的objectId
+        query.set('isWechat', true);
+        query.save().then(res => {
+          console.log(res)
           this.getlist();
         });
-      }).catch(() => {
-        // this.$message({
-        //   type: 'info',
-        //   message: '已取消操作'
-        // });          
       });
     },
     cancelWechat(id) {
@@ -281,17 +322,13 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
-        updateActivityPerson.set('isWechat', false);
-        updateActivityPerson.save().then(() => {
-          this.$message.success('已确认！');
+        const query = this.$Bmob.Query('activity_person');
+        query.set('id', id); //需要修改的objectId
+        query.set('isWechat', false);
+        query.save().then(res => {
+          console.log(res)
           this.getlist();
         });
-      }).catch(() => {
-        // this.$message({
-        //   type: 'info',
-        //   message: '已取消操作'
-        // });          
       });
     },
     comfilmPaid(id) {
@@ -300,10 +337,11 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
-        updateActivityPerson.set('isPaid', true);
-        updateActivityPerson.save().then(() => {
-          this.$message.success('已确认！');
+        const query = this.$Bmob.Query('activity_person');
+        query.set('id', id); //需要修改的objectId
+        query.set('isPaid', true);
+        query.save().then(res => {
+          console.log(res)
           this.getlist();
         });
       }).catch(() => {
@@ -319,10 +357,11 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
-        updateActivityPerson.set('isPaid', false);
-        updateActivityPerson.save().then(() => {
-          this.$message.success('已确认！');
+        const query = this.$Bmob.Query('activity_person');
+        query.set('id', id); //需要修改的objectId
+        query.set('isPaid', false);
+        query.save().then(res => {
+          console.log(res)
           this.getlist();
         });
       }).catch(() => {
