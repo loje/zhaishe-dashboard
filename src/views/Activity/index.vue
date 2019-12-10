@@ -82,14 +82,14 @@
         </el-table-column>
         <el-table-column
           prop="toDo"
-          width="500"
+          width="550"
           label="操作">
           <template slot-scope="scope">
             <el-button type="info" size="small" icon="el-icon-s-flag" v-if="scope.row.isTop === true" @click="setTop(scope.row.id, false)">取消置顶</el-button>
-            <el-button type="primary" size="small" icon="el-icon-s-flag" v-else @click="setTop(scope.row.id, true)">首页置顶</el-button>
+            <el-button :type="scope.row.status === 1 ? 'primary' : 'info'" size="small" icon="el-icon-s-flag" v-else @click="setTop(scope.row.id, true)">首页置顶</el-button>
 
-            <el-button type="primary" size="small" icon="el-icon-finished" @click="audit(scope.row.id, scope.row.title)">审核报名</el-button>
-            <el-button type="primary" size="small" icon="el-icon-finished" @click="note(scope.row.id, scope.row.title)">会后笔记</el-button>
+            <el-button :type="scope.row.status === 1 ? 'primary' : 'info'" size="small" icon="el-icon-finished" @click="audit(scope.row.id, scope.row.title)">查看已报名人</el-button>
+            <el-button :type="scope.row.status === 1 ? 'primary' : 'info'" size="small" icon="el-icon-finished" @click="note(scope.row.id, scope.row.title)">会后笔记</el-button>
 
             <el-button-group style="margin-left: 15px;">
             <el-button size="small" icon="el-icon-edit" @click="edit(scope.row.id)">编辑</el-button>

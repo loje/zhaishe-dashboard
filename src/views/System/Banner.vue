@@ -22,7 +22,7 @@
     </div>
 
     <div class="profile">
-      <el-divider content-position="left">左侧轮播图</el-divider>
+      <el-divider content-position="left">左侧轮播图(760px * 340px)</el-divider>
       <template v-if="bannerLeft.length > 0">
         <template v-for="(item, $index) in bannerLeft">
         <div class="el-upload el-upload--picture-card" :key="$index + 'left'">
@@ -39,7 +39,7 @@
         <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadLeftFile" class="el-upload__input" :multiple="false" name="file" ref="leftInput" type="file">
       </div>
 
-      <el-divider content-position="left">右侧轮播图</el-divider>
+      <el-divider content-position="left">右侧轮播图(440px * 170px)</el-divider>
       <template v-if="bannerRight.length > 0">
         <template v-for="(item, $index) in bannerRight">
         <div class="el-upload el-upload--picture-card" :key="$index + 'right'">
@@ -188,10 +188,14 @@ export default {
       this.$refs.rightInput.click();
     },
     uploadLeftFile(e) {
-      this.imgLeftLoading = true;
       const that = this;
       if (e.target.files) {
         var localFile  = e.target.files[0];
+        if (localFile.size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(localFile.size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        this.imgLeftLoading = true;
         var file = new this.$AV.File(localFile.name, localFile);
         file.save().then(function (file) {
           var newBanner = new that.$AV.Object('banner');
@@ -214,10 +218,14 @@ export default {
       }
     },
     uploadRightFile(e) {
-      this.imgRightLoading = true;
       const that = this;
       if (e.target.files) {
         var localFile  = e.target.files[0];
+        if (localFile.size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(localFile.size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        this.imgRightLoading = true;
         var file = new this.$AV.File(localFile.name, localFile);
         file.save().then(function (file) {
           var newBanner = new that.$AV.Object('banner');

@@ -4,7 +4,7 @@
       <div class="top-title">
         <el-breadcrumb separator-class="el-icon-arrow-right">
           <el-breadcrumb-item :to="{ path: '/activity' }">活动列表</el-breadcrumb-item>
-          <el-breadcrumb-item>审核报名</el-breadcrumb-item>
+          <el-breadcrumb-item>查看已报名人</el-breadcrumb-item>
           <el-breadcrumb-item v-loading="loading">{{$route.query.title}}</el-breadcrumb-item>
         </el-breadcrumb>
       </div>

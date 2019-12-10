@@ -236,10 +236,15 @@ export default {
       this.$refs.input.click();
     },
     uploadFile(e) {
-      this.imgLoading = true;
+      // console.log(e.target.files);
       const that = this;
       if (e.target.files) {
         var localFile  = e.target.files[0];
+        if (e.target.files[0].size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        this.imgLoading = true;
         var file = new this.$AV.File(localFile.name, localFile);
         file.save().then(function (file) {
           that.imgLoading = false;
