@@ -194,7 +194,7 @@ export default {
       // const skip = that.pageSize * (that.current - 1);
       query.descending('createdAt');
       // query.equalTo('notDelete', true);
-      if (that.searchText) {
+      if (that.searchText !== '') {
         query.contains('title', that.searchText);
       }
       // query.limit(that.pageSize);
