@@ -80,6 +80,8 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column label="创建时间" prop="createdAt" min-width="200"></el-table-column>
+        <el-table-column label="更新时间" prop="updatedAt" min-width="200"></el-table-column>
         <el-table-column
           prop="toDo"
           width="550"
@@ -189,12 +191,14 @@ export default {
       const that = this;
       let dataList = [];
       var query = new this.$AV.Query('activity');
-      const skip = that.pageSize * (that.current - 1);
-      query.equalTo('notDelete', true);
-      query.limit(that.pageSize);
-      query.skip(skip);
-      query.contains('title', that.searchText);
-      query.descending('updatedAt');
+      // const skip = that.pageSize * (that.current - 1);
+      query.descending('createdAt');
+      // query.equalTo('notDelete', true);
+      if (that.searchText) {
+        query.contains('title', that.searchText);
+      }
+      // query.limit(that.pageSize);
+      // query.skip(skip);
       query.find().then((data) => {
         that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
@@ -214,6 +218,8 @@ export default {
               endTime: that.$moment(data[i].get('endTime')).format('YYYY-MM-DD HH:mm'),
               status: data[i].get('status'),
               isTop: data[i].get('isTop'),
+              createdAt: that.$moment(data[i].get('createdAt')).format('YYYY-MM-DD HH:mm'),
+              updatedAt: that.$moment(data[i].get('updatedAt')).format('YYYY-MM-DD HH:mm'),
             });
           });
         }
