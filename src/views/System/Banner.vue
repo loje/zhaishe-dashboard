@@ -131,7 +131,7 @@ export default {
   methods: {
     confilm() {
       this.dialogLoading = true;
-      var banner = this.$AV.Object.createWithoutData('banner', this.dialog.id);
+      var banner = this.$Bmob.Object.createWithoutData('banner', this.dialog.id);
       banner.set('link', this.dialog.link);
       banner.save().then(() => {
         this.dialogLoading = false;
@@ -152,7 +152,7 @@ export default {
       this.getBanner();
     },
     getBanner() {
-      var query = new this.$AV.Query('banner');
+      var query = this.$Bmob.Query('banner');
       let bannerLeft = [];
       let bannerRight = [];
 
@@ -196,9 +196,9 @@ export default {
           return false;
         }
         this.imgLeftLoading = true;
-        var file = new this.$AV.File(localFile.name, localFile);
+        var file = this.$Bmob.File(localFile.name, localFile);
         file.save().then(function (file) {
-          var newBanner = new that.$AV.Object('banner');
+          var newBanner = that.$Bmob.Object('banner');
           newBanner.set('position', 'left');
           newBanner.set('imgSrc', file.attributes.url);
           newBanner.save().then((res) => {
@@ -226,9 +226,9 @@ export default {
           return false;
         }
         this.imgRightLoading = true;
-        var file = new this.$AV.File(localFile.name, localFile);
+        var file = this.$Bmob.File(localFile.name, localFile);
         file.save().then(function (file) {
-          var newBanner = new that.$AV.Object('banner');
+          var newBanner = that.$Bmob.Object('banner');
           newBanner.set('position', 'right');
           newBanner.set('imgSrc', file.attributes.url);
           newBanner.save().then((res) => {
@@ -254,7 +254,7 @@ export default {
         cancelButtonText: '取消',
         type: 'error'
       }).then(() => {
-        var banner = that.$AV.Object.createWithoutData('banner', id);
+        var banner = that.$Bmob.Object.createWithoutData('banner', id);
         banner.destroy().then(() => {
           that.$message({
             type: 'success',

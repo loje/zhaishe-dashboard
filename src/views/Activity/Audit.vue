@@ -104,10 +104,10 @@ export default {
         const that = this;
         let arr = [];
 
-        var userQuery = new this.$AV.Query('_User');
+        var userQuery = this.$Bmob.Query('_User');
 
-        var activityPersonQuery = new this.$AV.Query('activity_person');
-        activityPersonQuery.equalTo('activity', this.$AV.Object.createWithoutData('activity', that.$route.query.id));
+        var activityPersonQuery = this.$Bmob.Query('activity_person');
+        activityPersonQuery.equalTo('activity', this.$Bmob.Object.createWithoutData('activity', that.$route.query.id));
         activityPersonQuery.find().then((ap) => {
           that.loading = false;
           for (let i = 0; i < ap.length; i += 1) {
@@ -149,7 +149,7 @@ export default {
       this.dialog.loading = true;
       const that = this;
       that.userList = [];
-      var userQuery = new this.$AV.Query('_User');
+      var userQuery = this.$Bmob.Query('_User');
       userQuery.find().then((res) => {
         that.dialog.loading = false;
         for (let i = 0; i < res.length; i += 1) {
@@ -172,9 +172,9 @@ export default {
       this.$refs.dialogForm.validate((valid) => {
         if (valid) {
           this.dialog.loading = true;
-          var activityPersonQuery = new this.$AV.Query('activity_person');
-          activityPersonQuery.equalTo('activity', this.$AV.Object.createWithoutData('activity', that.$route.query.id));
-          activityPersonQuery.equalTo('user', this.$AV.Object.createWithoutData('_User', this.userList[this.dialog.selectUser].id));
+          var activityPersonQuery = this.$Bmob.Query('activity_person');
+          activityPersonQuery.equalTo('activity', this.$Bmob.Object.createWithoutData('activity', that.$route.query.id));
+          activityPersonQuery.equalTo('user', this.$Bmob.Object.createWithoutData('_User', this.userList[this.dialog.selectUser].id));
           activityPersonQuery.find().then((res) => {
             that.dialog.loading = false;
             if (res.length > 0) {
@@ -201,9 +201,9 @@ export default {
               }
             }
 
-            var newActivityPerson = new this.$AV.Object('activity_person');
-            newActivityPerson.set('activity', that.$AV.Object.createWithoutData('activity', that.$route.query.id));
-            newActivityPerson.set('user', that.$AV.Object.createWithoutData('_User', that.userList[that.dialog.selectUser].id));
+            var newActivityPerson = this.$Bmob.Object('activity_person');
+            newActivityPerson.set('activity', that.$Bmob.Object.createWithoutData('activity', that.$route.query.id));
+            newActivityPerson.set('user', that.$Bmob.Object.createWithoutData('_User', that.userList[that.dialog.selectUser].id));
             newActivityPerson.set('isApply', true);
 
             newActivityPerson.save().then(() => {
@@ -224,7 +224,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$AV.Object.createWithoutData('activity_person', id);
+        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
         updateActivityPerson.set('isApply', false);
         updateActivityPerson.save().then(() => {
           this.$message.success('取消成功！');
@@ -243,7 +243,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$AV.Object.createWithoutData('activity_person', id);
+        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
         updateActivityPerson.set('isApply', true);
         updateActivityPerson.save().then(() => {
           this.$message.success('重新报名成功！');
@@ -262,7 +262,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$AV.Object.createWithoutData('activity_person', id);
+        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
         updateActivityPerson.set('isWechat', true);
         updateActivityPerson.save().then(() => {
           this.$message.success('已确认！');
@@ -281,7 +281,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$AV.Object.createWithoutData('activity_person', id);
+        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
         updateActivityPerson.set('isWechat', false);
         updateActivityPerson.save().then(() => {
           this.$message.success('已确认！');
@@ -300,7 +300,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$AV.Object.createWithoutData('activity_person', id);
+        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
         updateActivityPerson.set('isPaid', true);
         updateActivityPerson.save().then(() => {
           this.$message.success('已确认！');
@@ -319,7 +319,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var updateActivityPerson = this.$AV.Object.createWithoutData('activity_person', id);
+        var updateActivityPerson = this.$Bmob.Object.createWithoutData('activity_person', id);
         updateActivityPerson.set('isPaid', false);
         updateActivityPerson.save().then(() => {
           this.$message.success('已确认！');

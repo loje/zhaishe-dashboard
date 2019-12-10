@@ -105,7 +105,7 @@ export default {
       this.dialog.loading = true;
       const that = this;
       that.userList = [];
-      var userQuery = new this.$AV.Query('_User');
+      var userQuery = this.$Bmob.Query('_User');
       userQuery.find().then((res) => {
         that.dialog.loading = false;
         for (let i = 0; i < res.length; i += 1) {
@@ -120,12 +120,12 @@ export default {
       const that = this;
       this.loading = true;
       const arr = [];
-      var channelQuery = new this.$AV.Query('channel');
+      var channelQuery = this.$Bmob.Query('channel');
       // channelQuery.equalTo('notDelete', true);
       channelQuery.find().then((d) => {
         that.loading = false;
         for (let i = 0; i < d.length; i += 1) {
-          var userQuery = new this.$AV.Query('_User');
+          var userQuery = this.$Bmob.Query('_User');
           userQuery.get(d[i].get('manager').id).then((res) => {
             arr.push({
               id: d[i].id,
@@ -182,7 +182,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var channel = this.$AV.Object.createWithoutData('channel', id);
+        var channel = this.$Bmob.Object.createWithoutData('channel', id);
         channel.set('notDelete', false);
         channel.save().then(() => {
           that.$message.success('删除成功！');
@@ -202,7 +202,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var channel = this.$AV.Object.createWithoutData('channel', id);
+        var channel = this.$Bmob.Object.createWithoutData('channel', id);
         channel.set('notDelete', true);
         channel.save().then(() => {
           that.$message.success('恢复成功！');
@@ -221,9 +221,9 @@ export default {
       this.$refs.dialogform.validate((valid) => {
         if (valid) {
           that.dialog.loading = true;
-          var newChannel = new that.$AV.Object('channel');
-          var activityObject = that.$AV.Object.createWithoutData('activity', that.$route.query.activityid);
-          var userObject = that.$AV.Object.createWithoutData('_User', that.userList[that.dialog.form.selectUser].id);
+          var newChannel = that.$Bmob.Object('channel');
+          var activityObject = that.$Bmob.Object.createWithoutData('activity', that.$route.query.activityid);
+          var userObject = that.$Bmob.Object.createWithoutData('_User', that.userList[that.dialog.form.selectUser].id);
           const formData = {
             ...that.dialog.form,
             startTime: that.dialog.form.time && that.dialog.form.time[0] ? that.dialog.form.time[0] : undefined,

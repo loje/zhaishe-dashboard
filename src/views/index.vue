@@ -101,24 +101,25 @@ export default {
     }
   },
   mounted() {
-    this.getUserCount();
-    this.getDownloadCount();
-    this.getProductCount();
+    // this.getUserCount();
+    // this.getDownloadCount();
+    // this.getProductCount();
     this.getActivityList();
   },
   methods: {
     getUserCount() {
-      const that = this;
-      var query = new this.$AV.Query('_User');
-      query.equalTo('isCustomer', true);
-      query.count().then(function (count) {
-        that.allUserCount = count;
+      // const that = this;
+      var query = this.$Bmob.Query('_User');
+      // query.equalTo('isCustomer', true);
+      query.find().then((count) => {
+        console.log(count);
+        // that.allUserCount = count;
       });
     },
     getDownloadCount() {
       const that = this;
       let count = 0;
-      var query = new this.$AV.Query('download');
+      var query = this.$Bmob.Query('download');
       query.find().then(function (data) {
         for (let i = 0; i < data.length; i += 1) {
           count += data[i].attributes.downloads;
@@ -128,27 +129,28 @@ export default {
     },
     getProductCount() {
       const that = this;
-      var query = new this.$AV.Query('product');
+      var query = this.$Bmob.Query('product');
       query.count().then(function (count) {
         that.productCount = count;
       });
     },
     getActivityList() {
-      const that = this;
+      // const that = this;
       let dataList = [];
-      var query = new this.$AV.Query('activity');
-      query.find().then(function (data) {
-        for (let i = 0; i < data.length; i += 1) {
-          dataList.push({
-            title: data[i].attributes.title,
-            desc: data[i].attributes.desc,
-            count: data[i].attributes.count,
-            pv: data[i].attributes.pv,
-            time: that.$moment(data[i].attributes.time).format('YYYY-MM-DD hh:mm'),
-            status: data[i].attributes.status,
-          });
-        }
-        that.tableData = dataList;
+      var query = this.$Bmob.Query('activity');
+      query.find().then((data) => {
+        console.log(data);
+        // for (let i = 0; i < data.length; i += 1) {
+        //   dataList.push({
+        //     title: data[i].attributes.title,
+        //     desc: data[i].attributes.desc,
+        //     count: data[i].attributes.count,
+        //     pv: data[i].attributes.pv,
+        //     time: that.$moment(data[i].attributes.time).format('YYYY-MM-DD hh:mm'),
+        //     status: data[i].attributes.status,
+        //   });
+        // }
+        // that.tableData = dataList;
       });
     },
     handleSizeChange() {},

@@ -53,12 +53,12 @@ export default {
       this.loading = true;
       const that = this;
       let dataList = [];
-      var query = new this.$AV.Query('activity');
+      var query = this.$Bmob.Query('activity');
       query.ascending('updatedAt');
       query.find().then(function (data) {
         that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
-          var channelQuery = new that.$AV.Query('channel');
+          var channelQuery = that.$Bmob.Query('channel');
           channelQuery.equalTo('activity', data[i]);
           channelQuery.find().then((channel) => {
             dataList.push({

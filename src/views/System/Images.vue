@@ -17,7 +17,7 @@ export default {
   methods: {
     getList() {
       const that = this;
-      var query = new this.$AV.Query('_File');
+      var query = this.$Bmob.Query('_File');
       query.descending('createdAt');
       query.find().then(function (data) {
         for (let i = 0; i < data.length; i += 1) {

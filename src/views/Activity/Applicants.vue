@@ -91,11 +91,11 @@ export default {
   methods: {
     getPerson() {
       // const that = this;
-      // var userQuery = new this.$AV.Query('_User');
+      // var userQuery = this.$Bmob.Query('_User');
       // userQuery.find().then((user) => {
       //   const arr = [];
       //   for (let i = 0; i < user.length; i += 1) {
-      //     var activityPersonQuery = new that.$AV.Query('activity_person');
+      //     var activityPersonQuery = that.$Bmob.Query('activity_person');
       //     activityPersonQuery.equalTo('user', user[i]);
       //     activityPersonQuery.find().then((ap) => {
       //       arr.push({
@@ -108,7 +108,7 @@ export default {
       //         userId: user[i].id,
       //       });
       //       for (let o = 0; o < ap.length; o += 1) {
-      //         var activityQuery = new that.$AV.Query('activity');
+      //         var activityQuery = that.$Bmob.Query('activity');
       //         activityQuery.get(ap[o].get('activity').id).then((ac) => {
       //           arr[i].totalFee = ac.get('fee') + arr[i].totalFee;
       //           arr[i].joinList.push({
@@ -127,7 +127,7 @@ export default {
 
     getActivityList() {
       const that = this;
-      var activityQuery = new that.$AV.Query('activity');
+      var activityQuery = that.$Bmob.Query('activity');
       activityQuery.find().then((act) => {
         const arr = [];
         for (let i = 0; i < act.length; i += 1) {
@@ -164,14 +164,14 @@ export default {
       this.$refs.itemform.validate((valid) => {
         if (valid) {
           // 更新用户信息
-          var user = this.$AV.Object.createWithoutData('_User', that.itemform.userId);
+          var user = this.$Bmob.Object.createWithoutData('_User', that.itemform.userId);
           // user.set('name', that.itemform.name);
           // user.set('email', that.itemform.email);
           // user.save();
           
           // 更新报名信息
           // const applylist = that.itemform.applylist;
-          var activityPersonQuery = new that.$AV.Query('activity_person');
+          var activityPersonQuery = that.$Bmob.Query('activity_person');
           activityPersonQuery.equalTo('user', user);
           activityPersonQuery.find().then(() => {
             // console.log(act);

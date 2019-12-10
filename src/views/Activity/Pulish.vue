@@ -128,7 +128,7 @@ export default {
     getInfo() {
       const that = this;
       that.pulishLoading = true;
-      var query = new this.$AV.Query('activity');
+      var query = this.$Bmob.Query('activity');
       query.get(that.$route.query.id).then(function (data) {
         that.pulishLoading = false;
         that.form = {
@@ -148,7 +148,7 @@ export default {
     getModeList() {
       const that = this;
       const list = [];
-      var query = new this.$AV.Query('activity_mode');
+      var query = this.$Bmob.Query('activity_mode');
       query.find().then(function (data) {
         for(let i = 0; i < data.length; i += 1) {
           list.push({
@@ -163,7 +163,7 @@ export default {
     getSortList() {
       const that = this;
       const list = [];
-      var query = new this.$AV.Query('activity_sort');
+      var query = this.$Bmob.Query('activity_sort');
       query.find().then(function (data) {
         for(let i = 0; i < data.length; i += 1) {
           list.push({
@@ -181,7 +181,7 @@ export default {
         if (valid) {
           that.pulishLoading = true;
           if (!that.$route.query.id) {
-            let Activity = this.$AV.Object.extend('activity');
+            let Activity = this.$Bmob.Object.extend('activity');
             let activity = new Activity();
             activity.set({
               ...that.form,
@@ -204,7 +204,7 @@ export default {
               // 异常处理
             });
           } else {
-            let activity = this.$AV.Object.createWithoutData('activity', that.$route.query.id);
+            let activity = this.$Bmob.Object.createWithoutData('activity', that.$route.query.id);
             activity.set({
               ...that.form,
               status: Number(status),
@@ -245,7 +245,7 @@ export default {
           return false;
         }
         this.imgLoading = true;
-        var file = new this.$AV.File(localFile.name, localFile);
+        var file = this.$Bmob.File(localFile.name, localFile);
         file.save().then(function (file) {
           that.imgLoading = false;
           that.form.imgSrc = file.attributes.url;

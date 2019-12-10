@@ -38,7 +38,7 @@ export default {
       const that = this;
       this.$refs.form.validate((valid) => {
         if (valid) {
-          that.$AV.User.logIn(that.form.username, that.form.password).then(function (user) {
+          that.$Bmob.User.logIn(that.form.username, that.form.password).then(function (user) {
             const data = {
               emailVerified: user.attributes.emailVerified,
               mobilePhoneNumber: user.attributes.mobilePhoneNumber,

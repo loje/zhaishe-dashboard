@@ -102,7 +102,7 @@ export default {
     getlist() {
       this.loading = true;
       const that = this;
-      var userListQuery = new this.$AV.Query('_User');
+      var userListQuery = this.$Bmob.Query('_User');
       userListQuery.find().then((res) => {
         that.loading = false;
         that.tableData = [];
@@ -116,7 +116,7 @@ export default {
       this.$refs.dialogForm.validate((valid) => {
         if (valid) {
           this.dialog.loading = true;
-          var newMember = new this.$AV.Object('_User');
+          var newMember = this.$Bmob.Object('_User');
           newMember.set(that.dialog.form);
           newMember.set('password', '123456'); // 暂时为123456
           newMember.set('isAdmin', false);

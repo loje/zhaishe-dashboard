@@ -166,11 +166,14 @@ export default {
   methods: {
     setTop(id, boolean) {
       if (this.isTops < 4) {
-        var activity = this.$AV.Object.createWithoutData('activity', id);
-        activity.set('isTop', boolean);
-        activity.save().then(() => {
+        const query = this.$Bmob.Query('activity');
+        query.set('id', id); //需要修改的objectId
+        query.set('isTop', boolean);
+        query.save().then(res => {
+          console.log(res)
           this.getActivityList();
-          this.getIsTop();
+        }).catch(err => {
+          console.log(err)
         });
       } else {
         this.$message.error('已置顶满四个');
@@ -180,8 +183,8 @@ export default {
       this.getActivityList();
     },
     getIsTop() {
-      var query = new this.$AV.Query('activity');
-      query.equalTo('isTop', true);
+      var query = this.$Bmob.Query('activity');
+      query.equalTo('isTop', '==', true);
       query.count().then((count) => {
         this.isTops = count;
       });
@@ -190,37 +193,46 @@ export default {
       this.loading = true;
       const that = this;
       let dataList = [];
-      var query = new this.$AV.Query('activity');
-      // const skip = that.pageSize * (that.current - 1);
-      query.descending('createdAt');
-      // query.equalTo('notDelete', true);
+      let apList = [];
+
+      var apQuery = this.$Bmob.Query('activity_person');
+      apQuery.find().then((res) => {
+        apList = res;
+      });
+
+      var query = this.$Bmob.Query('activity');
+      const skip = that.pageSize * (that.current - 1);
+      query.order('-createdAt');
+      query.equalTo('notDelete', '==', true);
       if (that.searchText !== '') {
         query.contains('title', that.searchText);
       }
-      // query.limit(that.pageSize);
-      // query.skip(skip);
+      query.limit(that.pageSize);
+      query.skip(skip);
       query.find().then((data) => {
+        console.log(data);
         that.loading = false;
         for (let i = 0; i < data.length; i += 1) {
-          var activityPersonQuery = new this.$AV.Query('activity_person');
-          activityPersonQuery.equalTo('isApply', true);
-          activityPersonQuery.equalTo('activity', this.$AV.Object.createWithoutData('activity', data[i].id));
-          activityPersonQuery.count().then((count) => {
-            dataList.push({
-              id: data[i].id,
-              img: data[i].get('imgSrc'),
-              title: data[i].get('title'),
-              desc: data[i].get('desc'),
-              count: count,
-              num: data[i].get('number'),
-              pv: data[i].get('pv'),
-              startTime: that.$moment(data[i].get('startTime')).format('YYYY-MM-DD HH:mm'),
-              endTime: that.$moment(data[i].get('endTime')).format('YYYY-MM-DD HH:mm'),
-              status: data[i].get('status'),
-              isTop: data[i].get('isTop'),
-              createdAt: that.$moment(data[i].get('createdAt')).format('YYYY-MM-DD HH:mm'),
-              updatedAt: that.$moment(data[i].get('updatedAt')).format('YYYY-MM-DD HH:mm'),
-            });
+          let count = 0;
+          for (let j = 0; j < apList.length; j += 1) {
+            if (data[i].objectId === apList[j].activity.objectId) {
+              count += 1;
+            }
+          }
+          dataList.push({
+            id: data[i].objectId,
+            // img: data[i].get('imgSrc'),
+            title: data[i].title,
+            desc: data[i].desc,
+            count,
+            num: data[i].number,
+            pv: data[i].pv,
+            startTime: that.$moment(data[i].startTime).format('YYYY-MM-DD HH:mm'),
+            endTime: that.$moment(data[i].endTime).format('YYYY-MM-DD HH:mm'),
+            status: data[i].status,
+            isTop: data[i].isTop,
+            createdAt: that.$moment(data[i].createdAt).format('YYYY-MM-DD HH:mm'),
+            updatedAt: that.$moment(data[i].updatedAt).format('YYYY-MM-DD HH:mm'),
           });
         }
         that.tableData = dataList;
@@ -228,7 +240,7 @@ export default {
     },
     getActivityCount() {
       const that = this;
-      var query = new this.$AV.Query('activity');
+      var query = this.$Bmob.Query('activity');
       query.count().then(function (count) {
         that.total = count;
       });
@@ -255,7 +267,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var activity = this.$AV.Object.createWithoutData('activity', id);
+        var activity = this.$Bmob.Object.createWithoutData('activity', id);
         activity.set('notDelete', false);
         activity.save().then(() => {
           that.$message.success('删除成功！');
@@ -284,7 +296,7 @@ export default {
       this.dialogVisible = true;
 
       this.dialogLoading = true;
-      var query = new this.$AV.Query('activity');
+      var query = this.$Bmob.Query('activity');
       query.get(id).then((data) => {
         this.dialogLoading = false;
         this.dialogContent = data.get('note');
@@ -292,7 +304,7 @@ export default {
     },
     confilm() {
       this.dialogLoading = true;
-      let activity = this.$AV.Object.createWithoutData('activity', this.dialogId);
+      let activity = this.$Bmob.Object.createWithoutData('activity', this.dialogId);
       activity.set('note', this.dialogContent);
       activity.save().then(() => {
         this.dialogLoading = false;

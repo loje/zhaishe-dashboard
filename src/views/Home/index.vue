@@ -53,29 +53,26 @@ export default {
   },
   methods: {
     getUserCount() {
-      const that = this;
-      var query = new this.$AV.Query('_User');
-      query.equalTo('isCustomer', true);
-      query.count().then(function (count) {
-        that.allUserCount = count;
+      var query = this.$Bmob.Query('_User');
+      query.equalTo('isCustomer', '==', true);
+      query.count().then((count) => {
+        this.allUserCount = count;
       });
     },
     getDownloadCount() {
-      const that = this;
       let count = 0;
-      var query = new this.$AV.Query('download');
-      query.find().then(function (data) {
+      var query = this.$Bmob.Query('download');
+      query.find().then((data) => {
         for (let i = 0; i < data.length; i += 1) {
-          count += data[i].attributes.downloads;
+          count += data[i].downloads;
         }
-        that.downloadCount = count;
+        this.downloadCount = count;
       });
     },
     getProductCount() {
-      const that = this;
-      var query = new this.$AV.Query('product');
-      query.count().then(function (count) {
-        that.productCount = count;
+      var query = this.$Bmob.Query('product');
+      query.count().then((count) => {
+        this.productCount = count;
       });
     },
     handleSizeChange() {},

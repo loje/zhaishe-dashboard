@@ -6,15 +6,20 @@ import './plugins/element.js'
 import './assets/style.css'
 
 
-var AV = require('leancloud-storage');
-// var { Realtime } = require('leancloud-realtime'); // 若不使用即时通讯服务，则无需引入
+// var AV = require('leancloud-storage');
+// // var { Realtime } = require('leancloud-realtime'); // 若不使用即时通讯服务，则无需引入
 
-AV.init({
-  appId: "vwzM34pywVYeT0lY6G5KlSYM-gzGzoHsz",
-  appKey: "3CTYBXJYIGsSrCGSD11E9p63",
-  serverURLs: "https://api.zdesigner.cn"
-});
-Vue.prototype.$AV = AV;
+// AV.init({
+//   appId: "vwzM34pywVYeT0lY6G5KlSYM-gzGzoHsz",
+//   appKey: "3CTYBXJYIGsSrCGSD11E9p63",
+//   serverURLs: "https://api.zdesigner.cn"
+// });
+// Vue.prototype.$AV = AV;
+import Bmob from "hydrogen-js-sdk";
+Bmob.initialize("4dcf39d90a4913b4", "900620");
+Vue.prototype.$Bmob = Bmob;
+
+Bmob.debug(true);
 
 import moment from 'moment'
 Vue.prototype.$moment = moment
