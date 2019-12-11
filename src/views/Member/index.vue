@@ -103,18 +103,18 @@ export default {
   },
   mounted() {
     this.getlist();
-    let params = {
-      funcName: 'hello',
-      data: {
-        name : 'bmob'
-      }
-    }
-    this.$Bmob.functions(params.funcName,params.data).then(function (response) {
-      console.log(response);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+    // let params = {
+    //   funcName: 'hello',
+    //   data: {
+    //     name : 'bmob'
+    //   }
+    // }
+    // this.$Bmob.functions(params.funcName,params.data).then(function (response) {
+    //   console.log(response);
+    // })
+    // .catch(function (error) {
+    //   console.log(error);
+    // });
 
   },
   methods: {
@@ -168,7 +168,7 @@ export default {
               // that.$message.error(err.error);
             });
           } else {
-            console.log('修改')
+            // console.log('修改')
             params = {
               ...params,
               objectId: this.dialog.form.objectId,

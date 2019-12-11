@@ -165,18 +165,26 @@ export default {
   },
   methods: {
     setTop(id, boolean) {
-      if (this.isTops < 4) {
+      if(boolean === true) {
+        if (this.isTops < 4 ) {
+          const query = this.$Bmob.Query('activity');
+          query.set('id', id); //需要修改的objectId
+          query.set('isTop', boolean);
+          query.save().then(() => {
+            this.getActivityList();
+            this.getIsTop();
+          });
+        } else {
+          this.$message.error('已置顶满四个');
+        }
+      } else {
         const query = this.$Bmob.Query('activity');
         query.set('id', id); //需要修改的objectId
         query.set('isTop', boolean);
-        query.save().then(res => {
-          console.log(res)
+        query.save().then(() => {
           this.getActivityList();
-        }).catch(err => {
-          console.log(err)
+          this.getIsTop();
         });
-      } else {
-        this.$message.error('已置顶满四个');
       }
     },
     dataSearch() {
