@@ -47,11 +47,11 @@
             <span style="margin-left:10px;font-size: 12px;">{{scope.row.count}} / {{scope.row.num}}</span>
           </template>
         </el-table-column>
-        <el-table-column
+        <!-- <el-table-column
           align="center"
           prop="pv"
           label="浏览量">
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column
           align="center"
           label="活动时间"
@@ -80,8 +80,8 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" prop="createdAt" min-width="200"></el-table-column>
-        <el-table-column label="更新时间" prop="updatedAt" min-width="200"></el-table-column>
+        <!-- <el-table-column label="创建时间" prop="createdAt" min-width="200"></el-table-column> -->
+        <!-- <el-table-column label="更新时间" prop="updatedAt" min-width="200"></el-table-column> -->
         <el-table-column
           prop="toDo"
           width="550"
@@ -191,7 +191,6 @@ export default {
     },
     getActivityList() {
       this.loading = true;
-      const that = this;
       let dataList = [];
       let apList = [];
 
@@ -201,17 +200,16 @@ export default {
       });
 
       var query = this.$Bmob.Query('activity');
-      const skip = that.pageSize * (that.current - 1);
-      query.order('-createdAt');
+      const skip = this.pageSize * (this.current - 1);
+      query.order('-endTime');
       query.equalTo('notDelete', '==', true);
-      if (that.searchText !== '') {
-        query.contains('title', that.searchText);
+      if (this.searchText !== '') {
+        query.equalTo('title', '==', this.searchText);
       }
-      query.limit(that.pageSize);
+      query.limit(this.pageSize);
       query.skip(skip);
       query.find().then((data) => {
-        console.log(data);
-        that.loading = false;
+        this.loading = false;
         for (let i = 0; i < data.length; i += 1) {
           let count = 0;
           for (let j = 0; j < apList.length; j += 1) {
@@ -219,30 +217,49 @@ export default {
               count += 1;
             }
           }
+          for (let key in data[i].startTime) {
+            if (key === 'iso') {
+              data[i].startTime = data[i].startTime[key];
+            }
+          }
+          for (let key in data[i].endTime) {
+            if (key === 'iso') {
+              data[i].endTime = data[i].endTime[key];
+            }
+          }
+          for (let key in data[i].createdAt) {
+            if (key === 'iso') {
+              data[i].createdAt = data[i].createdAt[key];
+            }
+          }
+          for (let key in data[i].updatedAt) {
+            if (key === 'iso') {
+              data[i].updatedAt = data[i].updatedAt[key];
+            }
+          }
           dataList.push({
             id: data[i].objectId,
-            // img: data[i].get('imgSrc'),
+            img: data[i].imgSrc,
             title: data[i].title,
             desc: data[i].desc,
             count,
             num: data[i].number,
             pv: data[i].pv,
-            startTime: that.$moment(data[i].startTime).format('YYYY-MM-DD HH:mm'),
-            endTime: that.$moment(data[i].endTime).format('YYYY-MM-DD HH:mm'),
+            startTime: this.$moment(data[i].startTime).format('YYYY-MM-DD HH:mm'),
+            endTime: this.$moment(data[i].endTime).format('YYYY-MM-DD HH:mm'),
             status: data[i].status,
             isTop: data[i].isTop,
-            createdAt: that.$moment(data[i].createdAt).format('YYYY-MM-DD HH:mm'),
-            updatedAt: that.$moment(data[i].updatedAt).format('YYYY-MM-DD HH:mm'),
+            createdAt: this.$moment(data[i].createdAt).format('YYYY-MM-DD HH:mm'),
+            updatedAt: this.$moment(data[i].updatedAt).format('YYYY-MM-DD HH:mm'),
           });
         }
-        that.tableData = dataList;
+        this.tableData = dataList;
       });
     },
     getActivityCount() {
-      const that = this;
       var query = this.$Bmob.Query('activity');
-      query.count().then(function (count) {
-        that.total = count;
+      query.count().then((count) => {
+        this.total = count;
       });
     },
     handleSizeChange(page) {
@@ -261,18 +278,18 @@ export default {
       })
     },
     del(id) {
-      const that = this;
       this.$confirm('此操作将永久删除该活动, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var activity = this.$Bmob.Object.createWithoutData('activity', id);
+        var activity = this.$Bmob.Query('activity');
+        activity.set('id', id);
         activity.set('notDelete', false);
         activity.save().then(() => {
-          that.$message.success('删除成功！');
-          that.getActivityList();
-          that.getActivityCount();
+          this.$message.success('删除成功！');
+          this.getActivityList();
+          this.getActivityCount();
         });
       }).catch(() => {
         this.$message({
@@ -299,12 +316,13 @@ export default {
       var query = this.$Bmob.Query('activity');
       query.get(id).then((data) => {
         this.dialogLoading = false;
-        this.dialogContent = data.get('note');
+        this.dialogContent = data.note;
       });
     },
     confilm() {
       this.dialogLoading = true;
-      let activity = this.$Bmob.Object.createWithoutData('activity', this.dialogId);
+      let activity = this.$Bmob.Query('activity');
+      activity.set('id', this.dialogId);
       activity.set('note', this.dialogContent);
       activity.save().then(() => {
         this.dialogLoading = false;

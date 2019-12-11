@@ -158,18 +158,18 @@ export default {
 
       query.find().then((res) => {
         for (let i = 0; i < res.length; i += 1) {
-          if (res[i].get('position') && res[i].get('position') === 'left') {
+          if (res[i].position && res[i].position === 'left') {
             bannerLeft.push({
-              id: res[i].id,
-              imgSrc: res[i].get('imgSrc'),
-              link: res[i].get('link')
+              id: res[i].objectId,
+              imgSrc: res[i].imgSrc,
+              link: res[i].link
             });
           }
-          if (res[i].get('position') && res[i].get('position') === 'right') {
+          if (res[i].position && res[i].position === 'right') {
             bannerRight.push({
-              id: res[i].id,
-              imgSrc: res[i].get('imgSrc'),
-              link: res[i].get('link')
+              id: res[i].objectId,
+              imgSrc: res[i].imgSrc,
+              link: res[i].link
             });
           }
         }
@@ -190,31 +190,31 @@ export default {
     uploadLeftFile(e) {
       const that = this;
       if (e.target.files) {
-        var localFile  = e.target.files[0];
+        let localFile  = e.target.files[0];
         if (localFile.size > 5*1024*100) {
           this.$message.warning(`当前文件有${parseInt(localFile.size / 1024)}kb,上传文件不得超过500kb`);
           return false;
         }
         this.imgLeftLoading = true;
-        var file = this.$Bmob.File(localFile.name, localFile);
-        file.save().then(function (file) {
-          var newBanner = that.$Bmob.Object('banner');
+        let file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          var newBanner = this.$Bmob.Query('banner');
           newBanner.set('position', 'left');
-          newBanner.set('imgSrc', file.attributes.url);
+          newBanner.set('imgSrc', file[0].url);
           newBanner.save().then((res) => {
-            that.imgLeftLoading = false;
-            that.bannerLeft.push({
-              id: res.id,
-              imgSrc: file.attributes.url,
+            this.imgLeftLoading = false;
+            this.bannerLeft.push({
+              id: res.objectId,
+              imgSrc: file[0].url,
             });
             that.$refs.leftSwiper.update();
           });
         }, function () {
-          that.imgLeftLoading = false;
+          this.imgLeftLoading = false;
           // console.error(error);
           // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
         });
-        that.getBanner();
+        this.getBanner();
       }
     },
     uploadRightFile(e) {
@@ -227,24 +227,24 @@ export default {
         }
         this.imgRightLoading = true;
         var file = this.$Bmob.File(localFile.name, localFile);
-        file.save().then(function (file) {
-          var newBanner = that.$Bmob.Object('banner');
+        file.save().then((file) => {
+          var newBanner = this.$Bmob.Query('banner');
           newBanner.set('position', 'right');
-          newBanner.set('imgSrc', file.attributes.url);
+          newBanner.set('imgSrc', file[0].url);
           newBanner.save().then((res) => {
-            that.imgRightLoading = false;
-            that.bannerRight.push({
-              id: res.id,
-              imgSrc: file.attributes.url,
+            this.imgRightLoading = false;
+            this.bannerRight.push({
+              id: res.objectId,
+              imgSrc: file[0].url,
             });
             that.$refs.rightSwiper.update();
           });
         }, function () {
-          that.imgRightLoading = false;
+          this.imgRightLoading = false;
           // console.error(error);
           // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
         });
-        that.getBanner();
+        this.getBanner();
       }
     },
     del(id) {
@@ -254,17 +254,16 @@ export default {
         cancelButtonText: '取消',
         type: 'error'
       }).then(() => {
-        var banner = that.$Bmob.Object.createWithoutData('banner', id);
-        banner.destroy().then(() => {
-          that.$message({
+        var banner = this.$Bmob.Query('banner');
+        banner.destroy(id).then(() => {
+          this.$message({
             type: 'success',
             message: '删除成功!'
           });
-          that.getBanner();
+          this.getBanner();
           that.$refs.leftSwiper.update();
           that.$refs.rightSwiper.update();
         });
-        
       }).catch(() => {
         // this.$message({
         //   type: 'info',

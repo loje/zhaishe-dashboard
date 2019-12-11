@@ -50,28 +50,27 @@ export default {
   },
   methods: {
     getActivityList() {
-      this.loading = true;
-      const that = this;
-      let dataList = [];
-      var query = this.$Bmob.Query('activity');
-      query.ascending('updatedAt');
-      query.find().then(function (data) {
-        that.loading = false;
-        for (let i = 0; i < data.length; i += 1) {
-          var channelQuery = that.$Bmob.Query('channel');
-          channelQuery.equalTo('activity', data[i]);
-          channelQuery.find().then((channel) => {
-            dataList.push({
-              id: data[i].id,
-              title: data[i].get('title'),
-              startTime: that.$moment(data[i].attributes.startTime).format('YYYY-MM-DD HH:mm'),
-              endTime: that.$moment(data[i].attributes.endTime).format('YYYY-MM-DD HH:mm'),
-              channelCount: channel.length,
-            });
-          });
-        }
-        that.tableData = dataList;
-      });
+      // this.loading = true;
+      // let dataList = [];
+      // var query = this.$Bmob.Query('activity');
+      // query.order('-updatedAt');
+      // query.find().then((data) => {
+      //   this.loading = false;
+      //   for (let i = 0; i < data.length; i += 1) {
+      //     var channelQuery = this.$Bmob.Query('channel');
+      //     channelQuery.equalTo('activity', data[i]);
+      //     channelQuery.find().then((channel) => {
+      //       dataList.push({
+      //         id: data[i].objectId,
+      //         title: data[i].title,
+      //         startTime: this.$moment(data[i].attributes.startTime).format('YYYY-MM-DD HH:mm'),
+      //         endTime: this.$moment(data[i].attributes.endTime).format('YYYY-MM-DD HH:mm'),
+      //         channelCount: channel.length,
+      //       });
+      //     });
+      //   }
+      //   this.tableData = dataList;
+      // });
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;

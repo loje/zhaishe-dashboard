@@ -172,8 +172,6 @@ export default {
     },
 
     uploadImgFile(e) {
-      console.log(e);
-      console.log(e.target.files);
       if (e.target.files) {
         var localFile  = e.target.files[0];
         if (e.target.files[0].size > 5*1024*100) {
@@ -199,29 +197,27 @@ export default {
     },
 
     getInfo() {
-      const that = this;
-      that.pulishLoading = true;
+      this.pulishLoading = true;
       var query = this.$Bmob.Query('activity');
-      query.get(that.$route.query.id).then(function (data) {
+      query.get(this.$route.query.id).then((data) => {
         for (let key in data.startTime) {
           if (key === 'iso') {
-            that.form.startTime = data.startTime[key];
+            this.form.startTime = data.startTime[key];
           }
         }
         for (let key in data.endTime) {
           if (key === 'iso') {
-            that.form.endTime = data.endTime[key];
+            this.form.endTime = data.endTime[key];
           }
         }
-        console.log(data.startTime['ios']);
-        that.pulishLoading = false;
-        that.form = {
+        this.pulishLoading = false;
+        this.form = {
           title: data.title,
           desc: data.desc,
           imgSrc: data.imgSrc,
-          mode: that.modeList[data.mode - 1].value,
-          sort: that.sortList[data.sort - 1].value,
-          time: [that.form.startTime, that.form.endTime],
+          mode: this.modeList[data.mode - 1].value,
+          sort: this.sortList[data.sort - 1].value,
+          time: [this.form.startTime, this.form.endTime],
           fee: data.fee,
           number: data.number,
           address: data.address,

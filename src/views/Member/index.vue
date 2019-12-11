@@ -7,7 +7,7 @@
         </el-breadcrumb>
       </span>
       <div class="top-func">
-        <el-button type="primary" icon="el-icon-plus" @click="dialogVisible = true">新建会员</el-button>
+        <el-button type="primary" icon="el-icon-plus" @click="create">新建会员</el-button>
       </div>
     </div>
     <div class="layer-table">
@@ -35,11 +35,16 @@
           label="邮箱"
           prop="email">
         </el-table-column>
+        <el-table-column label="操作">
+          <template slot-scope="scope">
+            <el-button type="warning" @click="edit(scope.row.objectId)" icon="el-icon-edit" size="small">编辑</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
 
     <el-dialog
-      title="添加会员"
+      :title="dialogTitle"
       :visible.sync="dialogVisible"
       width="30%"
       v-loading="dialog.loading"
@@ -79,6 +84,7 @@ export default {
       loading: false,
       tableData: [],
       dialogVisible: false,
+      dialogTitle: '',
       dialog: {
         loading: false,
         selectUser: '',
@@ -97,8 +103,32 @@ export default {
   },
   mounted() {
     this.getlist();
+    let params = {
+      funcName: 'hello',
+      data: {
+        name : 'bmob'
+      }
+    }
+    this.$Bmob.functions(params.funcName,params.data).then(function (response) {
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
   },
   methods: {
+    create() {
+      this.dialogVisible = true;
+      this.dialogTitle = '新建会员';
+    },
+    edit(id) {
+      this.dialogVisible = true;
+      this.dialogTitle = '编辑会员';
+      this.$Bmob.User.get(id).then(res => {
+        this.dialog.form = res;
+      });
+    },
     getlist() {
       this.loading = true;
       const that = this;
@@ -107,31 +137,59 @@ export default {
         that.loading = false;
         that.tableData = [];
         for (let i = 0; i < res.length; i += 1) {
-          that.tableData.push(res[i].attributes);
+          that.tableData.push(res[i]);
         }
       });
     },
     submitForm() {
-      const that = this;
       this.$refs.dialogForm.validate((valid) => {
         if (valid) {
           this.dialog.loading = true;
-          var newMember = this.$Bmob.Object('_User');
-          newMember.set(that.dialog.form);
-          newMember.set('password', '123456'); // 暂时为123456
-          newMember.set('isAdmin', false);
+          let params = {
+            email: this.dialog.form.email,
+            isAdmin: this.dialog.form.isAdmin,
+            mobilePhoneNumber: this.dialog.form.mobilePhoneNumber,
+            name: this.dialog.form.name,
+            username: this.dialog.form.username,
+            wechatId: this.dialog.form.wechatId,
+            password: '123456',
+          };
 
-          newMember.save().then(() => {
-            this.dialog.loading = false;
-            that.dialogVisible = false;
-            that.getlist();
-            that.$message.success('新增成功！');
-          }).catch(() => {
-            this.dialog.loading = false;
-            // that.dialogVisible = false;
-            // that.getlist();
-            // that.$message.error(err.error);
-          });
+          if (!this.dialog.form.objectId) {
+            this.$Bmob.User.register(params).then(() => {
+              this.dialog.loading = false;
+              this.dialogVisible = false;
+              this.getlist();
+              this.$message.success('新增成功！');
+            }).catch(() => {
+              this.dialog.loading = false;
+              // that.dialogVisible = false;
+              // that.getlist();
+              // that.$message.error(err.error);
+            });
+          } else {
+            console.log('修改')
+            params = {
+              ...params,
+              objectId: this.dialog.form.objectId,
+            };
+            // const query = this.$Bmob.Query('_User');
+            // query.set('id', this.dialog.form.objectId) //需要修改的objectId
+            // query.set('username', this.dialog.form.username);
+            // query.set('name', this.dialog.form.name);
+            // query.set('mobilePhoneNumber', this.dialog.form.mobilePhoneNumber);
+            // query.set('email', this.dialog.form.email);
+            // query.set('wechatId', this.dialog.form.wechatId);
+            // query.save().then(() => {
+            //   this.dialog.loading = false;
+            //   this.dialogVisible = false;
+            //   this.getlist();
+            //   this.$message.success('修改成功！');
+            // }).catch(err => {
+            //   console.log(err)
+            // })
+
+          }
         }
       });
     },
