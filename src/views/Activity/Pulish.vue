@@ -44,7 +44,10 @@
         <el-input v-model="form.address" placeholder="地点不限"></el-input>
       </el-form-item>
       <el-form-item label="活动详情" prop="content">
-        <quill-editor v-model="form.content" ref="myQuillEditor" :options="editorOption" style="width: 100%;"></quill-editor>
+
+        <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadImgFile" class="el-upload__input" :multiple="false" name="file" ref="imgInput" type="file">
+
+        <quill-editor v-model="form.content" ref="myQuillEditor" :options="editorOption" @change="onEditorChange($event)" style="width: 100%;"></quill-editor>
       </el-form-item>
       <el-form-item align="right">
         <el-button @click="submitForm('0')">设为暂存</el-button>
@@ -55,6 +58,21 @@
 </template>
 
 <script>
+const toolbarOptions = [
+  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+  [{'header': 1}, {'header': 2}],               // custom button values
+  [{'list': 'ordered'}, {'list': 'bullet'}],
+  [{'indent': '-1'}, {'indent': '+1'}],          // outdent/indent
+  [{'direction': 'rtl'}],                         // text direction
+  [{'size': ['small', false, 'large', 'huge']}],  // custom dropdown
+  [{'header': [1, 2, 3, 4, 5, 6, false]}],
+  [{'color': []}, {'background': []}],          // dropdown with defaults from theme
+  [{'font': []}],
+  [{'align': []}],
+  ['link', 'image'],
+  ['clean']
+]
+
 import {
   quillEditor
 } from 'vue-quill-editor'
@@ -65,6 +83,30 @@ import 'quill/dist/quill.bubble.css'
 export default {
   data() {
     return {
+      content: null,
+      editorOption: {
+        placeholder: '',
+        theme: 'snow',  // or 'bubble'
+        modules: {
+          toolbar: {
+            container: toolbarOptions,
+            handlers: {
+              'image': (value) => {
+                if (value) {
+                  // 触发input框选择图片文件
+                  // document.querySelector('.avatar-uploader input').click()
+                  this.$refs.imgInput.value = null;
+                  this.$refs.imgInput.click();
+                } else {
+                  this.quill.format('image', false);
+                }
+              }
+            }
+          }
+        }
+      },
+      serverUrl: '/manager/common/imgUpload',  // 这里写你要上传的图片服务器地址
+
       form: {
         fee: 0,
       },
@@ -77,7 +119,6 @@ export default {
         // address: [{required: true, message: '请输入活动地址', trigger: 'blur'}],
         content: [{required: true, message: '请输入', trigger: 'blur'}],
       },
-      editorOption: {},
       imgLoading: false,
 
       pulishLoading: false,
@@ -122,23 +163,69 @@ export default {
     }
   },
   methods: {
+    onEditorChange({editor, html, text}) {//内容改变事件
+      console.log("---内容改变事件---")
+      this.content = html
+      console.log(editor);
+      // console.log(html);
+      console.log(text);
+    },
+
+    uploadImgFile(e) {
+      console.log(e);
+      console.log(e.target.files);
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (e.target.files[0].size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb，为保障页面顺畅加载，上传文件不得超过500kb`);
+          return false;
+        }
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          let quill = this.$refs.myQuillEditor.quill
+          // 获取光标所在位置
+          let length = quill.getSelection().index;
+          // 插入图片  res.url为服务器返回的图片地址
+          quill.insertEmbed(length, 'image', file[0].url)
+          // 调整光标到最后
+          quill.setSelection(length + 1)
+        }, () => {
+          this.imgLoading = false;
+          this.$message.error('图片插入失败');
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+      }
+    },
+
     getInfo() {
       const that = this;
       that.pulishLoading = true;
       var query = this.$Bmob.Query('activity');
       query.get(that.$route.query.id).then(function (data) {
+        for (let key in data.startTime) {
+          if (key === 'iso') {
+            that.form.startTime = data.startTime[key];
+          }
+        }
+        for (let key in data.endTime) {
+          if (key === 'iso') {
+            that.form.endTime = data.endTime[key];
+          }
+        }
+        console.log(data.startTime['ios']);
         that.pulishLoading = false;
         that.form = {
-          title: data.get('title'),
-          desc: data.get('desc'),
-          imgSrc: data.get('imgSrc'),
-          mode: that.modeList[data.get('mode') - 1].value,
-          sort: that.sortList[data.get('sort') - 1].value,
-          time: [ data.get('startTime'), data.get('endTime') ],
-          fee: data.get('fee'),
-          number: data.get('number'),
-          address: data.get('address'),
-          content: data.get('content'),
+          title: data.title,
+          desc: data.desc,
+          imgSrc: data.imgSrc,
+          mode: that.modeList[data.mode - 1].value,
+          sort: that.sortList[data.sort - 1].value,
+          time: [that.form.startTime, that.form.endTime],
+          fee: data.fee,
+          number: data.number,
+          address: data.address,
+          content: data.content,
         }
       });
     },
@@ -150,22 +237,72 @@ export default {
           that.pulishLoading = true;
           if (!that.$route.query.id) {
             const query = that.$Bmob.Query('activity');
-            query.set({
-              ...that.form,
-              status: Number(status),
-              startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
-              endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
-              time: undefined,
-              fee: that.form.fee ? that.form.fee : 0,
-              number: that.form.number ? that.form.number : 0,
-              address: that.form.address ? that.form.address : '',
-              notDelete: true,
-            })
+            // query.set({
+            //   ...that.form,
+            //   status: Number(status),
+            //   startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
+            //   endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
+            //   time: undefined,
+            //   fee: that.form.fee ? that.form.fee : 0,
+            //   number: that.form.number ? that.form.number : 0,
+            //   address: that.form.address ? that.form.address : '',
+            //   notDelete: true,
+            // })
+            if(that.form.title) {
+              query.set('title', that.form.title);
+            }
+
+            if(that.form.desc) {
+              query.set('desc', that.form.desc);
+            }
+
+            if(that.form.mode) {
+              query.set('mode', that.modeList[that.form.mode - 1].value);
+            }
+
+            if(that.form.mode) {
+              query.set('sort', that.sortList[that.form.sort - 1].value);
+            }
+
+            if(that.form.imgSrc) {
+              query.set('imgSrc', that.form.imgSrc);
+            }
+            
+            if(that.form.time && that.form.time[0]) {
+              query.set('startTime', {"__type":"Date", "iso":that.form.time[0]});
+
+            }
+            if(that.form.time && that.form.time[1]) {
+              query.set('endTime', {"__type":"Date", "iso":that.form.time[1]});
+            }
+
+            if(that.form.fee) {
+              query.set('fee', that.form.fee );
+            }
+
+            if (that.form.number) {
+              query.set('number', that.form.number);
+            }
+
+            if (that.form.address) {
+              query.set('address', that.form.address);
+            }
+
+            if (that.form.address) {
+              query.set('content', that.form.content);
+            }
+
+            query.set('notDelete', true);
+            query.set('status', Number(status));
+
             query.save().then(() => {
               that.pulishLoading = false;
               that.$message.success('添加成功！');
               that.$router.push('/activity');
-            });
+            }),(error) => {
+              console.log(error);
+              that.pulishLoading = false;
+            };
             // let Activity = this.$Bmob.Object.extend('activity');
             // let activity = new Activity();
             // activity.set({
@@ -211,17 +348,52 @@ export default {
             // });
             const query = that.$Bmob.Query('activity');
             query.set('id', that.$route.query.id)
-            query.set({
-              ...that.form,
-              status: Number(status),
-              startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
-              endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
-              time: undefined,
-              fee: that.form.fee ? that.form.fee : 0,
-              number: that.form.number ? that.form.number : 0,
-              address: that.form.address ? that.form.address : '',
-              notDelete: true,
-            })
+            if(that.form.title) {
+              query.set('title', that.form.title);
+            }
+
+            if(that.form.desc) {
+              query.set('desc', that.form.desc);
+            }
+
+            if(that.form.mode) {
+              query.set('mode', that.modeList[that.form.mode - 1].value);
+            }
+
+            if(that.form.mode) {
+              query.set('sort', that.sortList[that.form.sort - 1].value);
+            }
+
+            if(that.form.imgSrc) {
+              query.set('imgSrc', that.form.imgSrc);
+            }
+            
+            if(that.form.time && that.form.time[0]) {
+              query.set('startTime', {"__type":"Date", "iso":that.form.time[0]});
+
+            }
+            if(that.form.time && that.form.time[1]) {
+              query.set('endTime', {"__type":"Date", "iso":that.form.time[1]});
+            }
+
+            if(that.form.fee) {
+              query.set('fee', that.form.fee );
+            }
+
+            if (that.form.number) {
+              query.set('number', that.form.number);
+            }
+
+            if (that.form.address) {
+              query.set('address', that.form.address);
+            }
+
+            if (that.form.address) {
+              query.set('content', that.form.content);
+            }
+
+            query.set('notDelete', true);
+            query.set('status', Number(status));
             query.save().then(() => {
               that.pulishLoading = false;
               that.$message.success('编辑成功！');
@@ -239,7 +411,7 @@ export default {
       this.$refs.input.click();
     },
     uploadFile(e) {
-      // console.log(e.target.files);
+      console.log(e);
       if (e.target.files) {
         var localFile  = e.target.files[0];
         if (e.target.files[0].size > 5*1024*100) {

@@ -169,7 +169,6 @@ export default {
           const query = this.$Bmob.Query('activity_person');
           query.equalTo('user', '==', this.userList[this.dialog.selectUser].objectId);
           query.find().then((res) => {
-            console.log(res);
             this.dialog.loading = false;
             if (res.length > 0) {
               if (res[0].isApply === false) {
