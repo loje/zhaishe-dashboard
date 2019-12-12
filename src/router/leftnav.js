@@ -55,6 +55,25 @@ const leftRoutes = [
     ],
   },
   {
+    path: '/product',
+    name: '代理产品',
+    meta: { menu: true, keepAlive: true },
+    component: () => import('@/components/Black'),
+    children: [
+      {
+        path: '/product/index',
+        name: '产品列表',
+        component: () => import('@/views/Product/index'),
+        meta: { menu: true, keepAlive: true },
+      },
+      {
+        path: '/product/buyers',
+        name: '管理购买人',
+        meta: { menu: false },
+      },
+    ],
+  },
+  {
     path: '/download',
     name: '资源管理',
     meta: { menu: true, keepAlive: true },
@@ -65,24 +84,6 @@ const leftRoutes = [
         name: '资源列表',
         component: () => import('@/views/Download/index'),
         meta: { menu: true },
-      },
-    ],
-  },
-  {
-    path: '/product',
-    name: '代理产品',
-    meta: { menu: false, keepAlive: true },
-    component: () => import('@/components/Black'),
-    children: [
-      {
-        path: '/product/item',
-        name: '添加产品',
-        meta: { menu: true, keepAlive: true },
-      },
-      {
-        path: '/product/buyers',
-        name: '管理购买人',
-        meta: { menu: true, keepAlive: true },
       },
     ],
   },
