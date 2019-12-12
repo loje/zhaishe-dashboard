@@ -19,7 +19,7 @@ import Bmob from "hydrogen-js-sdk";
 Bmob.initialize("4dcf39d90a4913b4", "900620", "b7bbafa0f02dd8b6d4e93fea9efd96aa");
 Vue.prototype.$Bmob = Bmob;
 
-Bmob.debug(true);
+Bmob.debug(false);
 
 import moment from 'moment'
 Vue.prototype.$moment = moment

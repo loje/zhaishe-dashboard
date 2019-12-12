@@ -38,19 +38,33 @@ export default {
       const that = this;
       this.$refs.form.validate((valid) => {
         if (valid) {
-          that.$Bmob.User.logIn(that.form.username, that.form.password).then(function (user) {
+          that.$Bmob.User.login(that.form.username, that.form.password).then((user) => {
+            if (user.isCustomer === false) {
+              this.$message.warning('此用户已被封禁');
+              return false;
+            }
+            if (user.isAdmin === false) {
+              this.$message.warning('此用户不是管理员');
+              return false;
+            }
+
             const data = {
-              emailVerified: user.attributes.emailVerified,
-              mobilePhoneNumber: user.attributes.mobilePhoneNumber,
-              mobilePhoneVerified: user.attributes.mobilePhoneVerified,
-              username: user.attributes.username,
+              emailVerified: user.emailVerified,
+              mobilePhoneNumber: user.mobilePhoneNumber,
+              mobilePhoneVerified: user.mobilePhoneVerified,
+              username: user.username,
             };
             localStorage.setItem('userInfo', JSON.stringify(data));
             that.$store.dispatch('getUser', user);
             that.$router.push('/');
+            this.$message.success('登录成功');
             // 登录成功
-          }, function () {
+          }, (err) => {
             // 登录失败（可能是密码错误）
+            if (err.error === 'username or password incorrect.') {
+              this.$message.error('用户名或密码错误。');
+              return false;
+            }
           });
         } else {
           return false;

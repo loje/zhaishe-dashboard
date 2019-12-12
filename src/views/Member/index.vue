@@ -35,9 +35,15 @@
           label="邮箱"
           prop="email">
         </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column label="操作" width="300">
           <template slot-scope="scope">
             <el-button type="warning" @click="edit(scope.row.objectId)" icon="el-icon-edit" size="small">编辑</el-button>
+
+            <el-button type="warning" @click="setAdmin(scope.row.objectId, true)" icon="el-icon-edit" size="small" v-if="scope.row.isAdmin === false">设为管理员</el-button>
+            <el-button type="info" @click="setAdmin(scope.row.objectId, false)" icon="el-icon-edit" size="small" v-else>取消管理员</el-button>
+
+            <el-button type="danger" @click="disable(scope.row.objectId, false)" icon="el-icon-edit" size="small" v-if="scope.row.isCustomer === true">禁用</el-button>
+            <el-button type="info" @click="disable(scope.row.objectId, true)" icon="el-icon-edit" size="small" v-else>启用</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -66,7 +72,7 @@
           <el-input type="text" v-model="dialog.form.wechatId"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input type="text" v-model="dialog.form.password" :disabled="true" placeholder="默认为123456"></el-input>
+          <el-input type="text" v-model="dialog.form.password" :disabled="dialogTitle === '新建会员'" :placeholder="dialogTitle === '新建会员' ? '默认为123456' : '请输入新密码'"></el-input>
         </el-form-item>
         <el-form-item align="right">
           <el-button type="primary" @click="submitForm">提交</el-button>
@@ -94,7 +100,7 @@ export default {
         rules: {
           username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
           // name: [{ required: true, message: '请输入名字', trigger: 'blur' }],
-          // mobilePhoneNumber: [{ required: true, message: '请输入手机号码', trigger: 'blur' }],
+          mobilePhoneNumber: [{ required: true, message: '请输入手机号码', trigger: 'blur' }],
           // email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
           // wechatId: [{ required: true, message: '请输入微信号', trigger: 'blur' }],
         },
@@ -103,19 +109,6 @@ export default {
   },
   mounted() {
     this.getlist();
-    // let params = {
-    //   funcName: 'hello',
-    //   data: {
-    //     name : 'bmob'
-    //   }
-    // }
-    // this.$Bmob.functions(params.funcName,params.data).then(function (response) {
-    //   console.log(response);
-    // })
-    // .catch(function (error) {
-    //   console.log(error);
-    // });
-
   },
   methods: {
     create() {
@@ -161,36 +154,52 @@ export default {
               this.dialogVisible = false;
               this.getlist();
               this.$message.success('新增成功！');
-            }).catch(() => {
+            }).catch((err) => {
               this.dialog.loading = false;
-              // that.dialogVisible = false;
-              // that.getlist();
-              // that.$message.error(err.error);
+              this.$message.error(err.error);
             });
           } else {
-            // console.log('修改')
-            params = {
-              ...params,
-              objectId: this.dialog.form.objectId,
-            };
-            // const query = this.$Bmob.Query('_User');
-            // query.set('id', this.dialog.form.objectId) //需要修改的objectId
-            // query.set('username', this.dialog.form.username);
-            // query.set('name', this.dialog.form.name);
-            // query.set('mobilePhoneNumber', this.dialog.form.mobilePhoneNumber);
-            // query.set('email', this.dialog.form.email);
-            // query.set('wechatId', this.dialog.form.wechatId);
-            // query.save().then(() => {
-            //   this.dialog.loading = false;
-            //   this.dialogVisible = false;
-            //   this.getlist();
-            //   this.$message.success('修改成功！');
-            // }).catch(err => {
-            //   console.log(err)
-            // })
-
+            const query = this.$Bmob.Query('_User');
+            query.get(this.dialog.form.objectId).then(user => {
+              user.set('username', this.dialog.form.username);
+              user.set('name', this.dialog.form.name);
+              user.set('mobilePhoneNumber', this.dialog.form.mobilePhoneNumber);
+              user.set('email', this.dialog.form.email);
+              user.set('wechatId', this.dialog.form.wechatId);
+              if (this.dialog.form.password) {
+                user.set('password', this.dialog.form.password);
+              }
+              user.save().then(() => {
+                this.dialog.loading = false;
+                this.dialogVisible = false;
+                this.getlist();
+              });
+            }).catch(err => {
+              this.dialog.loading = false;
+              console.log(err)
+            });
           }
         }
+      });
+    },
+    setAdmin(id, boolean) {
+      const query = this.$Bmob.Query('_User');
+      query.get(id).then(user => {
+        user.set('isAdmin', boolean);
+        user.save().then(() => {
+          this.$message.success('设置成功！');
+          this.getlist();
+        });
+      });
+    },
+    disable(id, boolean) {
+      const query = this.$Bmob.Query('_User');
+      query.get(id).then(user => {
+        user.set('isCustomer', boolean);
+        user.save().then(() => {
+          this.$message.success('设置成功！');
+          this.getlist();
+        });
       });
     },
   },
