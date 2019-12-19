@@ -273,7 +273,7 @@ export default {
               query.set('address', that.form.address);
             }
 
-            if (that.form.address) {
+            if (that.form.content) {
               query.set('content', that.form.content);
             }
 

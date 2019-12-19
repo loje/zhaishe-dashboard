@@ -117,16 +117,35 @@
       :visible.sync="dialogVisible"
       v-loading="dialogLoading"
       width="900px">
-      <quill-editor v-model="dialogContent" ref="myQuillEditor" style="padding-bottom:66px;width: 100%;height:600px;"></quill-editor>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="confilm">确 定</el-button>
-        </span>
+      <!-- <quill-editor v-model="dialogContent" ref="myQuillEditor" style="padding-bottom:66px;width: 100%;height:600px;"></quill-editor> -->
+      <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadImgFile" class="el-upload__input" :multiple="false" name="file" ref="imgInput" type="file">
+
+      <quill-editor v-model="dialogContent" ref="myQuillEditor" :options="editorOption" @change="onEditorChange($event)" style="width: 100%;"></quill-editor>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="confilm">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
+const toolbarOptions = [
+  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+  [{'header': 1}, {'header': 2}],               // custom button values
+  [{'list': 'ordered'}, {'list': 'bullet'}],
+  [{'indent': '-1'}, {'indent': '+1'}],          // outdent/indent
+  [{'direction': 'rtl'}],                         // text direction
+  [{'size': ['small', false, 'large', 'huge']}],  // custom dropdown
+  [{'header': [1, 2, 3, 4, 5, 6, false]}],
+  [{'color': []}, {'background': []}],          // dropdown with defaults from theme
+  [{'font': []}],
+  [{'align': []}],
+  ['link', 'image'],
+  ['clean']
+]
+
 import {
   quillEditor
 } from 'vue-quill-editor'
@@ -137,6 +156,30 @@ import 'quill/dist/quill.bubble.css'
 export default {
   data() {
     return {
+      editorOption: {
+        placeholder: '',
+        theme: 'snow',  // or 'bubble'
+        modules: {
+          toolbar: {
+            container: toolbarOptions,
+            handlers: {
+              'image': (value) => {
+                if (value) {
+                  // 触发input框选择图片文件
+                  // document.querySelector('.avatar-uploader input').click()
+                  this.$refs.imgInput.value = null;
+                  this.$refs.imgInput.click();
+                } else {
+                  this.quill.format('image', false);
+                }
+              }
+            }
+          }
+        }
+      },
+      serverUrl: '/manager/common/imgUpload',  // 这里写你要上传的图片服务器地址
+
+
       searchText: '',
 
       pageSize: 10,
@@ -153,6 +196,7 @@ export default {
       dialogLoading: false,
 
       isTops: 0,
+      
     }
   },
   components: {
@@ -164,6 +208,39 @@ export default {
     this.getIsTop();
   },
   methods: {
+    onEditorChange({editor, html, text}) {//内容改变事件
+      console.log("---内容改变事件---")
+      this.dialogContent = html
+      console.log(editor);
+      // console.log(html);
+      console.log(text);
+    },
+
+    uploadImgFile(e) {
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (e.target.files[0].size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb，为保障页面顺畅加载，上传文件不得超过500kb`);
+          return false;
+        }
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          let quill = this.$refs.myQuillEditor.quill
+          // 获取光标所在位置
+          let length = quill.getSelection().index;
+          // 插入图片  res.url为服务器返回的图片地址
+          quill.insertEmbed(length, 'image', file[0].url)
+          // 调整光标到最后
+          quill.setSelection(length + 1)
+        }, () => {
+          this.imgLoading = false;
+          this.$message.error('图片插入失败');
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+      }
+    },
+
     setTop(id, boolean) {
       if(boolean === true) {
         if (this.isTops < 4 ) {
@@ -324,7 +401,7 @@ export default {
       var query = this.$Bmob.Query('activity');
       query.get(id).then((data) => {
         this.dialogLoading = false;
-        this.dialogContent = data.note;
+        this.dialogContent = data.note; 
       });
     },
     confilm() {
@@ -416,6 +493,10 @@ export default {
       text-align: right;
       background-color:#fff;
       box-sizing: border-box;
+    }
+
+    /deep/.ql-editor{
+      height: 600px;
     }
   }
 </style>
