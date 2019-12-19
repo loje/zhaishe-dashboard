@@ -233,17 +233,6 @@ export default {
           that.pulishLoading = true;
           if (!that.$route.query.id) {
             const query = that.$Bmob.Query('activity');
-            // query.set({
-            //   ...that.form,
-            //   status: Number(status),
-            //   startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
-            //   endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
-            //   time: undefined,
-            //   fee: that.form.fee ? that.form.fee : 0,
-            //   number: that.form.number ? that.form.number : 0,
-            //   address: that.form.address ? that.form.address : '',
-            //   notDelete: true,
-            // })
             if(that.form.title) {
               query.set('title', that.form.title);
             }
@@ -299,49 +288,7 @@ export default {
               console.log(error);
               that.pulishLoading = false;
             };
-            // let Activity = this.$Bmob.Object.extend('activity');
-            // let activity = new Activity();
-            // activity.set({
-            //   ...that.form,
-            //   status: Number(status),
-            //   startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
-            //   endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
-            //   time: undefined,
-            //   fee: that.form.fee ? that.form.fee : 0,
-            //   number: that.form.number ? that.form.number : 0,
-            //   address: that.form.address ? that.form.address : '',
-            //   notDelete: true,
-            // });
-            // activity.save().then(function () {
-            //   that.pulishLoading = false;
-            //   that.$message.success('添加成功！');
-            //   that.$router.push('/activity');
-            //   // 成功保存之后，执行其他逻辑
-            // }, function () {
-            //   that.pulishLoading = false;
-            //   // 异常处理
-            // });
           } else {
-            // let activity = this.$Bmob.Object.createWithoutData('activity', that.$route.query.id);
-            // activity.set({
-            //   ...that.form,
-            //   status: Number(status),
-            //   startTime: that.form.time && that.form.time[0] ? that.form.time[0] : undefined,
-            //   endTime: that.form.time && that.form.time[1] ? that.form.time[1] : undefined,
-            //   time: undefined,
-            //   fee: that.form.fee ? that.form.fee : 0,
-            //   number: that.form.number ? that.form.number : 0,
-            //   address: that.form.address ? that.form.address : '',
-            // });
-            // activity.save().then(function () {
-            //   that.pulishLoading = false;
-            //   that.$message.success('编辑成功！');
-            //   that.$router.push('/activity');
-            //   // 成功保存之后，执行其他逻辑
-            // }, function () {
-            //   that.pulishLoading = false;
-            //   // 异常处理
-            // });
             const query = that.$Bmob.Query('activity');
             query.set('id', that.$route.query.id)
             if(that.form.title) {
@@ -407,7 +354,6 @@ export default {
       this.$refs.input.click();
     },
     uploadFile(e) {
-      console.log(e);
       if (e.target.files) {
         var localFile  = e.target.files[0];
         if (e.target.files[0].size > 5*1024*100) {

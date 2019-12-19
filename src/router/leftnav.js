@@ -67,6 +67,12 @@ const leftRoutes = [
         meta: { menu: true, keepAlive: true },
       },
       {
+        path: '/product/item',
+        name: '产品列表',
+        component: () => import('@/views/Product/Item'),
+        meta: { menu: false },
+      },
+      {
         path: '/product/buyers',
         name: '管理购买人',
         meta: { menu: false },
@@ -80,10 +86,16 @@ const leftRoutes = [
     component: () => import('@/components/Black'),
     children: [
       {
-        path: '/list',
+        path: '/download',
         name: '资源列表',
         component: () => import('@/views/Download/index'),
-        meta: { menu: true },
+        meta: { menu: true, keepAlive: true },
+      },
+      {
+        path: '/download/item',
+        name: '添加资源',
+        component: () => import('@/views/Download/Item'),
+        meta: { menu: false },
       },
     ],
   },
