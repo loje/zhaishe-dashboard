@@ -33,6 +33,12 @@
       <el-form-item label="团购价" prop="groupPrice">
         <el-input-number v-model="form.groupPrice" controls-position="right"></el-input-number>
       </el-form-item>
+      <el-form-item label="产品详情" prop="content">
+
+        <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadImgFile" class="el-upload__input" :multiple="false" name="file" ref="imgInput" type="file">
+
+        <quill-editor v-model="form.content" ref="myQuillEditor" :options="editorOption" @change="onEditorChange($event)" style="width: 100%;"></quill-editor>
+      </el-form-item>
       <el-form-item align="right">
         <el-button @click="submitForm(-1)">下架暂存</el-button>
         <el-button type="primary" @click="submitForm(0)">上架</el-button>
@@ -42,9 +48,55 @@
 </template>
 
 <script>
+const toolbarOptions = [
+  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+  [{'header': 1}, {'header': 2}],               // custom button values
+  [{'list': 'ordered'}, {'list': 'bullet'}],
+  [{'indent': '-1'}, {'indent': '+1'}],          // outdent/indent
+  [{'direction': 'rtl'}],                         // text direction
+  [{'size': ['small', false, 'large', 'huge']}],  // custom dropdown
+  [{'header': [1, 2, 3, 4, 5, 6, false]}],
+  [{'color': []}, {'background': []}],          // dropdown with defaults from theme
+  [{'font': []}],
+  [{'align': []}],
+  ['link', 'image'],
+  ['clean']
+]
+
+import {
+  quillEditor
+} from 'vue-quill-editor'
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+
 export default {
   data() {
     return {
+      content: null,
+      editorOption: {
+        placeholder: '',
+        theme: 'snow',  // or 'bubble'
+        modules: {
+          toolbar: {
+            container: toolbarOptions,
+            handlers: {
+              'image': (value) => {
+                if (value) {
+                  // 触发input框选择图片文件
+                  // document.querySelector('.avatar-uploader input').click()
+                  this.$refs.imgInput.value = null;
+                  this.$refs.imgInput.click();
+                } else {
+                  this.quill.format('image', false);
+                }
+              }
+            }
+          }
+        }
+      },
+      serverUrl: '/manager/common/imgUpload',  // 这里写你要上传的图片服务器地址
+
       loading: false,
       imgLoading: false,
       form: {},
@@ -54,9 +106,14 @@ export default {
         imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
         system: [{required: true, message: '请选择支持系统', trigger: 'blur'}],
         price: [{required: true, message: '请填写原价', trigger: 'blur'}],
+        content: [{required: true, message: '请填写详情', trigger: 'blur'}],
+
       },
       sysList: [],
     }
+  },
+  components: {
+    quillEditor
   },
   mounted() {
     this.getSystemList();
@@ -65,6 +122,37 @@ export default {
     }
   },
   methods: {
+    onEditorChange({editor, html, text}) {//内容改变事件
+      console.log("---内容改变事件---")
+      this.content = html
+      console.log(editor);
+      // console.log(html);
+      console.log(text);
+    },
+    uploadImgFile(e) {
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (e.target.files[0].size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb，为保障页面顺畅加载，上传文件不得超过500kb`);
+          return false;
+        }
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          let quill = this.$refs.myQuillEditor.quill
+          // 获取光标所在位置
+          let length = quill.getSelection().index;
+          // 插入图片  res.url为服务器返回的图片地址
+          quill.insertEmbed(length, 'image', file[0].url)
+          // 调整光标到最后
+          quill.setSelection(length + 1)
+        }, () => {
+          this.imgLoading = false;
+          this.$message.error('图片插入失败');
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+      }
+    },
     getSystemList() {
       let sysQuery = this.$Bmob.Query('support_sys');
       sysQuery.find().then((res) => {
@@ -85,6 +173,7 @@ export default {
           price: data.price,
           system: data.system,
           groupPrice: data.groupPrice,
+          content: data.content,
           status: data.status,
           notDelete: data.notDelete,
         }
@@ -147,6 +236,10 @@ export default {
 
           if (this.form.groupPrice) {
             query.set('groupPrice', this.form.groupPrice);
+          }
+
+          if (this.form.content) {
+            query.set('content', this.form.content);
           }
 
           query.set('notDelete', true);

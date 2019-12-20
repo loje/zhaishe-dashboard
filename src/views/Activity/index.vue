@@ -91,7 +91,7 @@
             <el-button :type="scope.row.status === 1 ? 'primary' : 'info'" size="small" icon="el-icon-s-flag" v-else @click="setTop(scope.row.id, true)">首页置顶</el-button>
 
             <el-button :type="scope.row.status === 1 ? 'primary' : 'info'" size="small" icon="el-icon-finished" @click="audit(scope.row.id, scope.row.title)">查看已报名人</el-button>
-            <el-button :type="scope.row.status === 1 ? 'primary' : 'info'" size="small" icon="el-icon-finished" @click="note(scope.row.id, scope.row.title)">会后笔记</el-button>
+            <!-- <el-button :type="scope.row.status === 1 ? 'primary' : 'info'" size="small" icon="el-icon-finished" @click="note(scope.row.id, scope.row.title)">会后笔记</el-button> -->
 
             <el-button-group style="margin-left: 15px;">
             <el-button size="small" icon="el-icon-edit" @click="edit(scope.row.id)">编辑</el-button>
@@ -113,11 +113,10 @@
       </el-pagination>
     </div>
 
-    <el-dialog :title="dialogTitle + ' - 会后笔记'"
+    <!-- <el-dialog :title="dialogTitle + ' - 会后笔记'"
       :visible.sync="dialogVisible"
       v-loading="dialogLoading"
       width="900px">
-      <!-- <quill-editor v-model="dialogContent" ref="myQuillEditor" style="padding-bottom:66px;width: 100%;height:600px;"></quill-editor> -->
       <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadImgFile" class="el-upload__input" :multiple="false" name="file" ref="imgInput" type="file">
 
       <quill-editor v-model="dialogContent" ref="myQuillEditor" :options="editorOption" @change="onEditorChange($event)" style="width: 100%;"></quill-editor>
@@ -126,58 +125,58 @@
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="confilm">确 定</el-button>
       </span>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
 <script>
-const toolbarOptions = [
-  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-  [{'header': 1}, {'header': 2}],               // custom button values
-  [{'list': 'ordered'}, {'list': 'bullet'}],
-  [{'indent': '-1'}, {'indent': '+1'}],          // outdent/indent
-  [{'direction': 'rtl'}],                         // text direction
-  [{'size': ['small', false, 'large', 'huge']}],  // custom dropdown
-  [{'header': [1, 2, 3, 4, 5, 6, false]}],
-  [{'color': []}, {'background': []}],          // dropdown with defaults from theme
-  [{'font': []}],
-  [{'align': []}],
-  ['link', 'image'],
-  ['clean']
-]
+// const toolbarOptions = [
+//   ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+//   [{'header': 1}, {'header': 2}],               // custom button values
+//   [{'list': 'ordered'}, {'list': 'bullet'}],
+//   [{'indent': '-1'}, {'indent': '+1'}],          // outdent/indent
+//   [{'direction': 'rtl'}],                         // text direction
+//   [{'size': ['small', false, 'large', 'huge']}],  // custom dropdown
+//   [{'header': [1, 2, 3, 4, 5, 6, false]}],
+//   [{'color': []}, {'background': []}],          // dropdown with defaults from theme
+//   [{'font': []}],
+//   [{'align': []}],
+//   ['link', 'image'],
+//   ['clean']
+// ]
 
-import {
-  quillEditor
-} from 'vue-quill-editor'
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
+// import {
+//   quillEditor
+// } from 'vue-quill-editor'
+// import 'quill/dist/quill.core.css'
+// import 'quill/dist/quill.snow.css'
+// import 'quill/dist/quill.bubble.css'
 
 export default {
   data() {
     return {
-      editorOption: {
-        placeholder: '',
-        theme: 'snow',  // or 'bubble'
-        modules: {
-          toolbar: {
-            container: toolbarOptions,
-            handlers: {
-              'image': (value) => {
-                if (value) {
-                  // 触发input框选择图片文件
-                  // document.querySelector('.avatar-uploader input').click()
-                  this.$refs.imgInput.value = null;
-                  this.$refs.imgInput.click();
-                } else {
-                  this.quill.format('image', false);
-                }
-              }
-            }
-          }
-        }
-      },
-      serverUrl: '/manager/common/imgUpload',  // 这里写你要上传的图片服务器地址
+      // editorOption: {
+      //   placeholder: '',
+      //   theme: 'snow',  // or 'bubble'
+      //   modules: {
+      //     toolbar: {
+      //       container: toolbarOptions,
+      //       handlers: {
+      //         'image': (value) => {
+      //           if (value) {
+      //             // 触发input框选择图片文件
+      //             // document.querySelector('.avatar-uploader input').click()
+      //             this.$refs.imgInput.value = null;
+      //             this.$refs.imgInput.click();
+      //           } else {
+      //             this.quill.format('image', false);
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      // },
+      // serverUrl: '/manager/common/imgUpload',  // 这里写你要上传的图片服务器地址
 
 
       searchText: '',
@@ -199,9 +198,9 @@ export default {
       
     }
   },
-  components: {
-    quillEditor
-  },
+  // components: {
+  //   quillEditor
+  // },
   activated() {
     this.getActivityList();
     this.getActivityCount();
@@ -392,31 +391,31 @@ export default {
         },
       });
     },
-    note(id, title) {
-      this.dialogTitle = title;
-      this.dialogId = id;
-      this.dialogVisible = true;
+    // note(id, title) {
+    //   this.dialogTitle = title;
+    //   this.dialogId = id;
+    //   this.dialogVisible = true;
 
-      this.dialogLoading = true;
-      var query = this.$Bmob.Query('activity');
-      query.get(id).then((data) => {
-        this.dialogLoading = false;
-        this.dialogContent = data.note; 
-      });
-    },
-    confilm() {
-      this.dialogLoading = true;
-      let activity = this.$Bmob.Query('activity');
-      activity.set('id', this.dialogId);
-      activity.set('note', this.dialogContent);
-      activity.save().then(() => {
-        this.dialogLoading = false;
-        this.dialogTitle = '';
-        this.dialogId = '';
-        this.dialogVisible = false;
-        this.$message.success('编辑成功！');
-      });
-    },
+    //   this.dialogLoading = true;
+    //   var query = this.$Bmob.Query('activity');
+    //   query.get(id).then((data) => {
+    //     this.dialogLoading = false;
+    //     this.dialogContent = data.note; 
+    //   });
+    // },
+    // confilm() {
+    //   this.dialogLoading = true;
+    //   let activity = this.$Bmob.Query('activity');
+    //   activity.set('id', this.dialogId);
+    //   activity.set('note', this.dialogContent);
+    //   activity.save().then(() => {
+    //     this.dialogLoading = false;
+    //     this.dialogTitle = '';
+    //     this.dialogId = '';
+    //     this.dialogVisible = false;
+    //     this.$message.success('编辑成功！');
+    //   });
+    // },
   },
 }
 </script>

@@ -43,6 +43,9 @@
       <el-form-item label="活动地点" prop="address">
         <el-input v-model="form.address" placeholder="地点不限"></el-input>
       </el-form-item>
+      <el-form-item label="会后笔记" prop="note">
+        <el-input v-model="form.note" placeholder="请填写笔记链接"></el-input>
+      </el-form-item>
       <el-form-item label="活动详情" prop="content">
 
         <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadImgFile" class="el-upload__input" :multiple="false" name="file" ref="imgInput" type="file">
@@ -219,6 +222,7 @@ export default {
           sort: this.sortList[data.sort - 1].value,
           time: [this.form.startTime, this.form.endTime],
           fee: data.fee,
+          note: data.note,
           number: data.number,
           address: data.address,
           content: data.content,
@@ -271,6 +275,10 @@ export default {
 
             if (that.form.address) {
               query.set('address', that.form.address);
+            }
+
+            if (that.form.note) {
+              query.set('note', that.form.note);
             }
 
             if (that.form.content) {
@@ -329,6 +337,10 @@ export default {
 
             if (that.form.address) {
               query.set('address', that.form.address);
+            }
+
+            if (that.form.note) {
+              query.set('note', that.form.note);
             }
 
             if (that.form.address) {
