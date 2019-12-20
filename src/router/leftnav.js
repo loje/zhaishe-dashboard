@@ -68,7 +68,7 @@ const leftRoutes = [
       },
       {
         path: '/product/item',
-        name: '产品列表',
+        name: '产品详情',
         component: () => import('@/views/Product/Item'),
         meta: { menu: false },
       },
@@ -96,6 +96,20 @@ const leftRoutes = [
         name: '添加资源',
         component: () => import('@/views/Download/Item'),
         meta: { menu: false },
+      },
+    ],
+  },
+  {
+    path: '/designer',
+    name: '设计师管理',
+    meta: { menu: true, keepAlive: true },
+    component: () => import('@/components/Black'),
+    children: [
+      {
+        path: '/designer',
+        name: '设计师列表',
+        component: () => import('@/views/Designer/index'),
+        meta: { menu: true, keepAlive: true },
       },
     ],
   },
