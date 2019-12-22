@@ -27,7 +27,7 @@
           </template>
         </el-table-column>
         <el-table-column label="严选人" prop="name"></el-table-column>
-        <el-table-column label="介绍" prop="desc"></el-table-column>
+        <el-table-column label="介绍" prop="info"></el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button type="warning" @click="edit('编辑', scope.row.objectId)" size="small">编辑</el-button>
@@ -42,8 +42,8 @@
         <el-form-item label="名字" prop="name">
           <el-input type="text" v-model="dialogForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="介绍" prop="desc">
-          <el-input type="textarea" v-model="dialogForm.desc"></el-input>
+        <el-form-item label="介绍" prop="info">
+          <el-input type="textarea" v-model="dialogForm.info"></el-input>
         </el-form-item>
         <el-form-item label="照片" prop="img">
           <div style="line-height: 40px; color:#999;">(图片长宽4比5)</div>
@@ -75,7 +75,7 @@ export default {
       rules: {
         img: [{required: true, message: '请上传照片', trigger: 'blur'}],
         name: [{required: true, message: '请填写名字', trigger: 'blur'}],
-        desc: [{required: true, message: '请填写介绍', trigger: 'blur'}],
+        info: [{required: true, message: '请填写介绍', trigger: 'blur'}],
       },
 
       imgLoading: false,
@@ -104,7 +104,7 @@ export default {
           objectId: res.objectId,
           name: res.name,
           img: res.img,
-          desc: res.desc,
+          info: res.info,
         };
       });
     },
@@ -174,8 +174,8 @@ export default {
             if(this.dialogForm.name) {
               query.set('name', this.dialogForm.name);
             }
-            if(this.dialogForm.desc) {
-              query.set('desc', this.dialogForm.desc);
+            if(this.dialogForm.info) {
+              query.set('info', this.dialogForm.info);
             }
             query.save().then(() => {
               this.dialogLoading = false;
@@ -193,8 +193,8 @@ export default {
             if(this.dialogForm.name) {
               query.set('name', this.dialogForm.name);
             }
-            if(this.dialogForm.desc) {
-              query.set('desc', this.dialogForm.desc);
+            if(this.dialogForm.info) {
+              query.set('info', this.dialogForm.info);
             }
             query.save().then(() => {
               this.dialogLoading = false;
