@@ -30,6 +30,10 @@
         <el-table-column label="介绍" prop="info"></el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
+            <el-button type="warning" @click="setTop(scope.row.objectId, true)" size="small" v-if="scope.row.isTop === false">置顶</el-button>
+            <el-button type="info" @click="setTop(scope.row.objectId, false)" size="small" v-else>取消置顶</el-button>
+
+
             <el-button type="warning" @click="edit('编辑', scope.row.objectId)" size="small">编辑</el-button>
             <el-button type="danger" @click="del(scope.row.objectId)" size="small">删除</el-button>
           </template>
@@ -79,6 +83,8 @@ export default {
       },
 
       imgLoading: false,
+
+      isTops: 0,
     }
   },
   activated() {
@@ -95,6 +101,7 @@ export default {
       designerQuery.find().then((res) => {
         this.loading = false;
         this.tableData = res;
+        this.getIsTop();
       });
     },
     getinfo(id) {
@@ -152,7 +159,6 @@ export default {
         file.save().then((file) => {
           this.imgLoading = false;
           this.dialogForm.img = file[0].url;
-          // that.form.img = file;
         }, () => {
           this.imgLoading = false;
           // console.error(error);
@@ -161,9 +167,7 @@ export default {
       }
     },
     confilm() {
-      // console.log(this.$refs.form);
       this.$refs.form.validate((valid) => {
-        console.log(valid);
         if (valid) {
           if (!this.dialogForm.objectId) {
             this.dialogLoading = true;
@@ -204,6 +208,30 @@ export default {
             });
           }
         }
+      });
+    },
+    setTop(id, boolean) {
+      if (this.isTops >= 4 && boolean === true) {
+        this.$message.warning('最多置顶4个');
+        return false;
+      }
+      const query = this.$Bmob.Query('designer');
+      query.set('id', id);
+      query.set('isTop', boolean);
+      query.save().then(() => {
+        if (boolean === true) {
+          this.$message.success('置顶成功！');
+        } else {
+          this.$message.success('取消置顶成功！');
+        }
+        this.getlist();
+      });
+    },
+    getIsTop() {
+      const query = this.$Bmob.Query('designer');
+      query.equalTo('isTop', '==', true);
+      query.count().then((count) => {
+        this.isTops = count;
       });
     },
   },
