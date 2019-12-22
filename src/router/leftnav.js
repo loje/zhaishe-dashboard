@@ -101,13 +101,13 @@ const leftRoutes = [
   },
   {
     path: '/designer',
-    name: '设计师管理',
+    name: '严选人管理',
     meta: { menu: true, keepAlive: true },
     component: () => import('@/components/Black'),
     children: [
       {
         path: '/designer',
-        name: '设计师列表',
+        name: '严选人列表',
         component: () => import('@/views/Designer/index'),
         meta: { menu: true, keepAlive: true },
       },

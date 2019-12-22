@@ -20,7 +20,6 @@
       <el-table :data="tableData"
         style="width: 100%"
         v-loading="loading">
-        <!-- <el-table-column label="类别" prop="sortName"></el-table-column> -->
         <el-table-column label="资源名称" prop="title"></el-table-column>
         <el-table-column label="作者" prop="author"></el-table-column>
         <el-table-column label="下载数"></el-table-column>
@@ -53,11 +52,9 @@ export default {
       this.visible = true;
       switch (type) {
         case '新建':
-          console.log(type);
           this.$router.push('/download/item');
           break;
         case '编辑':
-          console.log(type, id);
           this.$router.push({
             path: '/download/item',
             query: {
@@ -72,26 +69,12 @@ export default {
     },
     getlist() {
       this.loading = true;
-      // let sortList = [];
-
-      // const sortQuery = this.$Bmob.Query('download_sort');
-      // sortQuery.find().then((res) => {
-      //   sortList = res;
-      // });
-
       let downloadQuery = this.$Bmob.Query('download');
       if (this.searchText != '') {
         downloadQuery.equalTo('title', '===', this.searchText);
       }
       downloadQuery.find().then((res) => {
         this.loading = false;
-        // for (let i = 0; i < res.length; i += 1) {
-        //   for (let j = 0; j < sortList.length; j += 1) {
-        //     if (res[i].sort === sortList[j].objectId) {
-        //       res[i].sortName = sortList[j].name;
-        //     }
-        //   }
-        // }
         this.tableData = res;
       });
     },
