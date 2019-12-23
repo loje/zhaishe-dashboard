@@ -129,8 +129,6 @@ export default {
         default:
           break;
       }
-      // let designerQuery = this.$Bmob.Query('designer');
-      // designerQuery.set('id', id);
     },
     del(id) {
       const query = this.$Bmob.Query('designer');

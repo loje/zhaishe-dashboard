@@ -159,6 +159,12 @@ const leftRoutes = [
         component: () => import('@/views/System/Banner'),
         meta: { menu: true, keepAlive: true },
       },
+      {
+        path: '/system/friend',
+        name: '友情链接',
+        component: () => import('@/views/System/FriendLink'),
+        meta: { menu: true, keepAlive: true },
+      },
       // {
       //   path: '/system/images',
       //   name: '网站图片',
