@@ -209,8 +209,8 @@ export default {
       });
     },
     setTop(id, boolean) {
-      if (this.isTops >= 4 && boolean === true) {
-        this.$message.warning('最多置顶4个');
+      if (this.isTops >= 5 && boolean === true) {
+        this.$message.warning('最多置顶5个');
         return false;
       }
       const query = this.$Bmob.Query('designer');

@@ -131,10 +131,12 @@ export default {
   methods: {
     confilm() {
       this.dialogLoading = true;
-      var banner = this.$Bmob.Object.createWithoutData('banner', this.dialog.id);
+      let banner = this.$Bmob.Query('banner');
+      banner.set('id', this.dialog.id);
       banner.set('link', this.dialog.link);
       banner.save().then(() => {
         this.dialogLoading = false;
+        this.dialogVisible = false;
         this.dialog = {
           id: '',
           link: '',
@@ -144,6 +146,7 @@ export default {
       });
     },
     dialogClose() {
+      this.dialogVisible = false;
       this.dialog = {
         id: '',
         link: '',
