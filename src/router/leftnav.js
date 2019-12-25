@@ -23,12 +23,12 @@ const leftRoutes = [
         component: () => import('@/views/Activity/Pulish'),
         meta: { menu: false },
       },
-      {
-        path: '/activity/applicants',
-        name: '所有报名记录',
-        component: () => import('@/views/Activity/Applicants'),
-        meta: { menu: false, keepAlive: true },
-      },
+      // {
+      //   path: '/activity/applicants',
+      //   name: '所有报名记录',
+      //   component: () => import('@/views/Activity/Applicants'),
+      //   meta: { menu: false, keepAlive: true },
+      // },
       {
         path: '/activity/audit',
         name: '审核报名',
@@ -37,21 +37,27 @@ const leftRoutes = [
       },
       {
         path: '/activity/channel',
-        name: '渠道',
-        component: () => import('@/views/Activity/Channel'),
-        meta: { menu: true, keepAlive: true },
-      },
-      {
-        path: '/activity/channel/item',
-        name: '渠道',
-        component: () => import('@/views/Activity/ChannelView'),
+        name: '渠道优惠',
+        component: () => import('@/views/Activity/ActChannel'),
         meta: { menu: false },
       },
-      {
-        path: '/activity/statistical',
-        name: '统计',
-        meta: { menu: false, keepAlive: true },
-      },
+      // {
+      //   path: '/activity/channel',
+      //   name: '渠道',
+      //   component: () => import('@/views/Activity/Channel'),
+      //   meta: { menu: true, keepAlive: true },
+      // },
+      // {
+      //   path: '/activity/channel/item',
+      //   name: '渠道',
+      //   component: () => import('@/views/Activity/ChannelView'),
+      //   meta: { menu: false },
+      // },
+      // {
+      //   path: '/activity/statistical',
+      //   name: '统计',
+      //   meta: { menu: false, keepAlive: true },
+      // },
     ],
   },
   {
