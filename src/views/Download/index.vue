@@ -22,7 +22,7 @@
         v-loading="loading">
         <el-table-column label="资源名称" prop="title"></el-table-column>
         <el-table-column label="作者" prop="author"></el-table-column>
-        <el-table-column label="下载数"></el-table-column>
+        <el-table-column label="下载数" prop="downloads"></el-table-column>
         <el-table-column label="链接" prop="link"></el-table-column>
         <el-table-column label="网盘密码" prop="code"></el-table-column>
         <el-table-column label="操作" width="180">
