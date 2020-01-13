@@ -22,7 +22,7 @@
     </div>
 
     <div class="profile">
-      <el-divider content-position="left">左侧轮播图(760px * 340px)</el-divider>
+      <el-divider content-position="left">左侧轮播图(730px * 340px)</el-divider>
       <template v-if="bannerLeft.length > 0">
         <template v-for="(item, $index) in bannerLeft">
         <div class="el-upload el-upload--picture-card" :key="$index + 'left'">
@@ -39,7 +39,7 @@
         <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadLeftFile" class="el-upload__input" :multiple="false" name="file" ref="leftInput" type="file">
       </div>
 
-      <el-divider content-position="left">右侧轮播图(440px * 170px)</el-divider>
+      <el-divider content-position="left">右侧轮播图(350px * 160px)</el-divider>
       <template v-if="bannerRight.length > 0">
         <template v-for="(item, $index) in bannerRight">
         <div class="el-upload el-upload--picture-card" :key="$index + 'right'">
