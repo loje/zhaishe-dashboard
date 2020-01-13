@@ -4,8 +4,11 @@
       <el-form-item label="资源标题" prop="title">
         <el-input type="text" v-model="form.title"></el-input>
       </el-form-item>
-      <el-form-item label="资源作者" prop="author">
+      <el-form-item label="上传人" prop="author">
         <el-input type="text" v-model="form.author"></el-input>
+      </el-form-item>
+      <el-form-item label="微信" prop="wechat">
+        <el-input type="text" v-model="form.wechat"></el-input>
       </el-form-item>
       <el-form-item label="资源图片" prop="imgSrc">
         <div style="line-height: 40px; color:#999;">(图片长宽2比1)</div>
@@ -18,6 +21,11 @@
       <el-form-item label="资源分类" prop="sort">
         <el-select v-model="form.sort">
           <el-option v-for="(item, $index) in sortList" :key="$index" :label="item.name" :value="item.id"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="类型" prop="type">
+        <el-select v-model="form.type">
+          <el-option v-for="(item, $index) in typeList" :key="$index" :label="item.label" :value="item.value"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="下载链接" prop="link">
@@ -42,12 +50,39 @@ export default {
         title: [{required: true, message: '请输入资源标题', trigger: 'blur'}],
         imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
         sort: [{required: true, message: '请选择资源分类', trigger: 'blur'}],
+        type: [{required: true, message: '请选择类型', trigger: 'blur'}],
         link: [{required: true, message: '请输入链接', trigger: 'blur'}],
         // code: [{required: true, message: '请输入提取码', trigger: 'blur'}],
       },
       loading: false,
       imgLoading: false,
       sortList: [],
+      typeList: [
+        {
+          label: 'banner',
+          value: 1,
+        },
+        {
+          label: 'H5',
+          value: 2,
+        },
+        {
+          label: 'Web',
+          value: 3,
+        },
+        {
+          label: 'App',
+          value: 4,
+        },
+        {
+          label: 'Logo',
+          value: 5,
+        },
+        {
+          label: '其他',
+          value: 6,
+        },
+      ],
     }
   },
   mounted() {
@@ -124,11 +159,17 @@ export default {
           if(this.form.author) {
             query.set('author', this.form.author);
           }
+          if(this.form.wechat) {
+            query.set('wechat', this.form.wechat);
+          }
           if(this.form.imgSrc) {
             query.set('imgSrc', this.form.imgSrc);
           }
           if(this.form.sort) {
             query.set('sort', this.form.sort);
+          }
+          if(this.form.type) {
+            query.set('type', this.form.type);
           }
           if(this.form.link) {
             query.set('link', this.form.link);
