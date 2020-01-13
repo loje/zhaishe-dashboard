@@ -8,12 +8,12 @@
       </span>
       <div class="top-func">
         <el-button type="primary" icon="el-icon-plus" @click="edit('新建')">新建资源</el-button>
-
         <div class="input-group">
           <el-input type="text" placeholder="请输入资源标题" v-model="searchText" clearable>
             <el-button slot="append" icon="el-icon-search" @click="getlist" class="el-button--primary"></el-button>
           </el-input>
         </div>
+        <el-button type="default" icon="el-icon-setting" @click="edit('资源设置')">资源设置</el-button>
       </div>
     </div>
     <div class="layer-table">
@@ -60,6 +60,15 @@ export default {
         case '编辑':
           this.$router.push({
             path: '/download/item',
+            query: {
+              id,
+            },
+          });
+
+          break;
+        case '资源设置':
+          this.$router.push({
+            path: '/download/profile',
             query: {
               id,
             },
@@ -131,7 +140,7 @@ export default {
         width: 120px;
       }
       .input-group {
-        margin-left: 15px;
+        margin: 0 15px;
         display: inline-block;
       }
     }
