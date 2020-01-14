@@ -7,7 +7,9 @@
         </el-breadcrumb>
       </span>
       <div class="top-func">
-        <el-button type="primary" icon="el-icon-plus" @click="create">新建会员</el-button>
+        <el-tooltip class="item" effect="dark" content="暂不可用" placement="top">
+          <el-button type="primary" icon="el-icon-plus" @click="create" >新建会员</el-button>
+        </el-tooltip>
       </div>
     </div>
     <div class="layer-table">
@@ -112,8 +114,8 @@ export default {
   },
   methods: {
     create() {
-      this.dialogVisible = true;
-      this.dialogTitle = '新建会员';
+      // this.dialogVisible = true;
+      // this.dialogTitle = '新建会员';
     },
     edit(id) {
       this.dialogVisible = true;

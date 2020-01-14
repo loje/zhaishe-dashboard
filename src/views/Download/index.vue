@@ -13,7 +13,6 @@
             <el-button slot="append" icon="el-icon-search" @click="getlist" class="el-button--primary"></el-button>
           </el-input>
         </div>
-        <el-button type="default" icon="el-icon-setting" @click="edit('资源设置')">资源设置</el-button>
       </div>
     </div>
     <div class="layer-table">

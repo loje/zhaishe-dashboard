@@ -71,6 +71,37 @@
         <el-button type="primary" @click="confilm">确 定</el-button>
       </span>
     </el-dialog>
+
+    <div class="line"></div>
+
+    <div class="download-box">
+      <swiper v-if="downloadBanner && downloadBanner.length > 0" :options="downloadSwiperOption" ref="downloadSwiper">
+        <template v-for="(item, $index) in downloadBanner">
+        <swiper-slide :key="$index">
+          <div class="img" :style="{backgroundImage:`url(${item.imgSrc})`}"></div>
+        </swiper-slide>
+        </template>
+      </swiper>
+    </div>
+
+    <div class="profile">
+      <el-divider content-position="left">资源列表轮播图(870px * 230px)</el-divider>
+      <template v-if="downloadBanner.length > 0">
+        <template v-for="(item, $index) in downloadBanner">
+        <div class="el-upload el-upload--picture-card" :key="$index + 'left'">
+          <div class="hover">
+            <i class="el-icon-delete" @click="del(item.id)"></i>
+            <i class="el-icon-link" @click="setlink(item)"></i>
+          </div>
+          <el-image :src="item.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
+        </div>
+        </template>
+      </template>
+      <div @click="importDownloadClick" class="el-upload el-upload--picture-card" v-loading="imgDownloadLoading">
+        <i class="el-icon-plus"></i>
+        <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadDownloadFile" class="el-upload__input" :multiple="false" name="file" ref="downloadInput" type="file">
+      </div>
+    </div>
   </div>
 </template>
 
@@ -118,6 +149,17 @@ export default {
         link: '',
         src: '',
       },
+
+      downloadSwiperOption: {
+        autoplay: true,
+        loop : true,
+        delay: 1000,
+        pagination: {
+          el: '.swiper-pagination',
+        }
+      },
+      downloadBanner: [],
+      imgDownloadLoading: false,
     }
   },
   computed: {
@@ -158,6 +200,7 @@ export default {
       var query = this.$Bmob.Query('banner');
       let bannerLeft = [];
       let bannerRight = [];
+      let downloadBanner = [];
 
       query.find().then((res) => {
         for (let i = 0; i < res.length; i += 1) {
@@ -175,9 +218,17 @@ export default {
               link: res[i].link
             });
           }
+          if (res[i].position && res[i].position === 'download') {
+            downloadBanner.push({
+              id: res[i].objectId,
+              imgSrc: res[i].imgSrc,
+              link: res[i].link
+            });
+          }
         }
         this.bannerLeft = bannerLeft;
         this.bannerRight = bannerRight;
+        this.downloadBanner = downloadBanner;
       });
     },
     importLeftClick() {
@@ -189,6 +240,11 @@ export default {
       this.imgRightLoading = false;
       this.$refs.rightInput.value = null;
       this.$refs.rightInput.click();
+    },
+    importDownloadClick() {
+      this.imgDownloadLoading = false;
+      this.$refs.downloadInput.value = null;
+      this.$refs.downloadInput.click();
     },
     uploadLeftFile(e) {
       const that = this;
@@ -244,6 +300,36 @@ export default {
           });
         }, function () {
           this.imgRightLoading = false;
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+        this.getBanner();
+      }
+    },
+    uploadDownloadFile(e) {
+      const that = this;
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (localFile.size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(localFile.size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        this.imgDownloadLoading = true;
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          var newBanner = this.$Bmob.Query('banner');
+          newBanner.set('position', 'download');
+          newBanner.set('imgSrc', file[0].url);
+          newBanner.save().then((res) => {
+            this.imgDownloadLoading = false;
+            this.downloadBanner.push({
+              id: res.objectId,
+              imgSrc: file[0].url,
+            });
+            that.$refs.downloadSwiper.update();
+          });
+        }, function () {
+          this.imgDownloadLoading = false;
           // console.error(error);
           // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
         });
@@ -364,6 +450,31 @@ export default {
         width: 100%;
         height: 100%;
         z-index: 0;
+      }
+    }
+  }
+
+  .line {
+    margin: 30px 0;
+    width: 100%;
+    height: 1px;
+    background-color: #ccc;
+  }
+
+  .download-box {
+    width: 870px;
+    height: 230px;
+  background-color: #707A81;
+    background-position: 50%;
+    background-size: cover;
+    .swiper-container{
+      width: 100%;
+      height: 100%;
+      .img {
+        width: 100%;
+        height: 100%;
+        background-position: 50%;
+        background-size: cover;
       }
     }
   }

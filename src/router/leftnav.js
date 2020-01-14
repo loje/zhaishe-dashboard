@@ -103,12 +103,6 @@ const leftRoutes = [
         component: () => import('@/views/Download/Item'),
         meta: { menu: false },
       },
-      {
-        path: '/download/profile',
-        name: '资源页面设置',
-        component: () => import('@/views/Download/Profile'),
-        meta: { menu: false },
-      },
     ],
   },
   {

@@ -34,7 +34,10 @@
           end-placeholder="结束日期">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="活动费用" prop="fee">
+      <el-form-item label="早鸟票(元)" prop="birdPrice">
+        <el-input-number v-model="form.birdPrice" placeholder="免费" controls-position="right" :min="0.00"></el-input-number>
+      </el-form-item>
+      <el-form-item label="正常票(元)" prop="fee">
         <el-input-number v-model="form.fee" placeholder="免费" controls-position="right" :min="0.00"></el-input-number>
       </el-form-item>
       <el-form-item label="活动人数" prop="number">
@@ -221,6 +224,7 @@ export default {
           mode: this.modeList[data.mode - 1].value,
           sort: this.sortList[data.sort - 1].value,
           time: [this.form.startTime, this.form.endTime],
+          birdPrice: data.birdPrice,
           fee: data.fee,
           note: data.note,
           number: data.number,
@@ -263,6 +267,10 @@ export default {
             }
             if(that.form.time && that.form.time[1]) {
               query.set('endTime', {"__type":"Date", "iso":that.form.time[1]});
+            }
+
+            if(that.form.birdPrice) {
+              query.set('birdPrice', that.form.birdPrice );
             }
 
             if(that.form.fee) {
@@ -325,6 +333,10 @@ export default {
             }
             if(that.form.time && that.form.time[1]) {
               query.set('endTime', {"__type":"Date", "iso":that.form.time[1]});
+            }
+
+            if(that.form.birdPrice) {
+              query.set('birdPrice', that.form.birdPrice );
             }
 
             if(that.form.fee) {
