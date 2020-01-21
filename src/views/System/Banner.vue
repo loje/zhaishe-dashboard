@@ -102,6 +102,37 @@
         <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadDownloadFile" class="el-upload__input" :multiple="false" name="file" ref="downloadInput" type="file">
       </div>
     </div>
+
+    <div class="line"></div>
+
+    <div class="tool-box">
+      <swiper v-if="toolBanner && toolBanner.length > 0" :options="toolSwiperOption" ref="toolSwiper">
+        <template v-for="(item, $index) in toolBanner">
+        <swiper-slide :key="$index">
+          <div class="img" :style="{backgroundImage:`url(${item.imgSrc})`}"></div>
+        </swiper-slide>
+        </template>
+      </swiper>
+    </div>
+
+    <div class="profile">
+      <el-divider content-position="left">工具列表轮播图(360px * 187px)</el-divider>
+      <template v-if="toolBanner.length > 0">
+        <template v-for="(item, $index) in toolBanner">
+        <div class="el-upload el-upload--picture-card" :key="$index + 'left'">
+          <div class="hover">
+            <i class="el-icon-delete" @click="del(item.id)"></i>
+            <i class="el-icon-link" @click="setlink(item)"></i>
+          </div>
+          <el-image :src="item.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
+        </div>
+        </template>
+      </template>
+      <div @click="importToolClick" class="el-upload el-upload--picture-card" v-loading="imgToolLoading">
+        <i class="el-icon-plus"></i>
+        <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadToolFile" class="el-upload__input" :multiple="false" name="file" ref="toolInput" type="file">
+      </div>
+    </div>
   </div>
 </template>
 
@@ -160,6 +191,19 @@ export default {
       },
       downloadBanner: [],
       imgDownloadLoading: false,
+
+      toolSwiperOption: {
+        autoplay: true,
+        loop : true,
+        delay: 1000,
+        // direction : 'vertical',
+        slidesPerView : 3,
+        pagination: {
+          el: '.swiper-pagination',
+        }
+      },
+      toolBanner: [],
+      imgToolLoading: false,
     }
   },
   computed: {
@@ -201,6 +245,7 @@ export default {
       let bannerLeft = [];
       let bannerRight = [];
       let downloadBanner = [];
+      let toolBanner = [];
 
       query.find().then((res) => {
         for (let i = 0; i < res.length; i += 1) {
@@ -225,10 +270,19 @@ export default {
               link: res[i].link
             });
           }
+          if (res[i].position && res[i].position === 'tool') {
+            toolBanner.push({
+              id: res[i].objectId,
+              imgSrc: res[i].imgSrc,
+              link: res[i].link
+            });
+          }
         }
         this.bannerLeft = bannerLeft;
         this.bannerRight = bannerRight;
         this.downloadBanner = downloadBanner;
+        this.toolBanner = toolBanner;
+
       });
     },
     importLeftClick() {
@@ -245,6 +299,11 @@ export default {
       this.imgDownloadLoading = false;
       this.$refs.downloadInput.value = null;
       this.$refs.downloadInput.click();
+    },
+    importToolClick() {
+      this.imgToolLoading = false;
+      this.$refs.toolInput.value = null;
+      this.$refs.toolInput.click();
     },
     uploadLeftFile(e) {
       const that = this;
@@ -330,6 +389,35 @@ export default {
           });
         }, function () {
           this.imgDownloadLoading = false;
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+        this.getBanner();
+      }
+    },
+    uploadToolFile(e) {
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (localFile.size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(localFile.size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        this.imgToolLoading = true;
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          var newBanner = this.$Bmob.Query('banner');
+          newBanner.set('position', 'tool');
+          newBanner.set('imgSrc', file[0].url);
+          newBanner.save().then((res) => {
+            this.imgToolLoading = false;
+            this.toolBanner.push({
+              id: res.objectId,
+              imgSrc: file[0].url,
+            });
+            this.$refs.toolSwiper.update();
+          });
+        }, () => {
+          this.imgToolLoading = false;
           // console.error(error);
           // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
         });
@@ -464,7 +552,25 @@ export default {
   .download-box {
     width: 870px;
     height: 230px;
-  background-color: #707A81;
+    background-color: #707A81;
+    background-position: 50%;
+    background-size: cover;
+    .swiper-container{
+      width: 100%;
+      height: 100%;
+      .img {
+        width: 100%;
+        height: 100%;
+        background-position: 50%;
+        background-size: cover;
+      }
+    }
+  }
+
+  .tool-box {
+    width: 870px;
+    height: 230px;
+    background-color: #707A81;
     background-position: 50%;
     background-size: cover;
     .swiper-container{
