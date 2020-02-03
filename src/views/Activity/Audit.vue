@@ -9,7 +9,7 @@
         </el-breadcrumb>
       </div>
       <div class="top-func">
-        <el-button type="primary" class="add-btn" icon="el-icon-plus" @click="showDialog">添加</el-button>
+        <!-- <el-button type="primary" class="add-btn" icon="el-icon-plus" @click="showDialog">添加</el-button> -->
         <el-input class="search-input" v-model="searchText" placeholder="名字/电话/微信号" clearable></el-input>
         <el-button type="text" class="search-btn" @click="getlist">搜索</el-button>
       </div>
@@ -21,19 +21,23 @@
         <el-table-column label="微信" prop="wechatId" align="center"></el-table-column>
         <el-table-column label="邮箱" prop="email" align="center" min-width="120"></el-table-column>
         <el-table-column label="报名时间" prop="createTime" align="center" min-width="100"></el-table-column>
-        <el-table-column label="状态" align="center" width="280">
-          <template slot-scope="scope" prop="toDo">
+        <el-table-column label="支付金额" prop="total_fee" align="center" min-width="100"></el-table-column>
+        <el-table-column label="支付状态" prop="trade_state_desc" align="center" min-width="100"></el-table-column>
+        <!-- <el-table-column label="状态" align="center" width="280">
+          <template slot-scope="scope" prop="toDo"> -->
             <!-- <el-button type="primary" :disabled="scope.row.isApply" size="small">已报名</el-button> -->
+            <!-- <el-button type="primary" size="small" @click="comfilmWechat(scope.row.id)" v-if="scope.row.isWechat === false">确认加微信</el-button>
+            <el-button type="info" size="small" @click="cancelWechat(scope.row.id)" v-else>取消加微信</el-button> -->
+            
+            <!-- <el-button type="primary" size="small" @click="comfilmPaid(scope.row.id)" v-if="scope.row.isPaid === false">确认支付</el-button> -->
+            <!-- <el-button type="info" size="small" @click="cancelPaid(scope.row.id)" v-else>取消支付</el-button> -->
+
+          <!-- </template>
+        </el-table-column> -->
+        <el-table-column label="操作" align="center" width="240">
+          <template slot-scope="scope">
             <el-button type="primary" size="small" @click="comfilmWechat(scope.row.id)" v-if="scope.row.isWechat === false">确认加微信</el-button>
             <el-button type="info" size="small" @click="cancelWechat(scope.row.id)" v-else>取消加微信</el-button>
-            
-            <el-button type="primary" size="small" @click="comfilmPaid(scope.row.id)" v-if="scope.row.isPaid === false">确认支付</el-button>
-            <el-button type="info" size="small" @click="cancelPaid(scope.row.id)" v-else>取消支付</el-button>
-
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" align="center" width="120">
-          <template slot-scope="scope">
           <el-button type="danger" size="small" icon="el-icon-close" @click="cancel(scope.row.id)" v-if="scope.row.isApply === true">取消报名</el-button>
           <el-button type="info" size="small" icon="el-icon-check" @click="replace(scope.row.id)" v-else>重新报名</el-button>
           </template>
@@ -101,6 +105,7 @@ export default {
       this.loading = true;
       let arr = [];
       if (this.$route.query.id) {
+        // let orderlist = [];
         var activityPersonQuery = this.$Bmob.Query('activity_person');
         activityPersonQuery.order('-createdAt');
         activityPersonQuery.find().then((ap) => {
@@ -109,33 +114,48 @@ export default {
             if (ap[i].activity.objectId === this.$route.query.id) {
               const userQuery = this.$Bmob.Query('_User');
               userQuery.get(ap[i].user.objectId).then((user) => {
-                if (this.searchText != '') {
-                  if (this.searchText === user.name || this.searchText === user.mobilePhoneNumber  || this.searchText === user.wechatId) {
-                    arr.push({
-                      id: ap[i].objectId,
-                      name: user.name,
-                      mobilePhoneNumber: user.mobilePhoneNumber,
-                      wechatId: user.wechatId,
-                      email: user.email,
-                      createTime: this.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
-                      isApply: ap[i].isApply,
-                      isWechat: ap[i].isWechat,
-                      isPaid: ap[i].isPaid,
-                    });
+                let orderQuery = this.$Bmob.Query('order_list');
+                orderQuery.equalTo('sort', '===', 'active');
+                orderQuery.find().then((orderres) => {
+                  console.log(orderres);
+                  for (let j = 0; j < orderres.length; j += 1) {
+                    console.log(ap[i].activity.objectId);
+                    if (ap[i].activity.objectId === orderres[j].activity.objectId) {
+                      console.log(orderres[j]);
+                      if (this.searchText != '') {
+                        if (this.searchText === user.name || this.searchText === user.mobilePhoneNumber  || this.searchText === user.wechatId) {
+                          arr.push({
+                            id: ap[i].objectId,
+                            name: user.name,
+                            mobilePhoneNumber: user.mobilePhoneNumber,
+                            wechatId: user.wechatId,
+                            email: user.email,
+                            createTime: this.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
+                            isApply: ap[i].isApply,
+                            isWechat: ap[i].isWechat,
+                            isPaid: ap[i].isPaid,
+                            total_fee: orderres[j].payReslut.total_fee,
+                            trade_state_desc: orderres[j].payReslut.trade_state_desc,
+                          });
+                        }
+                      } else {
+                        arr.push({
+                          id: ap[i].objectId,
+                          name: user.name,
+                          mobilePhoneNumber: user.mobilePhoneNumber,
+                          wechatId: user.wechatId,
+                          email: user.email,
+                          createTime: this.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
+                          isApply: ap[i].isApply,
+                          isWechat: ap[i].isWechat,
+                          isPaid: ap[i].isPaid,
+                          total_fee: orderres[j].payReslut.total_fee,
+                          trade_state_desc: orderres[j].payReslut.trade_state_desc,
+                        });
+                      }
+                    }
                   }
-                } else {
-                  arr.push({
-                    id: ap[i].objectId,
-                    name: user.name,
-                    mobilePhoneNumber: user.mobilePhoneNumber,
-                    wechatId: user.wechatId,
-                    email: user.email,
-                    createTime: this.$moment(ap[i].createdAt).format('YYYY-MM-DD hh:mm'),
-                    isApply: ap[i].isApply,
-                    isWechat: ap[i].isWechat,
-                    isPaid: ap[i].isPaid,
-                  });
-                }
+                });
               });
             }
           }

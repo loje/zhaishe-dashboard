@@ -83,6 +83,12 @@ const leftRoutes = [
         name: '管理购买人',
         meta: { menu: false },
       },
+      {
+        path: '/product/order',
+        name: '产品订单列表',
+        component: () => import('@/views/Product/Order'),
+        meta: { menu: true, keepAlive: true },
+      },
     ],
   },
   {
