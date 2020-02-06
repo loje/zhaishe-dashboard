@@ -46,6 +46,32 @@
       <el-form-item label="活动地点" prop="address">
         <el-input v-model="form.address" placeholder="地点不限"></el-input>
       </el-form-item>
+      <el-form-item label="活动议程" prop="agenda" style="max-width: 1500px;">
+        <div class="speaker" style="overflow: hidden;" v-for="(item, $index) in agendaList" :key="$index">
+          <div class="speaker-img" :style="{backgroundImage: `url(${item.imgSrc})`}"></div>
+          <div class="speaker-right">
+            <div class="title">{{item.title}}</div>
+            <div class="theme">《{{item.theme}}》</div>
+          </div>
+          <div class="speaker-close" @click="agendaRemove($index)">
+            <i class="el-icon-delete"></i>
+          </div>
+        </div>
+        <div class="speaker speaker-edit">
+          <div @click="importAgendaClick" class="el-upload el-upload--picture-card speaker-img" v-loading="imgAgendaLoading">
+            <el-image :src="agendaEdit.imgSrc" v-if="agendaEdit.imgSrc" fit="cover" class="img" style="width: 100%; height: 100%;" lazy></el-image>
+            <i class="el-icon-plus" v-else></i>
+            <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadAgendaFile" class="el-upload__input" :multiple="false" name="file" ref="agendaInput" type="file">
+          </div>
+          <div class="speaker-right">
+            <el-input type="text" size="mini" v-model="agendaEdit.title" placeholder="请输入分享人名字"></el-input>
+            <el-input type="text" size="mini" v-model="agendaEdit.theme" placeholder="请输入分享标题" style="margin-top: 10px;"></el-input>
+          </div>
+          <div class="speaker-btn">
+            <el-button type="primary" size="medium" icon="el-icon-plus" @click="agendaAdd">增加</el-button>
+          </div>
+        </div>
+      </el-form-item>
       <el-form-item label="会后笔记" prop="note">
         <el-input v-model="form.note" placeholder="请填写笔记链接"></el-input>
       </el-form-item>
@@ -123,6 +149,7 @@ export default {
         sort: [{required: true, message: '请输入', trigger: 'blur'}],
         imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
         // address: [{required: true, message: '请输入活动地址', trigger: 'blur'}],
+        // agenda: [{required: true, message: '请补充活动议程', trigger: 'blur'}],
         content: [{required: true, message: '请输入', trigger: 'blur'}],
       },
       imgLoading: false,
@@ -158,6 +185,12 @@ export default {
           value: 4,
         },
       ],
+
+      imgAgendaLoading: false,
+      agendaList: [],
+      agendaEdit: {
+        imgSrc: '',
+      },
     }
   },
   components: {
@@ -217,6 +250,9 @@ export default {
           }
         }
         this.pulishLoading = false;
+        if (data.agenda) {
+          this.agendaList = JSON.parse(data.agenda);
+        }
         this.form = {
           title: data.title,
           desc: data.desc,
@@ -236,6 +272,10 @@ export default {
 
     submitForm(status) {
       const that = this;
+      if(this.agendaList.length === 0) {
+        this.$message.warning('请补充活动议程');
+        return false;
+      }
       this.$refs.form.validate((valid) => {
         if (valid) {
           that.pulishLoading = true;
@@ -287,6 +327,10 @@ export default {
 
             if (that.form.note) {
               query.set('note', that.form.note);
+            }
+
+            if (that.agendaList.length > 0) {
+              query.set('agenda', JSON.stringify(that.agendaList));
             }
 
             if (that.form.content) {
@@ -355,7 +399,11 @@ export default {
               query.set('note', that.form.note);
             }
 
-            if (that.form.address) {
+            if (that.agendaList.length > 0) {
+              query.set('agenda', JSON.stringify(that.agendaList));
+            }
+
+            if (that.form.content) {
               query.set('content', that.form.content);
             }
 
@@ -397,6 +445,54 @@ export default {
         });
       }
     },
+
+    importAgendaClick() {
+      this.imgAgendaLoading = false;
+      this.$refs.agendaInput.value = null;
+      this.$refs.agendaInput.click();
+    },
+    uploadAgendaFile(e) {
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (e.target.files[0].size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        this.imgAgendaLoading = true;
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          this.imgAgendaLoading = false;
+          this.agendaEdit.imgSrc = file[0].url;
+          // that.form.img = file;
+        }, () => {
+          this.imgAgendaLoading = false;
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+      }
+    },
+
+    agendaAdd() {
+      if (!this.agendaEdit.imgSrc) {
+        this.$message.warning('请上传分享人头像');
+        return false;
+      }
+      if (!this.agendaEdit.title) {
+        this.$message.warning('请输入分享人名字');
+        return false;
+      }
+      if (!this.agendaEdit.theme) {
+        this.$message.warning('请输入分享标题');
+        return false;
+      }
+      this.agendaList.push(this.agendaEdit);
+      this.agendaEdit = {
+        imgSrc: '',
+      };
+    },
+    agendaRemove(index) {
+      this.agendaList.splice(index, 1);
+    },
   },
 };
 </script>
@@ -411,12 +507,109 @@ export default {
     box-sizing: border-box;
     .form {
       width: 100%;
-      max-width: 900px;
+      /deep/ .el-form-item {
+        max-width: 900px;
+      }
       /deep/ .el-form-item__content{
         line-height: normal;
         /deep/.ql-editor{
           height: 600px;
         }
+      }
+    }
+  }
+  
+  .speaker {
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+    padding: 10px 15px;
+    vertical-align: middle;
+    box-sizing: border-box;
+    border-radius: 4px;
+    z-index: 1;
+    &.speaker-edit {
+      width: 270px;
+      box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+      border: 1px solid #ebeef5;
+      border-bottom-left-radius: 0px;
+      border-bottom-right-radius: 0px;
+      .speaker-btn {
+        display: none;
+      }
+      &:hover {
+        .speaker-btn {
+          display: block;
+          position: absolute;
+          left: 0;
+          bottom: -36px;
+          width: 100%;
+          box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+          .el-button {
+            width: 100%;
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
+          }
+        }
+      }
+    }
+
+    .speaker-img {
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+      line-height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      vertical-align: middle;
+      background-size: cover;
+      i {
+        display: block;
+        line-height: 80px;
+      }
+    }
+    .speaker-right {
+      display: inline-block;
+      vertical-align: middle;
+      padding-left: 15px;
+      width: 150px;
+      box-sizing: border-box;
+      .title {
+        font-size: 14px;
+        line-height: 20px;
+        color: #2B2B2B;
+      }
+      .theme {
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 17px;
+        color: #2B2B2B;
+      }
+    }
+    .speaker-close {
+      opacity: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      line-height: 100px;
+      text-align: center;
+      background-color: rgba(0,0,0,0.75);
+      z-index: 1;
+      transition: opacity 250ms ease-in-out;
+      cursor: pointer;
+      i {
+        display: block;
+        font-size: 42px;
+        color: #fff;
+        line-height: 100px;
+        opacity: 0.75;
+      }
+    }
+    &:hover {
+      .speaker-close {
+        opacity: 1;
       }
     }
   }

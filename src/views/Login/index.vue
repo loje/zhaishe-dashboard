@@ -35,10 +35,9 @@ export default {
   },
   methods: {
     submitForm() {
-      const that = this;
       this.$refs.form.validate((valid) => {
         if (valid) {
-          that.$Bmob.User.login(that.form.username, that.form.password).then((user) => {
+          this.$Bmob.User.login(this.form.username, this.form.password).then((user) => {
             if (user.isCustomer === false) {
               this.$message.warning('此用户已被封禁');
               return false;
@@ -55,8 +54,8 @@ export default {
               username: user.username,
             };
             localStorage.setItem('userInfo', JSON.stringify(data));
-            that.$store.dispatch('getUser', user);
-            that.$router.push('/');
+            this.$store.dispatch('getUser', user);
+            this.$router.push('/');
             this.$message.success('登录成功');
             // 登录成功
           }, (err) => {
