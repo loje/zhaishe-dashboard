@@ -15,7 +15,7 @@
           <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
         </div>
       </el-form-item>
-      <el-form-item label="支持系统" prop="system">
+      <!-- <el-form-item label="支持系统" prop="system">
         <el-select v-model="form.system" placeholder="请选择" multiple style="width:100%;">
           <el-option
             v-for="item in sysList"
@@ -26,15 +26,30 @@
             <div class="the-title">{{ item.title }}</div>
           </el-option>
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="原价" prop="price">
         <el-input-number v-model="form.price" controls-position="right"></el-input-number>
+      </el-form-item>
+      <el-form-item label="原价库存" prop="inventory">
+        <el-input-number v-model="form.inventory" controls-position="right" min="0"></el-input-number>
       </el-form-item>
       <el-form-item label="团购价" prop="groupPrice">
         <el-input-number v-model="form.groupPrice" controls-position="right"></el-input-number>
       </el-form-item>
+      <el-form-item label="团购库存" prop="groupInventory">
+        <el-input-number v-model="form.groupInventory" controls-position="right" min="0"></el-input-number>
+      </el-form-item>
+      <el-form-item label="官网地址" prop="website">
+        <el-input type="text" v-model="form.website" placeholder="请填写带有http://或https://前缀的地址"></el-input>
+      </el-form-item>
+      <el-form-item label="热门软件" prop="isHot">
+        <!-- <el-input type="text" v-model="form.isHot" placeholder="请填写带有http://或https://前缀的地址"></el-input> -->
+        <el-select v-model="form.isHot" placeholder="请选择">
+          <el-option label="否" :value="0"></el-option>
+          <el-option label="是" :value="1"></el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="产品详情" prop="content">
-
         <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadImgFile" class="el-upload__input" :multiple="false" name="file" ref="imgInput" type="file">
 
         <quill-editor v-model="form.content" ref="myQuillEditor" :options="editorOption" @change="onEditorChange($event)" style="width: 100%;"></quill-editor>
@@ -99,24 +114,29 @@ export default {
 
       loading: false,
       imgLoading: false,
-      form: {},
+      form: {
+        inventory: 0,
+        groupInventory: 0,
+        isHot: 0,
+      },
       rules: {
         title: [{required: true, message: '请输入', trigger: 'blur'}],
         desc: [{required: true, message: '请输入', trigger: 'blur'}],
         imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
-        system: [{required: true, message: '请选择支持系统', trigger: 'blur'}],
+        // system: [{required: true, message: '请选择支持系统', trigger: 'blur'}],
         price: [{required: true, message: '请填写原价', trigger: 'blur'}],
+        inventory: [{required: true, message: '请填写原价库存', trigger: 'blur'}],
+        website: [{required: true, message: '请填写官网地址', trigger: 'blur'}],
         content: [{required: true, message: '请填写详情', trigger: 'blur'}],
-
       },
-      sysList: [],
+      // sysList: [],
     }
   },
   components: {
     quillEditor
   },
   mounted() {
-    this.getSystemList();
+    // this.getSystemList();
     if (this.$route.query.id) {
       this.getInfo(this.$route.query.id);
     }
@@ -153,12 +173,12 @@ export default {
         });
       }
     },
-    getSystemList() {
-      let sysQuery = this.$Bmob.Query('support_sys');
-      sysQuery.find().then((res) => {
-        this.sysList = res;
-      });
-    },
+    // getSystemList() {
+    //   let sysQuery = this.$Bmob.Query('support_sys');
+    //   sysQuery.find().then((res) => {
+    //     this.sysList = res;
+    //   });
+    // },
 
     getInfo(id) {
       this.loading = true;
@@ -171,10 +191,14 @@ export default {
           desc: data.desc,
           imgSrc: data.imgSrc,
           price: data.price,
-          system: data.system,
+          // system: data.system,
+          inventory: data.inventory ? data.inventory : 0,
           groupPrice: data.groupPrice,
+          groupInventory: data.groupInventory ? data.groupInventory : 0,
+          isHot: data.isHot ? data.isHot : 0,
           content: data.content,
           status: data.status,
+          website: data.website ? data.website : undefined,
           notDelete: data.notDelete,
         }
       });
@@ -226,16 +250,32 @@ export default {
             query.set('imgSrc', this.form.imgSrc);
           }
           
-          if(this.form.system) {
-            query.set('system', this.form.system);
+          // if(this.form.system) {
+          //   query.set('system', this.form.system);
+          // }
+
+          if (this.form.website) {
+            query.set('website', this.form.website );
           }
 
           if(this.form.price) {
             query.set('price', this.form.price );
           }
 
+          if(this.form.inventory) {
+            query.set('inventory', this.form.inventory );
+          }
+
           if (this.form.groupPrice) {
             query.set('groupPrice', this.form.groupPrice);
+          }
+
+          if(this.form.groupInventory) {
+            query.set('groupInventory', this.form.groupInventory );
+          }
+
+          if(this.form.isHot) {
+            query.set('isHot', this.form.isHot );
           }
 
           if (this.form.content) {
@@ -245,7 +285,6 @@ export default {
           query.set('notDelete', true);
           query.set('status', Number(status));
           query.set('recommend', false);
-
 
           query.save().then(() => {
             this.loading = false;

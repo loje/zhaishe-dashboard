@@ -167,7 +167,7 @@ const leftRoutes = [
     children: [
       {
         path: '/system/banner',
-        name: 'Banner管理',
+        name: 'Banner广告管理',
         component: () => import('@/views/System/Banner'),
         meta: { menu: true, keepAlive: true },
       },

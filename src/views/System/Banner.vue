@@ -133,6 +133,30 @@
         <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadToolFile" class="el-upload__input" :multiple="false" name="file" ref="toolInput" type="file">
       </div>
     </div>
+
+    <div class="line"></div>
+
+    <div class="tool-ad">
+      <div class="img" :style="{backgroundImage: `url(${toolAdBanner[0].imgSrc})`}" v-if="toolAdBanner && toolAdBanner.length > 0"></div>
+    </div>
+    <div class="profile">
+      <el-divider content-position="left">工具列表右侧广告(220px * 150px)</el-divider>
+      <template v-if="toolAdBanner.length > 0">
+        <template v-for="(item, $index) in toolAdBanner">
+        <div class="el-upload el-upload--picture-card" :key="$index + 'left'">
+          <div class="hover">
+            <i class="el-icon-delete" @click="del(item.id)"></i>
+            <i class="el-icon-link" @click="setlink(item)"></i>
+          </div>
+          <el-image :src="item.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
+        </div>
+        </template>
+      </template>
+      <div @click="importToolAdClick" class="el-upload el-upload--picture-card" v-loading="imgToolAdLoading" v-if="toolAdBanner.length === 0">
+        <i class="el-icon-plus"></i>
+        <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadToolAdFile" class="el-upload__input" :multiple="false" name="file" ref="toolAdInput" type="file">
+      </div>
+    </div>
   </div>
 </template>
 
@@ -204,6 +228,8 @@ export default {
       },
       toolBanner: [],
       imgToolLoading: false,
+      toolAdBanner: [],
+      imgToolAdLoading: false,
     }
   },
   computed: {
@@ -246,6 +272,7 @@ export default {
       let bannerRight = [];
       let downloadBanner = [];
       let toolBanner = [];
+      let toolAdBanner = [];
 
       query.find().then((res) => {
         for (let i = 0; i < res.length; i += 1) {
@@ -277,12 +304,19 @@ export default {
               link: res[i].link
             });
           }
+          if (res[i].position && res[i].position === 'toolAd') {
+            toolAdBanner.push({
+              id: res[i].objectId,
+              imgSrc: res[i].imgSrc,
+              link: res[i].link
+            });
+          }
         }
         this.bannerLeft = bannerLeft;
         this.bannerRight = bannerRight;
         this.downloadBanner = downloadBanner;
         this.toolBanner = toolBanner;
-
+        this.toolAdBanner = toolAdBanner;
       });
     },
     importLeftClick() {
@@ -304,6 +338,11 @@ export default {
       this.imgToolLoading = false;
       this.$refs.toolInput.value = null;
       this.$refs.toolInput.click();
+    },
+    importToolAdClick() {
+      this.imgToolAdLoading = false;
+      this.$refs.toolAdInput.value = null;
+      this.$refs.toolAdInput.click();
     },
     uploadLeftFile(e) {
       const that = this;
@@ -418,6 +457,34 @@ export default {
           });
         }, () => {
           this.imgToolLoading = false;
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+        this.getBanner();
+      }
+    },
+    uploadToolAdFile(e) {
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (localFile.size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(localFile.size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        this.imgToolAdLoading = true;
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          var newBanner = this.$Bmob.Query('banner');
+          newBanner.set('position', 'toolAd');
+          newBanner.set('imgSrc', file[0].url);
+          newBanner.save().then((res) => {
+            this.imgToolAdLoading = false;
+            this.toolAdBanner.push({
+              id: res.objectId,
+              imgSrc: file[0].url,
+            });
+          });
+        }, () => {
+          this.imgToolAdLoading = false;
           // console.error(error);
           // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
         });
@@ -582,6 +649,20 @@ export default {
         background-position: 50%;
         background-size: cover;
       }
+    }
+  }
+
+  .tool-ad {
+    width: 220px;
+    height: 150px;
+    border-radius: 2px;
+    overflow: hidden;
+    .img {
+      width: 100%;
+      height: 100%;
+      background-color: #707A81;
+      background-position: 50%;
+      background-size: cover;
     }
   }
 </style>
