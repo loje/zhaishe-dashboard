@@ -34,6 +34,7 @@ export default {
   methods: {
     logout() {
       localStorage.removeItem('userInfo');
+      localStorage.removeItem('bmob');
       location.reload();
     },
   },
