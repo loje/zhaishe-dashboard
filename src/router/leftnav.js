@@ -109,6 +109,12 @@ const leftRoutes = [
         component: () => import('@/views/Download/Item'),
         meta: { menu: false },
       },
+      {
+        path: '/inspiration',
+        name: '灵感分享计划',
+        component: () => import('@/views/Download/Inspiration'),
+        meta: { menu: true, keepAlive: true },
+      },
     ],
   },
   {
@@ -121,6 +127,12 @@ const leftRoutes = [
         path: '/designer',
         name: '严选人列表',
         component: () => import('@/views/Designer/index'),
+        meta: { menu: true, keepAlive: true },
+      },
+      {
+        path: '/join',
+        name: '加入宅设分享人',
+        component: () => import('@/views/Designer/Join'),
         meta: { menu: true, keepAlive: true },
       },
     ],

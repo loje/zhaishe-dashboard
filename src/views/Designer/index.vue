@@ -46,6 +46,9 @@
         <el-form-item label="名字" prop="name">
           <el-input type="text" v-model="dialogForm.name"></el-input>
         </el-form-item>
+        <el-form-item label="个人链接" prop="link">
+          <el-input type="text" v-model="dialogForm.link" placeholder="http://或https://开头"></el-input>
+        </el-form-item>
         <el-form-item label="介绍" prop="info">
           <el-input type="textarea" v-model="dialogForm.info"></el-input>
         </el-form-item>
@@ -79,6 +82,7 @@ export default {
       rules: {
         img: [{required: true, message: '请上传照片', trigger: 'blur'}],
         name: [{required: true, message: '请填写名字', trigger: 'blur'}],
+        link: [{required: true, message: '请填写个人链接', trigger: 'blur'}],
         info: [{required: true, message: '请填写介绍', trigger: 'blur'}],
       },
 
@@ -112,6 +116,7 @@ export default {
           name: res.name,
           img: res.img,
           info: res.info,
+          link: res.link ? res.link : undefined,
         };
       });
     },
@@ -176,6 +181,9 @@ export default {
             if(this.dialogForm.name) {
               query.set('name', this.dialogForm.name);
             }
+            if(this.dialogForm.link) {
+              query.set('link', this.dialogForm.link);
+            }
             if(this.dialogForm.info) {
               query.set('info', this.dialogForm.info);
             }
@@ -194,6 +202,9 @@ export default {
             }
             if(this.dialogForm.name) {
               query.set('name', this.dialogForm.name);
+            }
+            if(this.dialogForm.link) {
+              query.set('link', this.dialogForm.link);
             }
             if(this.dialogForm.info) {
               query.set('info', this.dialogForm.info);
