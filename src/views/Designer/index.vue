@@ -28,12 +28,12 @@
         </el-table-column>
         <el-table-column label="严选人" prop="name"></el-table-column>
         <el-table-column label="介绍" prop="info"></el-table-column>
-        <el-table-column label="操作">
+        <el-table-column label="操作" min-width="100">
           <template slot-scope="scope">
+            <el-button type="primary" @click="edit('接单', scope.row.objectId, scope.row.name)" size="small">接单列表</el-button>
+
             <el-button type="warning" @click="setTop(scope.row.objectId, true)" size="small" v-if="scope.row.isTop === false">置顶</el-button>
             <el-button type="info" @click="setTop(scope.row.objectId, false)" size="small" v-else>取消置顶</el-button>
-
-
             <el-button type="warning" @click="edit('编辑', scope.row.objectId)" size="small">编辑</el-button>
             <el-button type="danger" @click="del(scope.row.objectId)" size="small">删除</el-button>
           </template>
@@ -120,16 +120,23 @@ export default {
         };
       });
     },
-    edit(type, id) {
-      this.visible = true;
-      if (this.$refs.form) {
-        this.$refs.form.resetFields();
-      }
+    edit(type, id, name) {
       switch(type) {
-        case '新建':
-          break;
         case '编辑':
+          this.visible = true;
+          if (this.$refs.form) {
+            this.$refs.form.resetFields();
+          }
           this.getinfo(id);
+          break;
+        case '接单':
+          this.$router.push({
+            path: '/designer/orderlist',
+            query: {
+              id,
+              name,
+            },
+          })
           break;
         default:
           break;

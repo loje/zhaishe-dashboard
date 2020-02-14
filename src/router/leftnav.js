@@ -130,6 +130,12 @@ const leftRoutes = [
         meta: { menu: true, keepAlive: true },
       },
       {
+        path: '/designer/orderlist',
+        name: '接单列表',
+        component: () => import('@/views/Designer/Order'),
+        meta: { menu: false },
+      },
+      {
         path: '/join',
         name: '加入宅设分享人',
         component: () => import('@/views/Designer/Join'),
