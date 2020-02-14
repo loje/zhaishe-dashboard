@@ -22,6 +22,9 @@
           label="订单金额"
           prop="total_fee"
           min-width="200">
+          <template slot-scope="scope">
+            {{(scope.row.total_fee / 100).toFixed(2)}}
+          </template>
         </el-table-column>
         <el-table-column
           label="支付状态"
