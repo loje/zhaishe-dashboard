@@ -144,6 +144,20 @@ const leftRoutes = [
     ],
   },
   {
+    path: '/private',
+    name: '私单管理',
+    meta: { menu: true, keepAlive: true },
+    component: () => import('@/components/Black'),
+    children: [
+      {
+        path: '/private',
+        name: '私单列表',
+        component: () => import('@/views/Private/index'),
+        meta: { menu: true, keepAlive: true },
+      },
+    ],
+  },
+  {
     path: '/member',
     name: '会员管理',
     meta: { menu: true, keepAlive: true },

@@ -88,7 +88,7 @@ export default {
 
       imgLoading: false,
 
-      isTops: 0,
+      // isTops: 0,
     }
   },
   activated() {
@@ -105,7 +105,7 @@ export default {
       designerQuery.find().then((res) => {
         this.loading = false;
         this.tableData = res;
-        this.getIsTop();
+        // this.getIsTop();
       });
     },
     getinfo(id) {
@@ -227,10 +227,10 @@ export default {
       });
     },
     setTop(id, boolean) {
-      if (this.isTops >= 5 && boolean === true) {
-        this.$message.warning('最多置顶5个');
-        return false;
-      }
+      // if (this.isTops >= 5 && boolean === true) {
+      //   this.$message.warning('最多置顶5个');
+      //   return false;
+      // }
       const query = this.$Bmob.Query('designer');
       query.set('id', id);
       query.set('isTop', boolean);
@@ -243,13 +243,13 @@ export default {
         this.getlist();
       });
     },
-    getIsTop() {
-      const query = this.$Bmob.Query('designer');
-      query.equalTo('isTop', '==', true);
-      query.count().then((count) => {
-        this.isTops = count;
-      });
-    },
+    // getIsTop() {
+    //   const query = this.$Bmob.Query('designer');
+    //   query.equalTo('isTop', '==', true);
+    //   query.count().then((count) => {
+    //     this.isTops = count;
+    //   });
+    // },
   },
 };
 </script>

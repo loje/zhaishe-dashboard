@@ -39,7 +39,7 @@
             <el-button type="primary" size="small" @click="comfilmWechat(scope.row.id)" v-if="scope.row.isWechat === false">确认加微信</el-button>
             <el-button type="info" size="small" @click="cancelWechat(scope.row.id)" v-else>取消加微信</el-button>
           <el-button type="danger" size="small" icon="el-icon-close" @click="cancel(scope.row.id)" v-if="scope.row.isApply === true">取消报名</el-button>
-          <el-button type="info" size="small" icon="el-icon-check" @click="replace(scope.row.id)" v-else>重新报名</el-button>
+          <el-button type="info" size="small" icon="el-icon-check" @click="replace(scope.row.id)" v-else>再次报名</el-button>
           </template>
         </el-table-column>
       </el-table>

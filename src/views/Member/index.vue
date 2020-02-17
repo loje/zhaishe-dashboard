@@ -56,6 +56,7 @@
       :visible.sync="dialogVisible"
       width="30%"
       v-loading="dialog.loading"
+      :close-on-click-modal="false"
       center>
       <el-form label-width="70px" :model="dialog.form" :rules="dialog.rules" ref="dialogForm">
         <el-form-item label="用户名" prop="username">
@@ -175,6 +176,19 @@ export default {
                 this.dialog.loading = false;
                 this.dialogVisible = false;
                 this.getlist();
+              }).catch(error => {
+                this.dialog.loading = false;
+                console.log(error);
+                if (error.code === 202) {
+                  this.$message.error('用户名已经存在');
+                }
+                if (error.code === 209) {
+                  this.$message.error('该手机号码已经存在');
+                }
+                if (error.code === 203) {
+                  this.$message.error('邮箱已经存在');
+                }
+                return false;
               });
             }).catch(err => {
               this.dialog.loading = false;

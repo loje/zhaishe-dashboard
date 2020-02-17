@@ -32,7 +32,7 @@
               <el-image :src="scope.row.img" style="width: 150px;" fit="contain"></el-image>
               <template slot="reference">
                 <div class="title">{{scope.row.title}}</div>
-                <div class="desc" style="font-size:12px;color:#999;">{{scope.row.desc}}</div>
+                <!-- <div class="desc" style="font-size:12px;color:#999;">{{scope.row.desc}}</div> -->
               </template>
             </el-popover>
           </template>

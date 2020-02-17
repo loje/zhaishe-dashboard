@@ -38,8 +38,25 @@
         </el-table-column>
         <el-table-column
           label="购买用户"
-          prop="userName"
+          prop="userInfo"
           min-width="250">
+          <template slot-scope="scope">
+            <el-popover
+              placement="top-start"
+              width="400"
+              trigger="hover">
+              <!-- <el-table :data="gridData">
+                <el-table-column width="150" property="date" label="日期"></el-table-column>
+                <el-table-column width="100" property="name" label="姓名"></el-table-column>
+                <el-table-column width="300" property="address" label="地址"></el-table-column>
+              </el-table> -->
+              <div style="margin-bottom: 10px;"><span style="color:#999;">微信号：</span>{{scope.row.userInfo['wechatId']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>{{scope.row.userInfo['mobilePhoneNumber']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>{{scope.row.userInfo['name']}}</div>
+              <div><span style="color:#999;">邮箱：</span>{{scope.row.userInfo['email']}}</div>
+              <span slot="reference">{{scope.row.userInfo['username']}}</span>
+            </el-popover>
+          </template>
         </el-table-column>
         <el-table-column
           label="购买时间"
@@ -95,7 +112,8 @@ export default {
 
                   for (let k = 0; k < userList.length; k += 1) {
                     if (list[i].user.objectId === userList[k].objectId) {
-                      list[i].userName = `${userList[k].name}(${userList[k].username})`;
+                      console.log(userList[k]);
+                      list[i].userInfo = userList[k];
 
                       list[i] = {
                         ...list[i],

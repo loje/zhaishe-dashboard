@@ -45,7 +45,7 @@
         </el-table-column>
         <el-table-column
           label="操作"
-          min-width="320">
+          width="400">
           <template slot-scope="scope">
             <el-button type="info" size="small" icon="el-icon-s-flag" v-if="scope.row.recommend === true" @click="setTop(scope.row.objectId, false)">取消置顶</el-button>
             <el-button type="primary" size="small" icon="el-icon-s-flag" v-else @click="setTop(scope.row.objectId, true)">首页置顶</el-button>
