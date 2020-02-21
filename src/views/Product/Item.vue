@@ -7,12 +7,20 @@
       <el-form-item label="产品介绍" prop="desc">
         <el-input type="textarea" v-model="form.desc" rows="3" maxlength="180" show-word-limit></el-input>
       </el-form-item>
-      <el-form-item label="产品图片" prop="imgSrc">
+      <el-form-item label="产品小图" prop="imgSrc">
         <div style="line-height: 40px; color:#999;">(图片长宽1比1)</div>
         <div @click="importClick" class="el-upload el-upload--picture-card" v-loading="imgLoading">
           <el-image :src="form.imgSrc" v-if="form.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
           <i class="el-icon-plus" v-else></i>
           <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
+        </div>
+      </el-form-item>
+      <el-form-item label="产品列表图" prop="imgListSrc">
+        <div style="line-height: 40px; color:#999;">(图片长宽190px * 110px)</div>
+        <div @click="importListClick" class="el-upload el-upload--picture-card" style="width: 190px; height: 110px;line-height: 110px;" v-loading="imgListLoading">
+          <el-image :src="form.imgListSrc" v-if="form.imgListSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
+          <i class="el-icon-plus" v-else></i>
+          <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadListFile" class="el-upload__input" :multiple="false" name="file" ref="inputList" type="file">
         </div>
       </el-form-item>
       <!-- <el-form-item label="支持系统" prop="system">
@@ -31,13 +39,13 @@
         <el-input-number v-model="form.price" controls-position="right"></el-input-number>
       </el-form-item>
       <el-form-item label="原价库存" prop="inventory">
-        <el-input-number v-model="form.inventory" controls-position="right" min="0"></el-input-number>
+        <el-input-number v-model="form.inventory" controls-position="right" :min="0"></el-input-number>
       </el-form-item>
       <el-form-item label="团购价" prop="groupPrice">
         <el-input-number v-model="form.groupPrice" controls-position="right"></el-input-number>
       </el-form-item>
       <el-form-item label="团购库存" prop="groupInventory">
-        <el-input-number v-model="form.groupInventory" controls-position="right" min="0"></el-input-number>
+        <el-input-number v-model="form.groupInventory" controls-position="right" :min="0"></el-input-number>
       </el-form-item>
       <el-form-item label="官网地址" prop="website">
         <el-input type="text" v-model="form.website" placeholder="请填写带有http://或https://前缀的地址"></el-input>
@@ -114,6 +122,8 @@ export default {
 
       loading: false,
       imgLoading: false,
+      imgListLoading: false,
+
       form: {
         inventory: 0,
         groupInventory: 0,
@@ -123,6 +133,8 @@ export default {
         title: [{required: true, message: '请输入', trigger: 'blur'}],
         desc: [{required: true, message: '请输入', trigger: 'blur'}],
         imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
+        imgListSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
+        
         // system: [{required: true, message: '请选择支持系统', trigger: 'blur'}],
         price: [{required: true, message: '请填写原价', trigger: 'blur'}],
         inventory: [{required: true, message: '请填写原价库存', trigger: 'blur'}],
@@ -190,6 +202,7 @@ export default {
           title: data.title,
           desc: data.desc,
           imgSrc: data.imgSrc,
+          imgListSrc: data.imgListSrc,
           price: data.price,
           // system: data.system,
           inventory: data.inventory ? data.inventory : 0,
@@ -223,6 +236,32 @@ export default {
           // that.form.img = file;
         }, () => {
           this.imgLoading = false;
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+      }
+    },
+
+    importListClick() {
+      this.imgListLoading = false;
+      this.$refs.inputList.value = null;
+      this.$refs.inputList.click();
+    },
+    uploadListFile(e) {
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (e.target.files[0].size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        this.imgListLoading = true;
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          this.imgListLoading = false;
+          this.form.imgListSrc = file[0].url;
+          // that.form.img = file;
+        }, () => {
+          this.imgListLoading = false;
           // console.error(error);
           // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
         });
@@ -284,7 +323,9 @@ export default {
 
           query.set('notDelete', true);
           query.set('status', Number(status));
-          query.set('recommend', false);
+          if (status === -1) {
+            query.set('recommend', false);
+          }
 
           query.save().then(() => {
             this.loading = false;
