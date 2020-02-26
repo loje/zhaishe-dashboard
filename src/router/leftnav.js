@@ -89,6 +89,12 @@ const leftRoutes = [
         component: () => import('@/views/Product/Order'),
         meta: { menu: true, keepAlive: true },
       },
+      {
+        path: '/product/wechatOrder',
+        name: '微信支付订单列表',
+        component: () => import('@/views/Product/wechatOrder'),
+        meta: { menu: true, keepAlive: true },
+      },
     ],
   },
   {
