@@ -17,9 +17,12 @@
           label="订单号"
           prop="objectId"
           min-width="250">
+          <template slot-scope="scope">
+            <span style="color: #999;">PRO-</span><span style="text-transform: uppercase">{{scope.row.objectId}}</span>
+          </template>
         </el-table-column>
         <el-table-column
-          label="订单金额"
+          label="订单金额(元)"
           prop="total_fee"
           min-width="200">
           <template slot-scope="scope">
@@ -45,17 +48,35 @@
               placement="top-start"
               width="400"
               trigger="hover">
-              <!-- <el-table :data="gridData">
-                <el-table-column width="150" property="date" label="日期"></el-table-column>
-                <el-table-column width="100" property="name" label="姓名"></el-table-column>
-                <el-table-column width="300" property="address" label="地址"></el-table-column>
-              </el-table> -->
               <div style="margin-bottom: 10px;"><span style="color:#999;">微信号：</span>{{scope.row.userInfo['wechatId']}}</div>
               <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>{{scope.row.userInfo['mobilePhoneNumber']}}</div>
               <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>{{scope.row.userInfo['name']}}</div>
               <div><span style="color:#999;">邮箱：</span>{{scope.row.userInfo['email']}}</div>
               <span slot="reference">{{scope.row.userInfo['username']}}</span>
             </el-popover>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="推荐码"
+          prop="userInfo"
+          min-width="250">
+          <template slot-scope="scope">
+            <template v-if="scope.row.couponCode">
+              <el-tag type="warning">{{scope.row.couponCode}}</el-tag>
+            </template>
+            <template v-else>
+              <span style="color: #999;font-size: 12px;">未使用推荐码</span>
+            </template>
+            <!-- <el-popover
+              placement="top-start"
+              width="400"
+              trigger="hover">
+              <div style="margin-bottom: 10px;"><span style="color:#999;">微信号：</span>{{scope.row.userInfo['wechatId']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>{{scope.row.userInfo['mobilePhoneNumber']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>{{scope.row.userInfo['name']}}</div>
+              <div><span style="color:#999;">邮箱：</span>{{scope.row.userInfo['email']}}</div>
+              <span slot="reference">{{scope.row.userInfo['username']}}</span>
+            </el-popover> -->
           </template>
         </el-table-column>
         <el-table-column
