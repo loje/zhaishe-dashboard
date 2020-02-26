@@ -10,14 +10,14 @@
       <el-form-item label="微信" prop="wechat">
         <el-input type="text" v-model="form.wechat"></el-input>
       </el-form-item>
-      <el-form-item label="资源图片" prop="imgSrc">
+      <!-- <el-form-item label="资源图片" prop="imgSrc">
         <div style="line-height: 40px; color:#999;">(图片长宽2比1)</div>
         <div @click="importClick" class="el-upload el-upload--picture-card" v-loading="imgLoading">
           <el-image :src="form.imgSrc" v-if="form.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
           <i class="el-icon-plus" v-else></i>
           <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
         </div>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="资源分类" prop="sort">
         <el-select v-model="form.sort">
           <el-option v-for="(item, $index) in sortList" :key="$index" :label="item.name" :value="item.id"></el-option>
@@ -48,7 +48,7 @@ export default {
       form: {},
       rules: {
         title: [{required: true, message: '请输入资源标题', trigger: 'blur'}],
-        imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
+        // imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
         sort: [{required: true, message: '请选择资源分类', trigger: 'blur'}],
         type: [{required: true, message: '请选择类型', trigger: 'blur'}],
         link: [{required: true, message: '请输入链接', trigger: 'blur'}],
@@ -101,7 +101,7 @@ export default {
           objectId: data.objectId ? data.objectId : '',
           title: data.title,
           author: data.author,
-          imgSrc: data.imgSrc,
+          // imgSrc: data.imgSrc,
           sort: data.sort,
           link: data.link,
           code: data.code,
@@ -126,25 +126,25 @@ export default {
       this.$refs.input.value = null;
       this.$refs.input.click();
     },
-    uploadFile(e) {
-      if (e.target.files) {
-        var localFile  = e.target.files[0];
-        if (e.target.files[0].size > 5*1024*100) {
-          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb,上传文件不得超过500kb`);
-          return false;
-        }
-        this.imgLoading = true;
-        var file = this.$Bmob.File(localFile.name, localFile);
-        file.save().then((res) => {
-          this.imgLoading = false;
-          this.form.imgSrc = res[0].url;
-        }, () => {
-          this.imgLoading = false;
-          // console.error(error);
-          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
-        });
-      }
-    },
+    // uploadFile(e) {
+    //   if (e.target.files) {
+    //     var localFile  = e.target.files[0];
+    //     if (e.target.files[0].size > 5*1024*100) {
+    //       this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb,上传文件不得超过500kb`);
+    //       return false;
+    //     }
+    //     this.imgLoading = true;
+    //     var file = this.$Bmob.File(localFile.name, localFile);
+    //     file.save().then((res) => {
+    //       this.imgLoading = false;
+    //       this.form.imgSrc = res[0].url;
+    //     }, () => {
+    //       this.imgLoading = false;
+    //       // console.error(error);
+    //       // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+    //     });
+    //   }
+    // },
     submitForm() {
       this.$refs.form.validate((valid) => {
         if (valid) {

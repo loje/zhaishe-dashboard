@@ -64,7 +64,7 @@ export default {
       var query = this.$Bmob.Query('download');
       query.find().then((data) => {
         for (let i = 0; i < data.length; i += 1) {
-          count += data[i].downloads;
+          count += data[i].downloads ? data[i].downloads : 0;
         }
         this.downloadCount = count;
       });

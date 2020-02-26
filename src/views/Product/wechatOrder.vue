@@ -341,6 +341,8 @@ export default {
               console.log(result.return_msg) //打印出返回的结果
               if (result.return_msg === 'No Bill Exist') {
                 that.$message.warning('账单不存在');
+              } else if (result.return_msg === 'Bill Creating') {
+                that.$message.warning('账单生成中');
               } else {
                 that.$message.warning(result.return_msg);
               }
