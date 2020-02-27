@@ -105,7 +105,8 @@ export default {
           sort: data.sort,
           link: data.link,
           code: data.code,
-        }
+          downloads: data.downloads || 0,
+        };
       });
     },
     getSort() {
@@ -176,6 +177,9 @@ export default {
           }
           if(this.form.code) {
             query.set('code', this.form.code);
+          }
+          if(this.form.downloads) {
+            query.set('downloads', this.form.downloads || 0);
           }
           query.save().then(() => {
             this.loading = false;

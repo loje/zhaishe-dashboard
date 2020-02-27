@@ -16,7 +16,7 @@
         <el-table-column
           label="订单号"
           prop="objectId"
-          min-width="250">
+          min-width="150">
           <template slot-scope="scope">
             <span style="color: #999;">PRO-</span><span style="text-transform: uppercase">{{scope.row.objectId}}</span>
           </template>
@@ -24,7 +24,7 @@
         <el-table-column
           label="订单金额(元)"
           prop="total_fee"
-          min-width="200">
+          min-width="120">
           <template slot-scope="scope">
             {{(scope.row.total_fee / 100).toFixed(2)}}
           </template>
@@ -32,7 +32,10 @@
         <el-table-column
           label="支付状态"
           prop="trade_state_desc"
-          min-width="250">
+          min-width="150">
+          <template slot-scope="scope">
+            {{scope.row.trade_state_desc}}
+          </template>
         </el-table-column>
         <el-table-column
           label="相关产品"
@@ -59,7 +62,7 @@
         <el-table-column
           label="推荐码"
           prop="userInfo"
-          min-width="250">
+          min-width="100">
           <template slot-scope="scope">
             <template v-if="scope.row.couponCode">
               <el-tag type="warning">{{scope.row.couponCode}}</el-tag>
@@ -82,10 +85,11 @@
         <el-table-column
           label="购买时间"
           prop="createdAt"
-          min-width="200">
+          min-width="130">
         </el-table-column>
-        <el-table-column label="操作" align="center" min-width="150">
+        <el-table-column label="操作" align="center" min-width="200">
           <template slot-scope="scope">
+            <el-button type="success" size="small" @click="checkWechatOrder(scope.row)" plain>查看微信订单</el-button>
             <el-button type="warning" size="small" @click="comfilmDelivery(scope.row.objectId)" v-if="!scope.row.delivery">确认发货</el-button>
             <el-button type="danger" size="small" @click="cancelDelivery(scope.row.objectId)" v-else>取消发货</el-button>
           </template>
@@ -165,6 +169,9 @@ export default {
       query.save().then(() => {
         this.getlist();
       });
+    },
+    checkWechatOrder(item) {
+      console.log(item);
     },
   },
 };

@@ -18,8 +18,8 @@
         </el-select>
       </el-form-item>
       <el-form-item label="活动图片" prop="imgSrc">
-        <div style="line-height: 40px; color:#999;">(图片长宽1比1)</div>
-        <div @click="importClick" class="el-upload el-upload--picture-card" v-loading="imgLoading">
+        <div style="line-height: 40px; color:#999;">(图片长宽280px * 160px)</div>
+        <div @click="importClick" class="el-upload el-upload--picture-card" style="width:280px;height:160px;" v-loading="imgLoading">
           <el-image :src="form.imgSrc" v-if="form.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
           <i class="el-icon-plus" v-else></i>
           <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">

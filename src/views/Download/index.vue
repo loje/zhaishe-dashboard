@@ -81,6 +81,7 @@ export default {
     getlist() {
       this.loading = true;
       let downloadQuery = this.$Bmob.Query('download');
+      downloadQuery.order('-updatedAt');
       downloadQuery.equalTo('notDelete', '==', true);
       if (this.searchText != '') {
         downloadQuery.equalTo('title', '===', this.searchText);
