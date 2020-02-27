@@ -272,10 +272,10 @@ export default {
 
     submitForm(status) {
       const that = this;
-      if(this.agendaList.length === 0) {
-        this.$message.warning('请补充活动议程');
-        return false;
-      }
+      // if(this.agendaList.length === 0) {
+      //   this.$message.warning('请补充活动议程');
+      //   return false;
+      // }
       this.$refs.form.validate((valid) => {
         if (valid) {
           that.pulishLoading = true;
