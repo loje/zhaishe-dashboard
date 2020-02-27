@@ -45,7 +45,7 @@
         <el-table-column
           label="购买用户"
           prop="userInfo"
-          min-width="250">
+          min-width="150">
           <template slot-scope="scope">
             <el-popover
               placement="top-start"
@@ -62,7 +62,7 @@
         <el-table-column
           label="推荐码"
           prop="userInfo"
-          min-width="100">
+          min-width="120">
           <template slot-scope="scope">
             <template v-if="scope.row.couponCode">
               <el-tag type="warning">{{scope.row.couponCode}}</el-tag>
@@ -70,41 +70,98 @@
             <template v-else>
               <span style="color: #999;font-size: 12px;">未使用推荐码</span>
             </template>
-            <!-- <el-popover
-              placement="top-start"
-              width="400"
-              trigger="hover">
-              <div style="margin-bottom: 10px;"><span style="color:#999;">微信号：</span>{{scope.row.userInfo['wechatId']}}</div>
-              <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>{{scope.row.userInfo['mobilePhoneNumber']}}</div>
-              <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>{{scope.row.userInfo['name']}}</div>
-              <div><span style="color:#999;">邮箱：</span>{{scope.row.userInfo['email']}}</div>
-              <span slot="reference">{{scope.row.userInfo['username']}}</span>
-            </el-popover> -->
           </template>
+        </el-table-column>
+        <el-table-column
+          label="订单备注"
+          prop="remark"
+          min-width="250">
         </el-table-column>
         <el-table-column
           label="购买时间"
           prop="createdAt"
-          min-width="130">
+          min-width="150">
         </el-table-column>
-        <el-table-column label="操作" align="center" min-width="200">
+        <el-table-column label="发货操作" align="center" min-width="100">
           <template slot-scope="scope">
-            <el-button type="success" size="small" @click="checkWechatOrder(scope.row)" plain>查看微信订单</el-button>
             <el-button type="warning" size="small" @click="comfilmDelivery(scope.row.objectId)" v-if="!scope.row.delivery">确认发货</el-button>
             <el-button type="danger" size="small" @click="cancelDelivery(scope.row.objectId)" v-else>取消发货</el-button>
           </template>
         </el-table-column>
+        <el-table-column label="订单操作" align="center" min-width="100">
+          <template slot-scope="scope">
+            <el-button size="small" @click="checkWechatOrder(scope.row)" style="color: #00c250;border-color: #00c250;">微信对账</el-button>
+            <!-- <el-button size="small" @click="refund(scope.row.payReslut)" style="color: #F56C6C;border-color: #F56C6C;">申请退款</el-button> -->
+          </template>
+        </el-table-column>
       </el-table>
     </div>
+
+    <el-dialog title="微信对账" :visible.sync="dialogVisible" width="30%">
+      <template v-if="form.trade_state === 'SUCCESS'">
+        <el-form :model="form">
+          <el-form-item label="微信支付订单号：" label-width="100">{{form.transaction_id}}</el-form-item>
+          <el-form-item label="商户订单号：" label-width="100">{{form.out_trade_no}}</el-form-item>
+          <el-form-item label="支付完成时间：" label-width="100">{{form.time_end.substring(0, 4)}}-{{form.time_end.substring(4, 6)}}-{{form.time_end.substring(6, 8)}} {{form.time_end.substring(8, 10)}}:{{form.time_end.substring(10, 12)}}:{{form.time_end.substring(12, 14)}}</el-form-item>
+          <el-form-item label="交易状态描述：" label-width="100">{{form.trade_state_desc}}</el-form-item>
+          <el-form-item label="订单金额：" label-width="100">{{(form.total_fee / 100).toFixed(2)}}</el-form-item>
+        </el-form>
+      </template>
+      <template v-if="!form.trade_state && form.return_code === 'SUCCESS'">
+        <el-form :model="form">
+          <el-form-item label="退款笔数：" label-width="100">{{form.refund_count}}</el-form-item>
+          <el-form-item label="微信支付订单号：" label-width="100">{{form.transaction_id}}</el-form-item>
+          <el-form-item label="商户订单号：" label-width="100">{{form.out_trade_no}}</el-form-item>
+          <el-form-item label="订单金额：" label-width="100">{{form.total_fee / 100}}</el-form-item>
+        </el-form>
+      </template>
+    </el-dialog>
+
+    <el-dialog title="申请退款" :visible.sync="refundVisible" width="30%">
+      <el-form :model="refundForm" :rules="refundRules" ref="refundform">
+        <el-form-item label="交易单号" label-width="100px">{{refundForm.transaction_id}}</el-form-item>
+        <el-form-item label="商户单号" label-width="100px">{{refundForm.out_trade_no}}</el-form-item>
+        <el-form-item label="订单金额" label-width="100px">{{refundForm.total_fee / 100}}</el-form-item>
+        <el-form-item label="退款金额" label-width="100px" prop="refund_fee">
+          <el-input-number v-model="refundForm.refund_fee" controls-position="right" :min="0.01" :precision="2"></el-input-number>
+        </el-form-item>
+        <el-form-item label="退款原因" label-width="100px" prop="refund_desc">
+          <el-input
+            type="textarea"
+            :rows="2"
+            placeholder="请输入退款原因"
+            v-model="refundForm.refund_desc">
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <!-- <el-button @click="dialogVisible = false">取 消</el-button> -->
+        <el-button type="primary" @click="comfilmRefund">提交申请</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import md5 from 'js-md5';
+import xml2js from 'xml2js';
+
 export default {
   data() {
     return {
       loading: false,
       tableData: [],
+
+      form: {},
+      dialogVisible: false,
+
+      refundForm: {
+        refund_fee: 0.01,
+      },
+      refundVisible: false,
+      refundRules: {
+        refund_fee: [{required: true, message: '请输入退款金额', trigger: 'blur' }],
+      },
     }
   },
   activated() {
@@ -117,7 +174,7 @@ export default {
       let userList = [];
 
       let orderQuery = this.$Bmob.Query('order_list');
-
+      orderQuery.order('-updatedAt');
       orderQuery.equalTo('sort', '===', 'product');
       orderQuery.find().then((res) => {
         this.loading = false;
@@ -170,8 +227,182 @@ export default {
         this.getlist();
       });
     },
+
+    formMessage(result) {
+      const that = this;
+      var message = {};
+      if (typeof result === 'object') {
+        var keys = Object.keys(result);
+        for (var i = 0; i < keys.length; i++) {
+          var item = result[keys[i]];
+          var key = keys[i];
+          if (!(item instanceof Array) || item.length === 0) {
+            continue;
+          }
+          if (item.length === 1) {
+            var val = item[0];
+            if (typeof val === 'object') {
+              message[key] = this.formMessage(val);
+            } else {
+              message[key] = (val || '').trim();
+            }
+          } else {
+            message[key] = [];
+            for (var j = 0, k = item.length; j < k; j++) {
+              message[key].push(that.formMessage(item[j]));
+            }
+          }
+        }
+      }
+      return message;
+    },
+    // 生成随机字符
+    randomString(length, chars) {
+      let result = '';
+      for (let i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+      return result;
+    },
+    checkWechatRefund(item) {
+      const that = this;
+
+      const appid = 'wx34c87ef5d4d802d9';
+      const mch_id = '1570704211';
+      const nonce_str = this.randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+
+      const stringA = `appid=${appid}&mch_id=${mch_id}&nonce_str=${nonce_str}&transaction_id=${item.transaction_id}`;
+      const stringSignTemp = stringA + "&key=5f99609225b2944c2e230ade0fa99cc9"; //注：key为商户平台设置的密钥key
+      const sign = md5(stringSignTemp).toUpperCase();
+
+      const formData = `<xml>
+      <appid>${appid}</appid>
+      <mch_id>${mch_id}</mch_id>
+      <nonce_str>${nonce_str}</nonce_str>
+      <out_refund_no></out_refund_no>
+      <out_trade_no></out_trade_no>
+      <refund_id></refund_id>
+      <transaction_id>${item.transaction_id}</transaction_id>
+      <sign>${sign}</sign>
+      </xml>`;
+
+      let param = {
+        funcName: 'refundquery',
+        data: {
+          formData,
+        }
+      };
+      this.$Bmob.functions(param.funcName, param.data).then((resultData) => {
+        // xml转json格式
+        xml2js.parseString(resultData, function (err, json) {
+          if (err) {
+            new Error("解析xml报错")
+          } else {
+            var result = that.formMessage(json.xml); // 转换成正常的json 数据
+            console.log(result) //打印出返回的结果
+            that.form = result;
+          }
+        })
+      });
+    },
     checkWechatOrder(item) {
-      console.log(item);
+      const that = this;
+      this.dialogVisible = true;
+
+      const appid = 'wx34c87ef5d4d802d9';
+      const mch_id = '1570704211';
+      const nonce_str = this.randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+
+      const stringA = `appid=${appid}&mch_id=${mch_id}&nonce_str=${nonce_str}&out_trade_no=${item.payReslut.out_trade_no}`;
+      const stringSignTemp = stringA + "&key=5f99609225b2944c2e230ade0fa99cc9"; //注：key为商户平台设置的密钥key
+      const sign = md5(stringSignTemp).toUpperCase();
+
+      const formData = `<xml>
+      <appid>${appid}</appid>
+      <mch_id>${mch_id}</mch_id>
+      <nonce_str>${nonce_str}</nonce_str>
+      <out_trade_no>${item.payReslut.out_trade_no}</out_trade_no>
+      <sign>${sign}</sign>
+      </xml>`;
+
+      let param = {
+        funcName: 'orderquery',
+        data: {
+          formData,
+        }
+      };
+      this.$Bmob.functions(param.funcName, param.data).then((resultData) => {
+        // xml转json格式
+        xml2js.parseString(resultData, function (err, json) {
+          if (err) {
+            new Error("解析xml报错")
+          } else {
+            var result = that.formMessage(json.xml); // 转换成正常的json 数据
+            console.log(JSON.stringify(result)) //打印出返回的结果
+            if (result.trade_state === 'SUCCESS') {
+              that.form = result;
+            }
+            if (result.trade_state === 'REFUND') {
+              that.checkWechatRefund(item.payReslut);
+            }
+            const orderquery = that.$Bmob.Query('order_list');
+            orderquery.set('id', item.objectId);
+            orderquery.set("payReslut", result);
+            orderquery.save();
+            // orderquery.get(item.objectId).then(() => {
+            //   orderquery.set("payReslut", result);
+            //   orderquery.save();
+            // });
+            console.log(item.objectId);
+          }
+        })
+      });
+    },
+
+    refund(item) {
+      this.refundVisible = true;
+      this.refundForm = item;
+    },
+    comfilmRefund() {
+      // const that = this;
+      this.$refs.refundform.validate((valid) => {
+        if (valid) {
+          const appid = 'wx34c87ef5d4d802d9';
+          const mch_id = '1570704211';
+          const nonce_str = this.randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+
+          const stringA = `appid=${appid}&mch_id=${mch_id}&nonce_str=${nonce_str}&out_trade_no=${this.refundForm.out_trade_no}&refund_fee=${this.refundForm.refund_fee * 100}&total_fee=${this.refundForm.total_fee}`;
+          const stringSignTemp = stringA + "&key=5f99609225b2944c2e230ade0fa99cc9"; //注：key为商户平台设置的密钥key
+          const sign = md5(stringSignTemp).toUpperCase();
+
+          const formData = `<xml>
+          <appid>${appid}</appid>
+          <mch_id>${mch_id}</mch_id>
+          <nonce_str>${nonce_str}</nonce_str>
+          <out_trade_no>${this.refundForm.out_trade_no}</out_trade_no>
+          <refund_fee>${this.refundForm.refund_fee * 100}</refund_fee>
+          <total_fee>${this.refundForm.total_fee}</total_fee>
+          <sign>${sign}</sign>
+          </xml>`;
+
+          let param = {
+            funcName: 'refund',
+            data: {
+              formData,
+            }
+          };
+          this.$Bmob.functions(param.funcName, param.data).then((error, res, body) => {
+            console.log(error, res, body);
+            // xml转json格式
+            // xml2js.parseString(resultData, function (err, json) {
+            //   if (err) {
+            //     new Error("解析xml报错")
+            //   } else {
+            //     var result = that.formMessage(json.xml); // 转换成正常的json 数据
+            //     console.log(JSON.stringify(result)) //打印出返回的结果
+            //   }
+            // });
+          });
+        }
+      });
     },
   },
 };
