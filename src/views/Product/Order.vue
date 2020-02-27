@@ -51,10 +51,10 @@
               placement="top-start"
               width="400"
               trigger="hover">
-              <div style="margin-bottom: 10px;"><span style="color:#999;">微信号：</span>{{scope.row.userInfo['wechatId']}}</div>
-              <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>{{scope.row.userInfo['mobilePhoneNumber']}}</div>
-              <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>{{scope.row.userInfo['name']}}</div>
-              <div><span style="color:#999;">邮箱：</span>{{scope.row.userInfo['email']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">微信号：</span>{{scope.row.wechatId || scope.row.userInfo['wechatId']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>{{scope.row.phone || scope.row.userInfo['mobilePhoneNumber']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>{{scope.row.name || scope.row.userInfo['name']}}</div>
+              <div><span style="color:#999;">邮箱：</span>{{scope.row.email || scope.row.userInfo['email']}}</div>
               <span slot="reference">{{scope.row.userInfo['username']}}</span>
             </el-popover>
           </template>
@@ -174,7 +174,7 @@ export default {
       let userList = [];
 
       let orderQuery = this.$Bmob.Query('order_list');
-      orderQuery.order('-updatedAt');
+      orderQuery.order('-createdAt');
       orderQuery.equalTo('sort', '===', 'product');
       orderQuery.find().then((res) => {
         this.loading = false;
@@ -346,7 +346,9 @@ export default {
             const orderquery = that.$Bmob.Query('order_list');
             orderquery.set('id', item.objectId);
             orderquery.set("payReslut", result);
-            orderquery.save();
+            orderquery.save().then(() => {
+              that.getlist();
+            });
             // orderquery.get(item.objectId).then(() => {
             //   orderquery.set("payReslut", result);
             //   orderquery.save();

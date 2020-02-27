@@ -25,23 +25,50 @@
           label="产品名"
           prop="title"
           min-width="250">
-        </el-table-column>
-        <el-table-column
-          label="购买人数"
-          prop="buyers"
-          min-width="250">
+          <template slot-scope="scope">
+            <div style="display: flex;width:340px;align-items: center;">
+              <div :style="{
+                width: '32px',
+                height: '32px',
+                backgroundImage: `url(${scope.row.imgSrc})`,
+                backgroundSize: 'cover'}"></div>
+                <div style="flex: 1; padding-left: 10px;">
+                  <div>{{scope.row.title}}</div>
+                </div>
+            </div>
+          </template>
         </el-table-column>
         <el-table-column
           label="原价格"
           prop="price"
-          min-width="250"
-          align="center">
+          min-width="150"
+          align="left">
+          <template slot-scope="scope">
+            ￥{{scope.row.price.toFixed(2)}}
+          </template>
         </el-table-column>
         <el-table-column
           label="优惠价/团购价"
           prop="groupPrice"
-          min-width="250"
+          min-width="150"
+          align="left">
+          <template slot-scope="scope">
+            ￥{{scope.row.groupPrice.toFixed(2)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="库存(原价 | 团购)"
+          min-width="150"
           align="center">
+          <template slot-scope="scope">
+            {{scope.row.inventory || 0}} | {{scope.row.groupInventory || 0}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="销量"
+          prop="buyers"
+          align="center"
+          min-width="150">
         </el-table-column>
         <el-table-column
           label="操作"
@@ -136,14 +163,33 @@ export default {
   methods: {
     getlist() {
       this.loading = true;
-      let productQuery = this.$Bmob.Query('product');
-      if (this.searchText != '') {
-        productQuery.equalTo('title', '===', this.searchText);
-      }
-      productQuery.find().then((res) => {
-        this.loading = false;
-        this.tableData = res;
+      let dataList = [];
+
+      var ppQuery = this.$Bmob.Query('product_person');
+      ppQuery.find().then((ppList) => {
+        let productQuery = this.$Bmob.Query('product');
+        if (this.searchText != '') {
+          productQuery.equalTo('title', '===', this.searchText);
+        }
+        productQuery.find().then((data) => {
+          this.loading = false;
+          for (let i = 0; i < data.length; i += 1) {
+            let buyers = 0;
+            for (let j = 0; j < ppList.length; j += 1) {
+              if (data[i].objectId === ppList[j].product.objectId) {
+                buyers += 1;
+              }
+            }
+            dataList.push({
+              ...data[i],
+              buyers,
+            });
+          }
+          this.tableData = dataList;
+        });
       });
+
+
     },
     setTop(id, boolean) {
       const query = this.$Bmob.Query('product');
