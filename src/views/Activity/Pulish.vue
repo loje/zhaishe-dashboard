@@ -72,9 +72,9 @@
           </div>
         </div>
       </el-form-item>
-      <el-form-item label="会后笔记" prop="note">
+      <!-- <el-form-item label="会后笔记" prop="note">
         <el-input v-model="form.note" placeholder="请填写笔记链接"></el-input>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="活动详情" prop="content">
 
         <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadImgFile" class="el-upload__input" :multiple="false" name="file" ref="imgInput" type="file">
@@ -262,7 +262,7 @@ export default {
           time: [this.form.startTime, this.form.endTime],
           birdPrice: data.birdPrice,
           fee: data.fee,
-          note: data.note,
+          // note: data.note,
           number: data.number,
           address: data.address,
           content: data.content,
@@ -325,9 +325,9 @@ export default {
               query.set('address', that.form.address);
             }
 
-            if (that.form.note) {
-              query.set('note', that.form.note);
-            }
+            // if (that.form.note) {
+            //   query.set('note', that.form.note);
+            // }
 
             if (that.agendaList.length > 0) {
               query.set('agenda', JSON.stringify(that.agendaList));
@@ -395,9 +395,9 @@ export default {
               query.set('address', that.form.address);
             }
 
-            if (that.form.note) {
-              query.set('note', that.form.note);
-            }
+            // if (that.form.note) {
+            //   query.set('note', that.form.note);
+            // }
 
             if (that.agendaList.length > 0) {
               query.set('agenda', JSON.stringify(that.agendaList));

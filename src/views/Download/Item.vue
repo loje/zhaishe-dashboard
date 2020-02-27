@@ -7,9 +7,9 @@
       <el-form-item label="上传人" prop="author">
         <el-input type="text" v-model="form.author"></el-input>
       </el-form-item>
-      <el-form-item label="微信" prop="wechat">
+      <!-- <el-form-item label="微信" prop="wechat">
         <el-input type="text" v-model="form.wechat"></el-input>
-      </el-form-item>
+      </el-form-item> -->
       <!-- <el-form-item label="资源图片" prop="imgSrc">
         <div style="line-height: 40px; color:#999;">(图片长宽2比1)</div>
         <div @click="importClick" class="el-upload el-upload--picture-card" v-loading="imgLoading">
@@ -160,9 +160,9 @@ export default {
           if(this.form.author) {
             query.set('author', this.form.author);
           }
-          if(this.form.wechat) {
-            query.set('wechat', this.form.wechat);
-          }
+          // if(this.form.wechat) {
+          //   query.set('wechat', this.form.wechat);
+          // }
           if(this.form.imgSrc) {
             query.set('imgSrc', this.form.imgSrc);
           }

@@ -84,8 +84,8 @@
         </el-table-column>
         <el-table-column label="发货操作" align="center" min-width="100">
           <template slot-scope="scope">
-            <el-button type="warning" size="small" @click="comfilmDelivery(scope.row.objectId)" v-if="!scope.row.delivery">确认发货</el-button>
-            <el-button type="danger" size="small" @click="cancelDelivery(scope.row.objectId)" v-else>取消发货</el-button>
+            <el-button type="danger" size="small" @click="comfilmDelivery(scope.row.objectId)" v-if="!scope.row.delivery">确认发货</el-button>
+            <el-button type="info" size="small" @click="cancelDelivery(scope.row.objectId)" v-else>取消发货</el-button>
           </template>
         </el-table-column>
         <el-table-column label="订单操作" align="center" min-width="100">
