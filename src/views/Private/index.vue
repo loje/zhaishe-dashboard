@@ -14,13 +14,21 @@
       <el-table :data="tableData"
         style="width: 100%"
         v-loading="loading">
-        <el-table-column label="私单名称" prop="title"></el-table-column>
-        <el-table-column label="私单要求" prop="content"></el-table-column>
-        <el-table-column label="创建时间" prop="createdAt"></el-table-column>
+        <el-table-column label="名字" prop="name"></el-table-column>
+        <el-table-column label="电话" prop="phone"></el-table-column>
+        <el-table-column label="电话" prop="wechatId"></el-table-column>
+        <el-table-column label="类型" prop="sort"></el-table-column>
+        <el-table-column label="发布时间" prop="createdAt"></el-table-column>
+
+        <!-- <el-table-column label="私单名称" prop="title"></el-table-column> -->
+        <el-table-column label="描述" prop="content"></el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="warning" size="small" @click="edit('编辑', scope.row)">编辑</el-button>
-            <el-button type="danger" size="small" @click="del(scope.row.objectId)">删除</el-button>
+            <el-button type="warning" size="small" @click="edit('查看', scope.row)">查看</el-button>
+            <el-button type="warning" size="small" @click="edit('下线', scope.row)">下线</el-button>
+
+            <!-- <el-button type="warning" size="small" @click="edit('编辑', scope.row)">编辑</el-button> -->
+            <!-- <el-button type="danger" size="small" @click="del(scope.row.objectId)">删除</el-button> -->
           </template>
         </el-table-column>
       </el-table>

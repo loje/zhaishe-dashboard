@@ -78,6 +78,11 @@
           min-width="250">
         </el-table-column>
         <el-table-column
+          label="商户订单号"
+          prop="out_trade_no"
+          min-width="150">
+        </el-table-column>
+        <el-table-column
           label="购买时间"
           prop="createdAt"
           min-width="150">
