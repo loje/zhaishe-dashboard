@@ -20,7 +20,12 @@
         </template>
         <el-menu-item-group>
           <template v-for="(item, $i) in items.children">
-          <el-menu-item :index="$i.toString()" :key="$i" @click="$router.push(item.path)" v-if="item.meta.menu" :style="{backgroundColor: $route.path === item.path ?  '#fffaea' : ''}">{{item.name}}</el-menu-item>
+          <el-menu-item :index="$i.toString()" :key="$i" @click="$router.push(item.path)" v-if="item.meta.menu" :style="{backgroundColor: $route.path === item.path ?  '#fffaea' : ''}">
+            {{item.name}}
+            <template v-if="item.name === '产品订单列表'">
+            <span style="display: inline-block;width: 10px; height: 10px; background-color: #f56c6c; border-radius: 10px;" v-if="count !== orderCount"></span>
+            </template>
+          </el-menu-item>
           </template>
         </el-menu-item-group>
       </el-submenu>
@@ -36,11 +41,26 @@ export default {
   data() {
     return {
       leftNav,
+      count: 0,
+      orderCount: 0,
     }
+  },
+  mounted() {
+    this.getProOrderCount();
   },
   methods: {
     handleOpen() {},
     handleClose() {},
+    
+    getProOrderCount() {
+      let orderQuery = this.$Bmob.Query('order_list');
+      orderQuery.order('-createdAt');
+      orderQuery.equalTo('sort', '===', 'product');
+      orderQuery.count().then((count) => {
+        this.count = count;
+        this.orderCount = Number(localStorage.getItem('orderCount'));
+      });
+    },
   },
 };
 </script>

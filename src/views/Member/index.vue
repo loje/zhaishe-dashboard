@@ -37,6 +37,10 @@
           label="邮箱"
           prop="email">
         </el-table-column>
+        <el-table-column
+          label="最近登录时间"
+          prop="loginTime">
+        </el-table-column>
         <el-table-column label="操作" width="300">
           <template slot-scope="scope">
             <el-button type="warning" @click="edit(scope.row.objectId)" icon="el-icon-edit" size="small">编辑</el-button>
@@ -129,10 +133,16 @@ export default {
       this.loading = true;
       const that = this;
       var userListQuery = this.$Bmob.Query('_User');
+      userListQuery.order("-loginTime");
       userListQuery.find().then((res) => {
         that.loading = false;
         that.tableData = [];
         for (let i = 0; i < res.length; i += 1) {
+          for (let key in res[i].loginTime) {
+            if (key === 'iso') {
+              res[i].loginTime = res[i].loginTime[key];
+            }
+          }
           that.tableData.push(res[i]);
         }
       });

@@ -7,6 +7,18 @@
           <el-breadcrumb-item>订单列表</el-breadcrumb-item>
         </el-breadcrumb>
       </span>
+      <div class="top-func">
+        <el-date-picker
+          v-model="dateTime"
+          type="datetimerange"
+          :picker-options="pickerOptions"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          align="right">
+        </el-date-picker>
+        <el-button type="primary" @click="getlist" style="margin-left: 10px;">查询</el-button>
+      </div>
     </div>
     <div class="layer-table">
       <el-table
@@ -155,6 +167,41 @@ export default {
   data() {
     return {
       loading: false,
+      dateTime: '',
+      pickerOptions: {
+        shortcuts: [{
+          text: '今天',
+          onClick(picker) {
+            const start = new Date(`${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`).getTime();
+            const end = start + 24 * 60 * 60 * 1000 - 1000;
+            picker.$emit('pick', [start, end]);
+          }
+        },{
+          text: '最近一周',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近一个月',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近三个月',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+            picker.$emit('pick', [start, end]);
+          }
+        }]
+      },
       tableData: [],
 
       form: {},
@@ -170,7 +217,11 @@ export default {
     }
   },
   activated() {
+    const start = new Date(`${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`).getTime();
+    const end = start + 24 * 60 * 60 * 1000 - 1000;
+    this.dateTime = [start, end];
     this.getlist();
+    this.getOrderCount();
   },
   methods: {
     getlist() {
@@ -181,6 +232,10 @@ export default {
       let orderQuery = this.$Bmob.Query('order_list');
       orderQuery.order('-createdAt');
       orderQuery.equalTo('sort', '===', 'product');
+      if (this.dateTime) {
+        orderQuery.equalTo("createdAt", ">=", new Date(this.dateTime[0]));
+        orderQuery.equalTo("createdAt", "<", new Date(this.dateTime[1]));
+      }
       orderQuery.find().then((res) => {
         this.loading = false;
         let list = res;
@@ -199,7 +254,7 @@ export default {
 
                   for (let k = 0; k < userList.length; k += 1) {
                     if (list[i].user.objectId === userList[k].objectId) {
-                      console.log(userList[k]);
+                      // console.log(userList[k]);
                       list[i].userInfo = userList[k];
 
                       list[i] = {
@@ -214,6 +269,14 @@ export default {
             this.tableData = list;
           });
         });
+      });
+    },
+    getOrderCount() {
+      let orderQuery = this.$Bmob.Query('order_list');
+      orderQuery.order('-createdAt');
+      orderQuery.equalTo('sort', '===', 'product');
+      orderQuery.count().then((count) => {
+        localStorage.setItem('orderCount', count);
       });
     },
     comfilmDelivery(id) {

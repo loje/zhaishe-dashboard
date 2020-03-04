@@ -53,10 +53,17 @@
             <div class="title">{{item.title}}</div>
             <div class="theme">《{{item.theme}}》</div>
           </div>
-          <div class="speaker-close" @click="agendaRemove($index)">
-            <i class="el-icon-delete"></i>
+          <div class="speaker-hover">
+            <div class="hover-flex">
+              <i class="el-icon-picture-outline-round" @click="importHeadClick($index)"></i>
+            </div>
+            <div class="hover-flex">
+              <i class="el-icon-delete" @click="agendaRemove($index)"></i>
+            </div>
           </div>
         </div>
+        <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadHeadFile" class="el-upload__input" :multiple="false" name="file" ref="headInput" type="file">
+
         <div class="speaker speaker-edit">
           <div @click="importAgendaClick" class="el-upload el-upload--picture-card speaker-img" v-loading="imgAgendaLoading">
             <el-image :src="agendaEdit.imgSrc" v-if="agendaEdit.imgSrc" fit="cover" class="img" style="width: 100%; height: 100%;" lazy></el-image>
@@ -191,6 +198,8 @@ export default {
       agendaEdit: {
         imgSrc: '',
       },
+
+      headIndex: '',
     }
   },
   components: {
@@ -472,6 +481,34 @@ export default {
       }
     },
 
+    importHeadClick(i) {
+      console.log(i);
+      this.headIndex = i;
+      // this.imgAgendaLoading = false;
+      this.$refs.headInput.value = null;
+      this.$refs.headInput.click();
+    },
+    uploadHeadFile(e) {
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (e.target.files[0].size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        // this.imgAgendaLoading = true;
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          console.log(file);
+          // this.imgAgendaLoading = false;
+          this.agendaList[this.headIndex].imgSrc = file[0].url;
+        }, () => {
+          // this.imgAgendaLoading = false;
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+      }
+    },
+
     agendaAdd() {
       if (!this.agendaEdit.imgSrc) {
         this.$message.warning('请上传分享人头像');
@@ -586,29 +623,55 @@ export default {
         color: #2B2B2B;
       }
     }
-    .speaker-close {
+    .speaker-hover {
       opacity: 0;
       position: absolute;
       left: 0;
       top: 0;
+      padding: 15px 0;
       width: 100%;
       height: 100%;
-      line-height: 100px;
       text-align: center;
       background-color: rgba(0,0,0,0.75);
+      box-sizing: border-box;
       z-index: 1;
       transition: opacity 250ms ease-in-out;
-      cursor: pointer;
-      i {
-        display: block;
-        font-size: 42px;
-        color: #fff;
-        line-height: 100px;
-        opacity: 0.75;
+      .hover-flex {
+        display: inline-flex;
+        width: 50%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        border-right: 1px solid rgba(255,255,255,0.25);
+        box-sizing: border-box;
+        i {
+          font-size: 42px;
+          cursor: pointer;
+          transition: all 250ms ease-in-out;
+        }
+      }
+      .hover-flex:nth-child(1) {
+        i {
+          color: #fff;
+          opacity: 0.25;
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
+      .hover-flex:nth-child(2) {
+        i {
+          color: #fff;
+          opacity: 0.25;
+          &:hover {
+            opacity: 1;
+            color: #f56c6c;
+          }
+        }
       }
     }
     &:hover {
-      .speaker-close {
+      .speaker-hover {
         opacity: 1;
       }
     }
