@@ -6,29 +6,44 @@
           <el-breadcrumb-item>私单列表</el-breadcrumb-item>
         </el-breadcrumb>
       </span>
-      <div class="top-func">
+      <!-- <div class="top-func">
         <el-button type="primary" icon="el-icon-plus" @click="edit('新建')">新建私单</el-button>
-      </div>
+      </div> -->
     </div>
     <div class="layer-table">
       <el-table :data="tableData"
         style="width: 100%"
         v-loading="loading">
+        <el-table-column
+          label="登录用户">
+          <template slot-scope="scope">
+            <template v-if="scope.row.user">
+            <el-popover
+              placement="top-start"
+              width="400"
+              trigger="hover">
+              <div style="margin-bottom: 10px;"><span style="color:#999;">微信号：</span>{{scope.row.user['wechatId']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>{{scope.row.user['mobilePhoneNumber']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>{{scope.row.user['name']}}</div>
+              <div><span style="color:#999;">邮箱：</span>{{scope.row.user['email']}}</div>
+              <span slot="reference">{{scope.row.user['username']}}</span>
+            </el-popover>
+            </template>
+            <template v-else>
+              <span style="color: #999;">该用户未登录</span>
+            </template>
+          </template>
+        </el-table-column>
         <el-table-column label="名字" prop="name"></el-table-column>
         <el-table-column label="电话" prop="phone"></el-table-column>
-        <el-table-column label="电话" prop="wechatId"></el-table-column>
+        <el-table-column label="微信号" prop="wechatId"></el-table-column>
         <el-table-column label="类型" prop="sort"></el-table-column>
         <el-table-column label="发布时间" prop="createdAt"></el-table-column>
-
-        <!-- <el-table-column label="私单名称" prop="title"></el-table-column> -->
-        <el-table-column label="描述" prop="content"></el-table-column>
+        <el-table-column label="描述" prop="remark"></el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="warning" size="small" @click="edit('查看', scope.row)">查看</el-button>
-            <el-button type="warning" size="small" @click="edit('下线', scope.row)">下线</el-button>
-
-            <!-- <el-button type="warning" size="small" @click="edit('编辑', scope.row)">编辑</el-button> -->
-            <!-- <el-button type="danger" size="small" @click="del(scope.row.objectId)">删除</el-button> -->
+            <el-button type="defalut" size="small" @click="edit('上线', scope.row)" v-if="scope.row.online === false">上线</el-button>
+            <el-button type="info" size="small" @click="edit('下线', scope.row)" v-else>下线</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -73,26 +88,36 @@ export default {
   methods: {
     edit(type, item) {
       console.log(type, item);
-      this.dialogVisible = true;
-      switch (type) {
-        case '新建':
-          this.dialogTitle = '新建私单';
-          break;
-        case '编辑':
-          this.dialogTitle = '编辑私单';
-          this.form = {
-            id: item.objectId,
-            title: item.title,
-            content: item.content
-          };
-          break;
-        default:
-          break;
-      }
+
+      // this.dialogVisible = true;
+      // switch (type) {
+        // case '新建':
+        //   this.dialogTitle = '新建私单';
+        //   break;
+        // case '编辑':
+        //   this.dialogTitle = '编辑私单';
+        //   this.form = {
+        //     id: item.objectId,
+        //     title: item.title,
+        //     content: item.content
+        //   };
+        //   break;
+      //   default:
+      //     break;
+      // }
+
+      const query = this.$Bmob.Query('private_orders');
+      query.get(item.objectId).then(privateOrder => {
+        privateOrder.set('online', type === '上线' ? true : false);
+        privateOrder.save().then(() => {
+          this.getlist();
+        });
+      });
     },
     getlist() {
       this.loading = true;
       let privateQuery = this.$Bmob.Query('private_orders');
+      privateQuery.include('user','user');
       privateQuery.equalTo('notDelete', '==', true);
       privateQuery.find().then((res) => {
         this.loading = false;

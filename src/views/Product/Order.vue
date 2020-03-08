@@ -73,7 +73,6 @@
         </el-table-column>
         <el-table-column
           label="推荐码"
-          prop="userInfo"
           min-width="120">
           <template slot-scope="scope">
             <template v-if="scope.row.couponCode">
