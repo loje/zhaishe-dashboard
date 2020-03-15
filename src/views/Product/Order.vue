@@ -8,6 +8,11 @@
         </el-breadcrumb>
       </span>
       <div class="top-func">
+        <span>发货状态：</span>
+        <el-select v-model="delivery" clearable>
+          <el-option :value="1" label="未发货"></el-option>
+          <el-option :value="2" label="已发货"></el-option>
+        </el-select>
         <el-date-picker
           v-model="dateTime"
           type="datetimerange"
@@ -15,9 +20,10 @@
           range-separator="至"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          align="right">
+          align="right"
+          style="margin-left: 30px;">
         </el-date-picker>
-        <el-button type="primary" @click="getlist" style="margin-left: 10px;">查询</el-button>
+        <el-button type="primary" @click="getlist" style="margin-left: 5px;">查询</el-button>
       </div>
     </div>
     <div class="layer-table">
@@ -201,6 +207,8 @@ export default {
           }
         }]
       },
+
+      delivery: '',
       tableData: [],
 
       form: {},
@@ -220,7 +228,7 @@ export default {
     const end = start + 24 * 60 * 60 * 1000 - 1000;
     this.dateTime = [start, end];
     this.getlist();
-    this.getOrderCount();
+    // this.getOrderCount();
   },
   methods: {
     getlist() {
@@ -234,6 +242,13 @@ export default {
       if (this.dateTime) {
         orderQuery.equalTo("createdAt", ">=", new Date(this.dateTime[0]));
         orderQuery.equalTo("createdAt", "<", new Date(this.dateTime[1]));
+      }
+      if (this.delivery) {
+        if (this.delivery === 1) {
+          orderQuery.equalTo("delivery", "==", false);
+        } else if (this.delivery === 2) {
+          orderQuery.equalTo("delivery", "==", true);
+        }
       }
       orderQuery.find().then((res) => {
         this.loading = false;
@@ -266,6 +281,7 @@ export default {
               }
             }
             this.tableData = list;
+            this.getOrderCount();
           });
         });
       });

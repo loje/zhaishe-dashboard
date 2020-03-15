@@ -58,6 +58,12 @@ const leftRoutes = [
       //   name: '统计',
       //   meta: { menu: false, keepAlive: true },
       // },
+      {
+        path: '/activity/apply',
+        name: '用户发布活动',
+        component: () => import('@/views/Activity/Apply'),
+        meta: { menu: true, keepAlive: true },
+      },
     ],
   },
   {

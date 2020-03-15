@@ -80,8 +80,16 @@ export default {
     align-items: center;
     width: 100vw;
     height: 100vh;
+    background-color: #fafafa;
     .login-box {
       margin: auto;
+      padding: 30px 15px 15px 15px;
+      border-radius: 3px;
+      background-color: #fff;
+      transition: all 250ms ease;
+      &:hover {
+        box-shadow: 0px 0px 12px rgba(0,0,0,0.1);
+      }
       .logo {
         margin: auto;
         width: 181px;
@@ -90,6 +98,9 @@ export default {
       .login-form {
         margin-top: 40px;
         width: 368px;
+        /deep/.el-form-item:last-child {
+          margin-bottom: 0;
+        }
       }
     }
   }

@@ -18,8 +18,13 @@
         style="width: 100%"
         v-loading="loading">
         <el-table-column
-          label="用户名"
-          prop="username">
+          label="用户名">
+          <template slot-scope="scope">
+            <div style="display: flex;">
+            <el-image :src="scope.row.imgSrc" style="margin-right:5px;width: 24px;height:24px;"></el-image>
+            <span style="line-height:24px;">{{scope.row.username}}</span>
+            </div>
+          </template>
         </el-table-column>
         <el-table-column
           label="名字"
@@ -39,7 +44,25 @@
         </el-table-column>
         <el-table-column
           label="最近登录时间"
-          prop="loginTime">
+          prop="loginTime"
+          sortable>
+        </el-table-column>
+        <el-table-column
+          label="注册时长"
+          prop="longTime">
+          <template slot-scope="scope">
+            <template v-if="scope.row.longTime">
+              约{{scope.row.longTime}}天
+            </template>
+            <template v-else-if="scope.row.longHours">
+              约{{scope.row.longHours}}小时 <el-tag type="success" size="mini">新用户</el-tag>
+            </template>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="注册时间"
+          prop="createdAt"
+          sortable>
         </el-table-column>
         <el-table-column label="操作" width="300">
           <template slot-scope="scope">
@@ -143,6 +166,14 @@ export default {
               res[i].loginTime = res[i].loginTime[key];
             }
           }
+          const longTime = parseInt((new Date().getTime() - new Date(res[i].createdAt).getTime()) / 1000 / 60 / 60 / 24);
+          const longHours = parseInt((new Date().getTime() - new Date(res[i].createdAt).getTime()) / 1000 / 60 / 60);
+          if (longTime > 0) {
+            res[i].longTime = longTime
+          } else {
+            res[i].longHours = longHours
+          }
+
           that.tableData.push(res[i]);
         }
       });

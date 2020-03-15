@@ -202,6 +202,7 @@ export default {
       return message;
     },
     downloadbill() {
+      this.tableData = [];
       const that = this;
       const yy = new Date(this.billDate).getFullYear();
       const mm = new Date(this.billDate).getMonth() + 1 < 10 ? '0' + (new Date(this.billDate).getMonth() + 1) : (new Date(this.billDate).getMonth() + 1);
@@ -380,7 +381,6 @@ export default {
 
                   for (let k = 0; k < userList.length; k += 1) {
                     if (list[i].user.objectId === userList[k].objectId) {
-                      console.log(userList[k]);
                       list[i].userInfo = userList[k];
 
                       list[i] = {

@@ -42,8 +42,8 @@
         <el-table-column label="描述" prop="remark"></el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="defalut" size="small" @click="edit('上线', scope.row)" v-if="scope.row.online === false">上线</el-button>
-            <el-button type="info" size="small" @click="edit('下线', scope.row)" v-else>下线</el-button>
+            <el-button type="success" icon="el-icon-check" size="small" @click="edit('通过审核', scope.row)" v-if="!scope.row.audit || scope.row.audit === false">通过审核</el-button>
+            <el-button type="info" icon="el-icon-close" size="small" @click="edit('驳回审核', scope.row)" v-else>驳回审核</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -108,7 +108,8 @@ export default {
 
       const query = this.$Bmob.Query('private_orders');
       query.get(item.objectId).then(privateOrder => {
-        privateOrder.set('online', type === '上线' ? true : false);
+        privateOrder.set('audit', type === '通过审核' ? true : false);
+        privateOrder.set('online', type === '通过审核' ? true : false);
         privateOrder.save().then(() => {
           this.getlist();
         });
