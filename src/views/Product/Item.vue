@@ -15,26 +15,7 @@
           <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
         </div>
       </el-form-item>
-      <!-- <el-form-item label="产品列表图" prop="imgListSrc">
-        <div style="line-height: 40px; color:#999;">(图片长宽190px * 110px)</div>
-        <div @click="importListClick" class="el-upload el-upload--picture-card" style="width: 190px; height: 110px;line-height: 110px;" v-loading="imgListLoading">
-          <el-image :src="form.imgListSrc" v-if="form.imgListSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
-          <i class="el-icon-plus" v-else></i>
-          <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadListFile" class="el-upload__input" :multiple="false" name="file" ref="inputList" type="file">
-        </div>
-      </el-form-item> -->
-      <!-- <el-form-item label="支持系统" prop="system">
-        <el-select v-model="form.system" placeholder="请选择" multiple style="width:100%;">
-          <el-option
-            v-for="item in sysList"
-            :key="item.objectId"
-            :label="item.title"
-            :value="item.objectId">
-            <div class="the-icon" v-html="item.icon"></div>
-            <div class="the-title">{{ item.title }}</div>
-          </el-option>
-        </el-select>
-      </el-form-item> -->
+
       <el-form-item label="原价" prop="price">
         <el-input-number v-model="form.price" controls-position="right"></el-input-number>
       </el-form-item>
@@ -135,20 +116,17 @@ export default {
         imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
         // imgListSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
         
-        // system: [{required: true, message: '请选择支持系统', trigger: 'blur'}],
         price: [{required: true, message: '请填写原价', trigger: 'blur'}],
         inventory: [{required: true, message: '请填写原价库存', trigger: 'blur'}],
         website: [{required: true, message: '请填写官网地址', trigger: 'blur'}],
         content: [{required: true, message: '请填写详情', trigger: 'blur'}],
       },
-      // sysList: [],
     }
   },
   components: {
     quillEditor
   },
   mounted() {
-    // this.getSystemList();
     if (this.$route.query.id) {
       this.getInfo(this.$route.query.id);
     }
@@ -185,12 +163,7 @@ export default {
         });
       }
     },
-    // getSystemList() {
-    //   let sysQuery = this.$Bmob.Query('support_sys');
-    //   sysQuery.find().then((res) => {
-    //     this.sysList = res;
-    //   });
-    // },
+
 
     getInfo(id) {
       this.loading = true;
@@ -202,9 +175,7 @@ export default {
           title: data.title,
           desc: data.desc,
           imgSrc: data.imgSrc,
-          // imgListSrc: data.imgListSrc,
           price: data.price,
-          // system: data.system,
           inventory: data.inventory ? data.inventory : 0,
           groupPrice: data.groupPrice,
           groupInventory: data.groupInventory ? data.groupInventory : 0,

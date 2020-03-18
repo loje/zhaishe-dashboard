@@ -105,18 +105,7 @@
             <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
           </div>
         </el-form-item>
-        <el-form-item label="支持系统" prop="system">
-          <el-select v-model="form.system" placeholder="请选择" multiple style="width:100%;">
-            <el-option
-              v-for="item in sysList"
-              :key="item.objectId"
-              :label="item.title"
-              :value="item.objectId">
-              <div class="the-icon" v-html="item.icon"></div>
-              <div class="the-title">{{ item.title }}</div>
-            </el-option>
-          </el-select>
-        </el-form-item>
+
         <el-form-item label="原价" prop="price">
           <el-input-number v-model="form.price" controls-position="right"></el-input-number>
         </el-form-item>
@@ -150,10 +139,8 @@ export default {
         title: [{required: true, message: '请输入', trigger: 'blur'}],
         desc: [{required: true, message: '请输入', trigger: 'blur'}],
         imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
-        system: [{required: true, message: '请选择支持系统', trigger: 'blur'}],
         price: [{required: true, message: '请填写原价', trigger: 'blur'}],
       },
-      sysList: [],
     }
   },
   activated() {
@@ -213,12 +200,6 @@ export default {
       query.set('status', status);
       query.save().then(() => {
         this.getlist();
-      });
-    },
-    getSystemList() {
-      let sysQuery = this.$Bmob.Query('support_sys');
-      sysQuery.find().then((res) => {
-        this.sysList = res;
       });
     },
     edit(type, id) {

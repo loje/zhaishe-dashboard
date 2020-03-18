@@ -227,6 +227,12 @@ const leftRoutes = [
         component: () => import('@/views/System/FriendLink'),
         meta: { menu: true, keepAlive: true },
       },
+      {
+        path: '/system/region',
+        name: '全国地址库',
+        component: () => import('@/views/System/Region'),
+        meta: { menu: true, keepAlive: true },
+      },
       // {
       //   path: '/system/images',
       //   name: '网站图片',

@@ -30,7 +30,8 @@
       <el-table
         :data="tableData"
         style="width: 100%"
-        v-loading="loading">
+        v-loading="loading"
+        :default-sort = "{prop: 'time_end', order: 'descending'}">
         <el-table-column
           label="订单号"
           prop="objectId"
@@ -44,7 +45,7 @@
           prop="total_fee"
           min-width="120">
           <template slot-scope="scope">
-            {{(scope.row.total_fee / 100).toFixed(2)}}
+            {{(scope.row.payReslut.total_fee / 100).toFixed(2)}}
           </template>
         </el-table-column>
         <el-table-column
@@ -52,7 +53,7 @@
           prop="trade_state_desc"
           min-width="150">
           <template slot-scope="scope">
-            {{scope.row.trade_state_desc}}
+            {{scope.row.payReslut.trade_state_desc}}
           </template>
         </el-table-column>
         <el-table-column
@@ -65,7 +66,8 @@
           prop="userInfo"
           min-width="150">
           <template slot-scope="scope">
-            <el-popover
+            {{scope.row.user ? scope.row.user.name : ''}}
+            <!-- <el-popover
               placement="top-start"
               width="400"
               trigger="hover">
@@ -73,8 +75,8 @@
               <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>{{scope.row.phone || scope.row.userInfo['mobilePhoneNumber']}}</div>
               <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>{{scope.row.name || scope.row.userInfo['name']}}</div>
               <div><span style="color:#999;">邮箱：</span>{{scope.row.email || scope.row.userInfo['email']}}</div>
-              <span slot="reference">{{scope.row.userInfo['username']}}</span>
-            </el-popover>
+              <span slot="reference">{{scope.row.userInfo['username'] || scope.row.userInfo}}</span>
+            </el-popover> -->
           </template>
         </el-table-column>
         <el-table-column
@@ -101,8 +103,9 @@
         </el-table-column>
         <el-table-column
           label="购买时间"
-          prop="createdAt"
-          min-width="150">
+          prop="time_end"
+          min-width="150"
+          sortable>
         </el-table-column>
         <el-table-column label="发货操作" align="center" min-width="100">
           <template slot-scope="scope">
@@ -234,15 +237,15 @@ export default {
     getlist() {
       this.loading = true;
       let proList = [];
-      let userList = [];
+      // let userList = [];
 
       let orderQuery = this.$Bmob.Query('order_list');
-      orderQuery.order('-createdAt');
-      orderQuery.equalTo('sort', '===', 'product');
-      if (this.dateTime) {
-        orderQuery.equalTo("createdAt", ">=", new Date(this.dateTime[0]));
-        orderQuery.equalTo("createdAt", "<", new Date(this.dateTime[1]));
-      }
+      // orderQuery.order('-createdAt');
+      // orderQuery.equalTo('sort', '===', 'product');
+      // if (this.dateTime) {
+      //   orderQuery.equalTo("createdAt", ">=", new Date(this.dateTime[0]));
+      //   orderQuery.equalTo("createdAt", "<", new Date(this.dateTime[1]));
+      // }
       if (this.delivery) {
         if (this.delivery === 1) {
           orderQuery.equalTo("delivery", "==", false);
@@ -250,40 +253,65 @@ export default {
           orderQuery.equalTo("delivery", "==", true);
         }
       }
+      orderQuery.include('user','user');
+      // orderQuery.include('product','product');
       orderQuery.find().then((res) => {
+        console.log(res)
         this.loading = false;
         let list = res;
 
         let productQuery = this.$Bmob.Query('product');
         productQuery.find().then((prores) => {
+        //   // console.log(prores);
           proList = prores;
-          let userQuery = this.$Bmob.Query('_User');
-          userQuery.find().then((userres) => {
-            userList = userres;
-
-            for (let i = 0; i < list.length; i += 1) {
-              for (let j = 0; j < proList.length; j += 1) {
-                if (list[i].product.objectId === proList[j].objectId) {
-                  list[i].productName = proList[j].title;
-
-                  for (let k = 0; k < userList.length; k += 1) {
-                    if (list[i].user.objectId === userList[k].objectId) {
-                      // console.log(userList[k]);
-                      list[i].userInfo = userList[k];
-
-                      list[i] = {
-                        ...list[i],
-                        ...list[i].payReslut,
-                      };
-                    }
-                  }
-                }
+          for (let i = 0; i < list.length; i += 1) {
+            for (let j = 0; j < proList.length; j += 1) {
+              if (list[i].product && list[i].product.objectId === proList[j].objectId) {
+                list[i].productName = proList[j].title;
               }
             }
-            this.tableData = list;
-            this.getOrderCount();
-          });
+          }
+        //   let userQuery = this.$Bmob.Query('_User');
+        //   userQuery.find().then((userres) => {
+        //     // console.log(userres);
+        //     userList = userres;
+
+        //     // for (let i = 0; i < list.length; i += 1) {
+        //     //   for (let j = 0; j < proList.length; j += 1) {
+        //     //     if (list[i].product && list[i].product.objectId === proList[j].objectId) {
+        //     //       list[i].productName = proList[j].title;
+
+        //     //       for (let k = 0; k < userList.length; k += 1) {
+        //     //         if (list[i].user.objectId === userList[k].objectId) {
+        //     //           // console.log(userList[k]);
+        //     //           list[i].userInfo = userList[k];
+        //     //           const time_end = list[i].payReslut.time_end;
+        //     //           const time = `${time_end.substring(0, 4)}-${time_end.substring(4, 6)}-${time_end.substring(6, 8)} ${time_end.substring(8, 10)}:${time_end.substring(10, 12)}:${time_end.substring(12, 14)}`;
+        //     //           list[i] = {
+        //     //             ...list[i],
+        //     //             ...list[i].payReslut,
+        //     //             time_end: time
+        //     //           };
+        //     //         }
+        //     //       }
+        //     //     }
+        //     //   }
+        //     // }
+        //     // this.tableData = list;
+        //     // this.getOrderCount();
+        //   });
         });
+        for (let i = 0; i < list.length; i += 1) {
+          const time_end = list[i].payReslut.time_end;
+          const time = `${time_end.substring(0, 4)}-${time_end.substring(4, 6)}-${time_end.substring(6, 8)} ${time_end.substring(8, 10)}:${time_end.substring(10, 12)}:${time_end.substring(12, 14)}`;
+          list[i] = {
+            ...list[i],
+            out_trade_no: list[i].payReslut.out_trade_no,
+            time_end: time
+          };
+        }
+        this.tableData = list;
+        this.getOrderCount();
       });
     },
     getOrderCount() {
