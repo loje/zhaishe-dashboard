@@ -3,7 +3,7 @@
     <div class="page-top">
       <span class="top-title">
         <el-breadcrumb separator-class="el-icon-arrow-right">
-          <el-breadcrumb-item>友情链接</el-breadcrumb-item>
+          <el-breadcrumb-item>友情链接（当前共{{tableData.length}}条友情链接）</el-breadcrumb-item>
         </el-breadcrumb>
       </span>
       <div class="top-func">
@@ -77,7 +77,11 @@ export default {
       tableData: [],
       loading: false,
 
-      form: {},
+      form: {
+        src: '',
+        title: '',
+        link: ''
+      },
       rules: {
         src: [{required: true, message: '请上传链接图标', trigger: 'blur'}],
         title: [{required: true, message: '请填写链接名称', trigger: 'blur'}],
@@ -113,14 +117,19 @@ export default {
       });
     },
     edit(type, id) {
-      this.visible = true;
       if (this.$refs.form) {
         this.$refs.form.resetFields();
       }
       switch(type) {
         case '新建':
+          if(this.tableData.length >= 12) {
+            this.$message.warning('最多只能有12条友情链接');
+            return false;
+          }
+          this.visible = true;
           break;
         case '编辑':
+          this.visible = true;
           this.getinfo(id);
           break;
         default:
@@ -165,10 +174,7 @@ export default {
       this.$refs.form.validate((valid) => {
         if (valid) {
           if (!this.form.objectId) {
-            if(this.linkList.length === 4) {
-              this.$message.error('最多只能有4条友情链接');
-              return false;
-            }
+            console.log(this.tableData.length);
             this.dialogLoading = true;
             const query = this.$Bmob.Query('link');
             if(this.form.src) {
@@ -187,6 +193,7 @@ export default {
               this.$message.success('添加成功！');
             });
           } else {
+            console.log(this.form);
             this.dialogLoading = true;
             const query = this.$Bmob.Query('link');
             query.set('id', this.form.objectId)
