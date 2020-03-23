@@ -13,7 +13,7 @@
           <el-option :value="1" label="未发货"></el-option>
           <el-option :value="2" label="已发货"></el-option>
         </el-select>
-        <!-- <el-date-picker
+        <el-date-picker
           v-model="dateTime"
           type="datetimerange"
           :picker-options="pickerOptions"
@@ -22,7 +22,7 @@
           end-placeholder="结束日期"
           align="right"
           style="margin-left: 30px;">
-        </el-date-picker> -->
+        </el-date-picker>
         <el-button type="primary" @click="getlist" style="margin-left: 5px;">查询</el-button>
       </div>
     </div>
@@ -33,29 +33,17 @@
         v-loading="loading"
         :default-sort = "{prop: 'time_end', order: 'descending'}">
         <el-table-column
-          label="序号"
-          min-width="60">
-          <template slot-scope="scope">
-            {{scope.$index + 1}}
-          </template>
-        </el-table-column>
-        <!-- <el-table-column
           label="订单号"
           prop="objectId"
           min-width="150">
           <template slot-scope="scope">
             <span style="color: #999;">PRO-</span><span style="text-transform: uppercase">{{scope.row.objectId}}</span>
           </template>
-        </el-table-column> -->
-        <el-table-column
-          label="商户订单号"
-          prop="out_trade_no"
-          min-width="160">
         </el-table-column>
         <el-table-column
           label="订单金额(元)"
           prop="total_fee"
-          min-width="110">
+          min-width="120">
           <template slot-scope="scope">
             {{(scope.row.payReslut ? scope.row.payReslut.total_fee / 100 : 0).toFixed(2)}}
           </template>
@@ -63,7 +51,7 @@
         <el-table-column
           label="支付状态"
           prop="trade_state_desc"
-          min-width="80">
+          min-width="150">
           <template slot-scope="scope">
             {{scope.row.payReslut ? scope.row.payReslut.trade_state_desc : ''}}
           </template>
@@ -71,50 +59,29 @@
         <el-table-column
           label="相关产品"
           prop="productName"
-          min-width="200">
-          <template slot-scope="scope">
-          <div class="media" v-if="scope.row.product">
-            <div class="media-left">
-              <div class="media-img" :style="{backgroundImage: `url(${scope.row.product.imgSrc})`}"></div>
-            </div>
-            <div class="media-body">
-              <div class="media-title">
-                {{scope.row.product.title}}
-              </div>
-            </div>
-          </div>
-          </template>
+          min-width="250">
         </el-table-column>
         <el-table-column
           label="购买用户"
-          min-width="200">
+          prop="userInfo"
+          min-width="150">
           <template slot-scope="scope">
-            <el-popover
+            {{scope.row.user ? scope.row.user.name : ''}}
+            <!-- <el-popover
               placement="top-start"
               width="400"
               trigger="hover">
-              <div style="margin-bottom: 10px;"><span style="color:#999;">微信号：</span>
-              {{scope.row.wechatId ? scope.row.wechatId : (scope.row.user && scope.row.user.wechatId ? scope.row.user.wechatId : '暂无微信号')}}
-              </div>
-              <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>
-              {{scope.row.phone ? scope.row.phone : (scope.row.user && scope.row.user.mobilePhoneNumber ? scope.row.user.mobilePhoneNumber : '暂无手机号')}}
-              </div>
-              <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>
-              {{scope.row.name ? scope.row.name : (scope.row.user && scope.row.user.name ? scope.row.user.name : '暂无名字')}}
-              </div>
-              <div><span style="color:#999;">邮箱：</span>
-              {{scope.row.email ? scope.row.email : (scope.row.user && scope.row.user.email ? scope.row.user.email : '暂无邮箱')}}
-              </div>
-              <span slot="reference" style="white-space: nowrap;">
-                <div :style="{display: 'inline-block',  backgroundImage: `url(${scope.row.user.imgSrc})`, width: '18px', height: '18px', backgroundSize: 'cover', verticalAlign: 'middle', borderRadius: '50%'}" v-if="!scope.row.username && scope.row.user"></div>
-                <span style="display: inline-block;margin-left: 5px;">{{scope.row.username ? scope.row.username : (scope.row.user && scope.row.user.username ? scope.row.user.username : '暂无用户名')}}</span>
-              </span>
-            </el-popover>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">微信号：</span>{{scope.row.wechatId || scope.row.userInfo['wechatId']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">电话：</span>{{scope.row.phone || scope.row.userInfo['mobilePhoneNumber']}}</div>
+              <div style="margin-bottom: 10px;"><span style="color:#999;">姓名：</span>{{scope.row.name || scope.row.userInfo['name']}}</div>
+              <div><span style="color:#999;">邮箱：</span>{{scope.row.email || scope.row.userInfo['email']}}</div>
+              <span slot="reference">{{scope.row.userInfo['username'] || scope.row.userInfo}}</span>
+            </el-popover> -->
           </template>
         </el-table-column>
         <el-table-column
           label="推荐码"
-          min-width="100">
+          min-width="120">
           <template slot-scope="scope">
             <template v-if="scope.row.couponCode">
               <el-tag type="warning">{{scope.row.couponCode}}</el-tag>
@@ -130,9 +97,15 @@
           min-width="250">
         </el-table-column>
         <el-table-column
+          label="商户订单号"
+          prop="out_trade_no"
+          min-width="150">
+        </el-table-column>
+        <el-table-column
           label="购买时间"
           prop="time_end"
-          min-width="160">
+          min-width="150"
+          sortable>
         </el-table-column>
         <el-table-column label="发货操作" align="center" min-width="100">
           <template slot-scope="scope">
@@ -148,7 +121,6 @@
         </el-table-column>
       </el-table>
     </div>
-
 
     <el-dialog title="微信对账" :visible.sync="dialogVisible" width="30%">
       <template v-if="form.trade_state === 'SUCCESS'">
@@ -188,6 +160,7 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
+        <!-- <el-button @click="dialogVisible = false">取 消</el-button> -->
         <el-button type="primary" @click="comfilmRefund">提交申请</el-button>
       </span>
     </el-dialog>
@@ -201,6 +174,7 @@ import xml2js from 'xml2js';
 export default {
   data() {
     return {
+      loading: false,
       dateTime: '',
       pickerOptions: {
         shortcuts: [{
@@ -239,7 +213,6 @@ export default {
 
       delivery: '',
       tableData: [],
-      loading: false,
 
       form: {},
       dialogVisible: false,
@@ -258,57 +231,21 @@ export default {
     const end = start + 24 * 60 * 60 * 1000 - 1000;
     this.dateTime = [start, end];
     this.getlist();
+    // this.getOrderCount();
   },
   methods: {
     getlist() {
       this.loading = true;
-      let ppQuery = this.$Bmob.Query('order_list');
-      ppQuery.order('-createdAt');
-      ppQuery.equalTo("sort", "==", 'product');
-      if (this.delivery) {
-        if (this.delivery === 1) {
-          ppQuery.equalTo("delivery", "==", false);
-        } else if (this.delivery === 2) {
-          ppQuery.equalTo("delivery", "==", true);
-        }
-      }
-      ppQuery.include('user', 'user');
-      
-      ppQuery.find().then((res) => {
-        this.loading = false;
-        let list = res;
+      let proList = [];
+      // let userList = [];
 
-        let productQuery = this.$Bmob.Query('product');
-        productQuery.find().then((prolist) => {
-          for (let i = 0; i < list.length; i += 1) {
-            const time_end = list[i].payReslut && list[i].payReslut.time_end ? list[i].payReslut.time_end : '';
-            const time = list[i].payReslut && list[i].payReslut.time_end ? `${time_end.substring(0, 4)}-${time_end.substring(4, 6)}-${time_end.substring(6, 8)} ${time_end.substring(8, 10)}:${time_end.substring(10, 12)}:${time_end.substring(12, 14)}` : '';
-            list[i] = {
-              ...list[i],
-              out_trade_no: list[i].payReslut && list[i].payReslut.out_trade_no ? list[i].payReslut.out_trade_no : '',
-              time_end: time,
-            };
-
-            for (let j = 0; j < prolist.length; j += 1) {
-              if (list[i].product && list[i].product.objectId === prolist[j].objectId) {
-                list[i].productName = prolist[j].title;
-                list[i].product = prolist[j];
-              }
-            }
-
-            if (list[i].payReslut && list[i].payReslut.out_trade_no === 'test1583073597596') {
-              console.log(list[i]);
-            }
-          }
-          this.tableData = list;
-          this.getOrderCount();
-        });
-      });
-    },
-    getOrderCount() {
       let orderQuery = this.$Bmob.Query('order_list');
-      orderQuery.order('-createdAt');
-      orderQuery.equalTo('sort', '===', 'product');
+      // orderQuery.order('-createdAt');
+      // orderQuery.equalTo('sort', '===', 'product');
+      // if (this.dateTime) {
+      //   orderQuery.equalTo("createdAt", ">=", new Date(this.dateTime[0]));
+      //   orderQuery.equalTo("createdAt", "<", new Date(this.dateTime[1]));
+      // }
       if (this.delivery) {
         if (this.delivery === 1) {
           orderQuery.equalTo("delivery", "==", false);
@@ -316,6 +253,71 @@ export default {
           orderQuery.equalTo("delivery", "==", true);
         }
       }
+      orderQuery.include('user','user');
+      // orderQuery.include('product','product');
+      orderQuery.find().then((res) => {
+        console.log(res)
+        this.loading = false;
+        let list = res;
+
+        let productQuery = this.$Bmob.Query('product');
+        productQuery.find().then((prores) => {
+        //   // console.log(prores);
+          proList = prores;
+          for (let i = 0; i < list.length; i += 1) {
+            for (let j = 0; j < proList.length; j += 1) {
+              if (list[i].product && list[i].product.objectId === proList[j].objectId) {
+                list[i].productName = proList[j].title;
+              }
+            }
+          }
+        //   let userQuery = this.$Bmob.Query('_User');
+        //   userQuery.find().then((userres) => {
+        //     // console.log(userres);
+        //     userList = userres;
+
+        //     // for (let i = 0; i < list.length; i += 1) {
+        //     //   for (let j = 0; j < proList.length; j += 1) {
+        //     //     if (list[i].product && list[i].product.objectId === proList[j].objectId) {
+        //     //       list[i].productName = proList[j].title;
+
+        //     //       for (let k = 0; k < userList.length; k += 1) {
+        //     //         if (list[i].user.objectId === userList[k].objectId) {
+        //     //           // console.log(userList[k]);
+        //     //           list[i].userInfo = userList[k];
+        //     //           const time_end = list[i].payReslut.time_end;
+        //     //           const time = `${time_end.substring(0, 4)}-${time_end.substring(4, 6)}-${time_end.substring(6, 8)} ${time_end.substring(8, 10)}:${time_end.substring(10, 12)}:${time_end.substring(12, 14)}`;
+        //     //           list[i] = {
+        //     //             ...list[i],
+        //     //             ...list[i].payReslut,
+        //     //             time_end: time
+        //     //           };
+        //     //         }
+        //     //       }
+        //     //     }
+        //     //   }
+        //     // }
+        //     // this.tableData = list;
+        //     // this.getOrderCount();
+        //   });
+        });
+        for (let i = 0; i < list.length; i += 1) {
+          const time_end = list[i].payReslut && list[i].payReslut.time_end ? list[i].payReslut.time_end : '';
+          const time = list[i].payReslut && list[i].payReslut.time_end ? `${time_end.substring(0, 4)}-${time_end.substring(4, 6)}-${time_end.substring(6, 8)} ${time_end.substring(8, 10)}:${time_end.substring(10, 12)}:${time_end.substring(12, 14)}` : '';
+          list[i] = {
+            ...list[i],
+            out_trade_no: list[i].payReslut && list[i].payReslut.out_trade_no ? list[i].payReslut.out_trade_no : '',
+            time_end: time
+          };
+        }
+        this.tableData = list;
+        this.getOrderCount();
+      });
+    },
+    getOrderCount() {
+      let orderQuery = this.$Bmob.Query('order_list');
+      orderQuery.order('-createdAt');
+      orderQuery.equalTo('sort', '===', 'product');
       orderQuery.count().then((count) => {
         localStorage.setItem('orderCount', count);
       });
@@ -576,25 +578,5 @@ export default {
     text-align: right;
     background-color:#fff;
     box-sizing: border-box;
-  }
-  .media {
-    display: flex;
-    width: 230px;
-    .media-left {
-      padding-right: 5px;
-      .media-img {
-        width: 24px;
-        height: 24px;
-        background-size: cover;
-      }
-      .media-body {
-        flex: 1;
-        .media-title {
-          font-size: 13px;
-          line-height: 24px;
-          color: #999;
-        }
-      }
-    }
   }
 </style>

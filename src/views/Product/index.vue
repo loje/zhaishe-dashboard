@@ -145,7 +145,6 @@ export default {
   },
   activated() {
     this.getlist();
-    this.getSystemList();
   },
   methods: {
     getlist() {
