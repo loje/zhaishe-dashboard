@@ -9,8 +9,8 @@
       </div>
       <div class="box">
         <div class="box-flex">
-          <span class="box-t">付费用户</span>
-          <span class="box-num">1000</span>
+          <span class="box-t">付费人次</span>
+          <span class="box-num">{{orderCount}}</span>
         </div>
       </div>
       <div class="box">
@@ -22,7 +22,7 @@
       <div class="box">
         <div class="box-flex">
           <span class="box-t">活动参与人数</span>
-          <span class="box-num">1000</span>
+          <span class="box-num">{{actPersonCount}}</span>
         </div>
       </div>
       <div class="box">
@@ -44,12 +44,16 @@ export default {
       allUserCount: 0,
       downloadCount: 0,
       productCount: 0,
+      orderCount: 0,
+      actPersonCount: 0,
     }
   },
   mounted() {
     this.getUserCount();
     this.getDownloadCount();
     this.getProductCount();
+    this.getOrderCount();
+    this.getActPersonCount();
   },
   methods: {
     getUserCount() {
@@ -77,6 +81,19 @@ export default {
     },
     handleSizeChange() {},
     handleCurrentChange() {},
+
+    getOrderCount() {
+      var query = this.$Bmob.Query('order_list');
+      query.count().then((count) => {
+        this.orderCount = count;
+      });
+    },
+    getActPersonCount() {
+      var query = this.$Bmob.Query('activity_person');
+      query.count().then((count) => {
+        this.actPersonCount = count;
+      });
+    },
   },
 }
 </script>
