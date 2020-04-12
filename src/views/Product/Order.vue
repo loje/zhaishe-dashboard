@@ -8,11 +8,19 @@
         </el-breadcrumb>
       </span>
       <div class="top-func">
-        <span>发货状态：</span>
-        <el-select v-model="delivery" clearable>
-          <el-option :value="1" label="未发货"></el-option>
-          <el-option :value="2" label="已发货"></el-option>
-        </el-select>
+        <div class="input-group">
+          <span>购买用户：</span>
+          <el-select v-model="userId" filterable clearable>
+            <el-option :value="item.objectId" :label="item.username" v-for="(item, $index) in userList" :key="$index"></el-option>
+          </el-select>
+        </div>
+        <div class="input-group">
+          <span>发货状态：</span>
+          <el-select v-model="delivery" clearable>
+            <el-option :value="1" label="未发货"></el-option>
+            <el-option :value="2" label="已发货"></el-option>
+          </el-select>
+        </div>
         <!-- <el-date-picker
           v-model="dateTime"
           type="datetimerange"
@@ -148,6 +156,17 @@
         </el-table-column>
       </el-table>
     </div>
+    <div class="pagination">
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="current"
+        :page-sizes="[10, 20, 50, 100, 1000]"
+        :page-size="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total">
+      </el-pagination>
+    </div>
 
 
     <el-dialog title="微信对账" :visible.sync="dialogVisible" width="30%">
@@ -238,8 +257,12 @@ export default {
       },
 
       delivery: '',
+      pageSize: 50,
+      skip: 0,
       tableData: [],
       loading: false,
+      current: 1,
+      total: 0,
 
       form: {},
       dialogVisible: false,
@@ -251,6 +274,9 @@ export default {
       refundRules: {
         refund_fee: [{required: true, message: '请输入退款金额', trigger: 'blur' }],
       },
+
+      userList: [],
+      userId: '',
     }
   },
   activated() {
@@ -258,13 +284,23 @@ export default {
     const end = start + 24 * 60 * 60 * 1000 - 1000;
     this.dateTime = [start, end];
     this.getlist();
+
+    this.getUserList();
   },
   methods: {
     getlist() {
       this.loading = true;
       let ppQuery = this.$Bmob.Query('order_list');
+      const skip = this.pageSize * (this.current - 1);
+      ppQuery.limit(this.pageSize);
+      ppQuery.skip(skip);
       ppQuery.order('-createdAt');
       ppQuery.equalTo("sort", "==", 'product');
+      if (this.userId) {
+        const pointer = this.$Bmob.Pointer('_User')
+        const poiID = pointer.set(this.userId)
+        ppQuery.equalTo("user", "==", poiID);
+      }
       if (this.delivery) {
         if (this.delivery === 1) {
           ppQuery.equalTo("delivery", "==", false);
@@ -273,7 +309,6 @@ export default {
         }
       }
       ppQuery.include('user', 'user');
-      
       ppQuery.find().then((res) => {
         this.loading = false;
         let list = res;
@@ -295,15 +330,12 @@ export default {
                 list[i].product = prolist[j];
               }
             }
-
-            if (list[i].payReslut && list[i].payReslut.out_trade_no === 'test1583073597596') {
-              console.log(list[i]);
-            }
           }
           this.tableData = list;
           this.getOrderCount();
         });
       });
+
     },
     getOrderCount() {
       let orderQuery = this.$Bmob.Query('order_list');
@@ -317,8 +349,18 @@ export default {
         }
       }
       orderQuery.count().then((count) => {
+        this.total = count;
         localStorage.setItem('orderCount', count);
       });
+    },
+    handleSizeChange(page) {
+      this.current = 1;
+      this.pageSize = page;
+      this.getlist();
+    },
+    handleCurrentChange(current) {
+      this.current = current;
+      this.getlist();
     },
     comfilmDelivery(id) {
       const query = this.$Bmob.Query('order_list');
@@ -513,6 +555,34 @@ export default {
             // });
           });
         }
+      });
+    },
+
+    getUserList() {
+      // this.loading = true;
+      // const that = this;
+      var userListQuery = this.$Bmob.Query('_User');
+      userListQuery.order("-loginTime");
+      userListQuery.find().then((res) => {
+        // that.loading = false;
+        // that.userList = [];
+        // for (let i = 0; i < res.length; i += 1) {
+        //   for (let key in res[i].loginTime) {
+        //     if (key === 'iso') {
+        //       res[i].loginTime = res[i].loginTime[key];
+        //     }
+        //   }
+        //   const longTime = parseInt((new Date().getTime() - new Date(res[i].createdAt).getTime()) / 1000 / 60 / 60 / 24);
+        //   const longHours = parseInt((new Date().getTime() - new Date(res[i].createdAt).getTime()) / 1000 / 60 / 60);
+        //   if (longTime > 0) {
+        //     res[i].longTime = longTime
+        //   } else {
+        //     res[i].longHours = longHours
+        //   }
+
+        //   that.tableData.push(res[i]);
+        // }
+        this.userList = res;
       });
     },
   },

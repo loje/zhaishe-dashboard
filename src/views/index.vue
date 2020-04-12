@@ -136,7 +136,7 @@ export default {
     },
     getActivityList() {
       // const that = this;
-      let dataList = [];
+      // let dataList = [];
       var query = this.$Bmob.Query('activity');
       query.find().then((data) => {
         console.log(data);
