@@ -6,11 +6,11 @@
           <el-breadcrumb-item>会员列表</el-breadcrumb-item>
         </el-breadcrumb>
       </span>
-      <div class="top-func">
+      <!-- <div class="top-func">
         <el-tooltip class="item" effect="dark" content="暂不可用" placement="top">
           <el-button type="primary" icon="el-icon-plus" @click="create" >新建会员</el-button>
         </el-tooltip>
-      </div>
+      </div> -->
     </div>
     <div class="layer-table">
       <el-table
@@ -18,11 +18,20 @@
         style="width: 100%"
         v-loading="loading">
         <el-table-column
+          label="序号" width="80">
+          <template slot-scope="scope">
+            {{(current - 1) * pageSize + (scope.$index + 1)}}
+            <template v-if="scope.row.sex === 0">👽</template>
+            <template v-else-if="scope.row.sex === 1">👦</template>
+            <template v-else-if="scope.row.sex === 2">👧</template>
+          </template>
+        </el-table-column>
+        <el-table-column
           label="用户名">
           <template slot-scope="scope">
-            <div style="display: flex;">
+            <div style="display: flex;align-items: center;">
             <el-image :src="scope.row.imgSrc" style="margin-right:5px;width: 24px;height:24px;"></el-image>
-            <span style="line-height:24px;">{{scope.row.username}}</span>
+            <span style="line-height:24px;">{{scope.row.nickname || scope.row.username}}</span>
             </div>
           </template>
         </el-table-column>
@@ -57,6 +66,9 @@
             <template v-else-if="scope.row.longHours">
               约{{scope.row.longHours}}小时 <el-tag type="success" size="mini">新用户</el-tag>
             </template>
+            <template v-else-if="scope.row.longMinute">
+              约{{scope.row.longMinute}}分钟 <el-tag type="success" size="mini">新用户</el-tag>
+            </template>
           </template>
         </el-table-column>
         <el-table-column
@@ -78,6 +90,18 @@
       </el-table>
     </div>
 
+    <div class="pagination">
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="current"
+        :page-sizes="[1, 5, 10, 20, 50]"
+        :page-size="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total">
+      </el-pagination>
+    </div>
+
     <el-dialog
       :title="dialogTitle"
       :visible.sync="dialogVisible"
@@ -86,8 +110,8 @@
       :close-on-click-modal="false"
       center>
       <el-form label-width="70px" :model="dialog.form" :rules="dialog.rules" ref="dialogForm">
-        <el-form-item label="用户名" prop="username">
-          <el-input type="text" v-model="dialog.form.username"></el-input>
+        <el-form-item label="用户名" prop="nickname">
+          <el-input type="text" v-model="dialog.form.nickname"></el-input>
         </el-form-item>
         <el-form-item label="名字" prop="name">
           <el-input type="text" v-model="dialog.form.name"></el-input>
@@ -118,7 +142,13 @@ export default {
   data() {
     return {
       loading: false,
+
+      pageSize: 10,
+      skip: 0,
       tableData: [],
+      current: 1,
+      total: 0,
+
       dialogVisible: false,
       dialogTitle: '',
       dialog: {
@@ -128,7 +158,7 @@ export default {
           password: '',
         },
         rules: {
-          username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+          nickname: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
           // name: [{ required: true, message: '请输入名字', trigger: 'blur' }],
           mobilePhoneNumber: [{ required: true, message: '请输入手机号码', trigger: 'blur' }],
           // email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
@@ -139,6 +169,7 @@ export default {
   },
   mounted() {
     this.getlist();
+    this.getCount();
   },
   methods: {
     create() {
@@ -156,7 +187,10 @@ export default {
       this.loading = true;
       const that = this;
       var userListQuery = this.$Bmob.Query('_User');
+      const skip = this.pageSize * (this.current - 1);
       userListQuery.order("-loginTime");
+      userListQuery.limit(this.pageSize);
+      userListQuery.skip(skip);
       userListQuery.find().then((res) => {
         that.loading = false;
         that.tableData = [];
@@ -168,15 +202,33 @@ export default {
           }
           const longTime = parseInt((new Date().getTime() - new Date(res[i].createdAt).getTime()) / 1000 / 60 / 60 / 24);
           const longHours = parseInt((new Date().getTime() - new Date(res[i].createdAt).getTime()) / 1000 / 60 / 60);
+          const longMinute = parseInt((new Date().getTime() - new Date(res[i].createdAt).getTime()) / 1000 / 60);
           if (longTime > 0) {
             res[i].longTime = longTime
-          } else {
+          } else if (longHours > 0) {
             res[i].longHours = longHours
+          } else {
+            res[i].longMinute = longMinute
           }
 
           that.tableData.push(res[i]);
         }
       });
+    },
+    getCount() {
+      var query = this.$Bmob.Query('_User');
+      query.count().then((count) => {
+        this.total = count;
+      });
+    },
+    handleSizeChange(page) {
+      this.current = 1;
+      this.pageSize = page;
+      this.getlist();
+    },
+    handleCurrentChange(current) {
+      this.current = current;
+      this.getlist();
     },
     submitForm() {
       this.$refs.dialogForm.validate((valid) => {
@@ -187,7 +239,7 @@ export default {
             isAdmin: this.dialog.form.isAdmin,
             mobilePhoneNumber: this.dialog.form.mobilePhoneNumber,
             name: this.dialog.form.name,
-            username: this.dialog.form.username,
+            nickname: this.dialog.form.nickname,
             wechatId: this.dialog.form.wechatId,
             password: '123456',
           };
@@ -312,5 +364,13 @@ export default {
     .title {
       font-size: 12px;
     }
+  }
+  .pagination {
+    padding: 0 50px;
+    width: 100%;
+    height: 50px;
+    text-align: right;
+    background-color:#fff;
+    box-sizing: border-box;
   }
 </style>

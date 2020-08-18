@@ -7,10 +7,32 @@
       <el-form-item label="活动描述" prop="desc">
         <el-input v-model="form.desc" type="textarea" rows="3" placeholder="请输入"></el-input>
       </el-form-item>
+      <el-form-item label="活动主办方" prop="sponsor">
+        <el-input v-model="form.sponsor" placeholder="请输入"></el-input>
+      </el-form-item>
       <el-form-item label="活动形式" prop="mode">
-        <el-select v-model="form.mode" placeholder="请选择活动形式">
-          <el-option v-for="(item, $index) in modeList" :key="$index" :label="item.label" :value="item.value"></el-option>
-        </el-select>
+        <div
+          style="line-height: 40px;">
+        <el-tag
+          :key="tag"
+          v-for="tag in form.mode"
+          closable
+          :disable-transitions="false"
+          @close="handleClose(tag)">
+          {{tag}}
+        </el-tag>
+        <el-input
+          class="input-new-tag"
+          v-if="inputVisible"
+          v-model="inputValue"
+          ref="saveTagInput"
+          size="small"
+          @keyup.enter.native="handleInputConfirm"
+          @blur="handleInputConfirm"
+        >
+        </el-input>
+        <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 增加标签</el-button>
+        </div>
       </el-form-item>
       <el-form-item label="活动类型" prop="sort">
         <el-select v-model="form.sort" placeholder="请选择活动类型">
@@ -22,10 +44,18 @@
         <div @click="importClick" class="el-upload el-upload--picture-card" style="width:280px;height:160px;" v-loading="imgLoading">
           <el-image :src="form.imgSrc" v-if="form.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
           <i class="el-icon-plus" v-else></i>
-          <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
+          <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file"> 
         </div>
       </el-form-item>
-      <el-form-item label="活动时间" prop="time">
+      <el-form-item label="活动精选图片" prop="imgChoicenessSrc">
+        <div style="line-height: 40px; color:#999;">(图片长宽210px * 240px)</div>
+        <div @click="importChoicenessClick" class="el-upload el-upload--picture-card" style="width:210px;height:240px;line-height:240px;" v-loading="imgChoicenessLoading">
+          <el-image :src="form.imgChoicenessSrc" v-if="form.imgChoicenessSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
+          <i class="el-icon-plus" v-else></i>
+          <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadChoicenessFile" class="el-upload__input" :multiple="false" name="file" ref="choicenessInput" type="file">
+        </div>
+      </el-form-item>
+      <el-form-item label="报名时间" prop="time">
         <el-date-picker
           v-model="form.time"
           type="datetimerange"
@@ -34,14 +64,41 @@
           end-placeholder="结束日期">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="早鸟票(元)" prop="birdPrice">
-        <el-input-number v-model="form.birdPrice" placeholder="免费" controls-position="right" :min="0.00"></el-input-number>
+
+      <el-form-item label="活动时间" prop="actTime">
+        <el-date-picker
+          v-model="form.actTime"
+          type="datetimerange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期">
+        </el-date-picker>
       </el-form-item>
-      <el-form-item label="正常票(元)" prop="fee">
-        <el-input-number v-model="form.fee" placeholder="免费" controls-position="right" :min="0.00"></el-input-number>
-      </el-form-item>
-      <el-form-item label="活动人数" prop="number">
-        <el-input-number v-model="form.number" placeholder="不限" controls-position="right" :min="0"></el-input-number>
+
+      <el-form-item label="门票规格">
+        <el-button type="warning" icon="el-icon-plus" size="medium" plain @click="addAttr" :disabled="attrs.length >= 6">添加规格（最多6个，最少1个）</el-button>
+        <el-table :data="attrs" size="small" border stripe style="margin-top: 10px;">
+          <el-table-column label="规格名称" prop="attrName">
+            <template slot-scope="scope">
+              <el-input size="small" v-model="scope.row.attrName" required></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="库存" prop="attrNum" align="center">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.attrNum" size="small" controls-position="right" :min="0" :precision="0"></el-input-number>
+            </template>
+          </el-table-column>
+          <el-table-column label="单价（元）" prop="attrPrice" align="center">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.attrPrice" size="small" controls-position="right" :min="0" :precision="2"></el-input-number>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" align="right">
+            <template slot-scope="scope">
+              <el-button type="danger" icon="el-icon-delete" size="small" @click="delAttr(scope)"></el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-form-item>
       <el-form-item label="活动地点" prop="address">
         <el-input v-model="form.address" placeholder="地点不限"></el-input>
@@ -52,6 +109,7 @@
           <div class="speaker-right">
             <div class="title">{{item.title}}</div>
             <div class="theme">《{{item.theme}}》</div>
+            <div class="the-title">{{item.theTitle}}</div>
           </div>
           <div class="speaker-hover">
             <div class="hover-flex">
@@ -73,15 +131,15 @@
           <div class="speaker-right">
             <el-input type="text" size="mini" v-model="agendaEdit.title" placeholder="请输入分享人名字"></el-input>
             <el-input type="text" size="mini" v-model="agendaEdit.theme" placeholder="请输入分享标题" style="margin-top: 10px;"></el-input>
+            <el-input type="text" size="mini" v-model="agendaEdit.theTitle" placeholder="请输入分享人头衔" style="margin-top: 10px;"></el-input>
+
           </div>
           <div class="speaker-btn">
             <el-button type="primary" size="medium" icon="el-icon-plus" @click="agendaAdd">增加</el-button>
           </div>
         </div>
       </el-form-item>
-      <!-- <el-form-item label="会后笔记" prop="note">
-        <el-input v-model="form.note" placeholder="请填写笔记链接"></el-input>
-      </el-form-item> -->
+
       <el-form-item label="活动详情" prop="content">
 
         <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadImgFile" class="el-upload__input" :multiple="false" name="file" ref="imgInput" type="file">
@@ -146,20 +204,25 @@ export default {
       },
       serverUrl: '/manager/common/imgUpload',  // 这里写你要上传的图片服务器地址
 
+      attrs: [
+        {},
+      ],
+      removeAtts: [],
       form: {
-        fee: 0,
+        mode: [],
       },
       rules: {
         title: [{required: true, message: '请输入', trigger: 'blur'}],
+        sponsor: [{required: true, message: '请输入', trigger: 'blur'}],
         desc: [{required: true, message: '请输入', trigger: 'blur'}],
         mode: [{required: true, message: '请输入', trigger: 'blur'}],
         sort: [{required: true, message: '请输入', trigger: 'blur'}],
         imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
-        // address: [{required: true, message: '请输入活动地址', trigger: 'blur'}],
-        // agenda: [{required: true, message: '请补充活动议程', trigger: 'blur'}],
+        imgChoicenessSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
         content: [{required: true, message: '请输入', trigger: 'blur'}],
       },
       imgLoading: false,
+      imgChoicenessLoading: false,
 
       pulishLoading: false,
       modes: [],
@@ -176,19 +239,19 @@ export default {
       sorts: [],
       sortList: [
         {
-          label: '宅设主办',
+          label: '展览演出',
           value: 1,
         },
         {
-          label: '推荐活动',
+          label: '知识分享',
           value: 2,
         },
         {
-          label: '合作活动',
+          label: '休闲娱乐',
           value: 3,
         },
         {
-          label: '探讨会',
+          label: '生活趣味',
           value: 4,
         },
       ],
@@ -200,6 +263,9 @@ export default {
       },
 
       headIndex: '',
+
+      inputVisible: false,
+      inputValue: ''
     }
   },
   components: {
@@ -211,6 +277,31 @@ export default {
     }
   },
   methods: {
+    handleClose(tag) {
+			this.form.mode.splice(this.form.mode.indexOf(tag), 1);
+    },
+    showInput() {
+			this.inputVisible = true;
+			this.$nextTick(() => {
+				this.$refs.saveTagInput.$refs.input.focus();
+			});
+		},
+
+		handleInputConfirm() {
+			let inputValue = this.inputValue;
+			if (inputValue && this.form.mode.indexOf(inputValue) === -1) {
+				this.form.mode.push(inputValue);
+			}
+			this.inputVisible = false;
+			this.inputValue = '';
+		},
+    addAttr() {
+      this.attrs.push({});
+    },
+    delAttr(item) {
+      this.removeAtts.push(item.row.objectId);
+      this.attrs.splice(item.$index, 1);
+    },
     onEditorChange({editor, html, text}) {//内容改变事件
       console.log("---内容改变事件---")
       this.content = html
@@ -222,8 +313,8 @@ export default {
     uploadImgFile(e) {
       if (e.target.files) {
         var localFile  = e.target.files[0];
-        if (e.target.files[0].size > 5*1024*100) {
-          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb，为保障页面顺畅加载，上传文件不得超过500kb`);
+        if (e.target.files[0].size > 10*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb，为保障页面顺畅加载，上传文件不得超过1mb`);
           return false;
         }
         var file = this.$Bmob.File(localFile.name, localFile);
@@ -243,6 +334,7 @@ export default {
         });
       }
     },
+    
 
     getInfo() {
       this.pulishLoading = true;
@@ -258,6 +350,16 @@ export default {
             this.form.endTime = data.endTime[key];
           }
         }
+        for (let key in data.startActTime) {
+          if (key === 'iso') {
+            this.form.startActTime = data.startActTime[key];
+          }
+        }
+        for (let key in data.endActTime) {
+          if (key === 'iso') {
+            this.form.endActTime = data.endActTime[key];
+          }
+        }
         this.pulishLoading = false;
         if (data.agenda) {
           this.agendaList = JSON.parse(data.agenda);
@@ -265,26 +367,24 @@ export default {
         this.form = {
           title: data.title,
           desc: data.desc,
+          sponsor: data.sponsor,
           imgSrc: data.imgSrc,
-          mode: this.modeList[data.mode - 1].value,
+          imgChoicenessSrc: data.imgChoicenessSrc || '',
+          mode: data.mode || [],
           sort: this.sortList[data.sort - 1].value,
           time: [this.form.startTime, this.form.endTime],
-          birdPrice: data.birdPrice,
-          fee: data.fee,
-          // note: data.note,
-          number: data.number,
+          actTime: [this.form.startActTime, this.form.endActTime],
+
           address: data.address,
           content: data.content,
         }
+        this.getSkus(this.$route.query.id);
       });
     },
 
     submitForm(status) {
       const that = this;
-      // if(this.agendaList.length === 0) {
-      //   this.$message.warning('请补充活动议程');
-      //   return false;
-      // }
+
       this.$refs.form.validate((valid) => {
         if (valid) {
           that.pulishLoading = true;
@@ -298,16 +398,24 @@ export default {
               query.set('desc', that.form.desc);
             }
 
-            if(that.form.mode) {
-              query.set('mode', that.modeList[that.form.mode - 1].value);
+            if(that.form.sponsor) {
+              query.set('sponsor', that.form.sponsor);
             }
 
             if(that.form.mode) {
+              query.set('mode', that.form.mode);
+            }
+
+            if(that.form.sort) {
               query.set('sort', that.sortList[that.form.sort - 1].value);
             }
 
             if(that.form.imgSrc) {
               query.set('imgSrc', that.form.imgSrc);
+            }
+
+            if(that.form.imgChoicenessSrc) {
+              query.set('imgChoicenessSrc', that.form.imgChoicenessSrc);
             }
             
             if(that.form.time && that.form.time[0]) {
@@ -318,25 +426,18 @@ export default {
               query.set('endTime', {"__type":"Date", "iso":that.form.time[1]});
             }
 
-            if(that.form.birdPrice) {
-              query.set('birdPrice', that.form.birdPrice );
+            if(that.form.actTime && that.form.actTime[0]) {
+              query.set('startActTime', {"__type":"Date", "iso":that.form.actTime[0]});
+
+            }
+            if(that.form.actTime && that.form.actTime[1]) {
+              query.set('endActTime', {"__type":"Date", "iso":that.form.actTime[1]});
             }
 
-            if(that.form.fee) {
-              query.set('fee', that.form.fee );
-            }
-
-            if (that.form.number) {
-              query.set('number', that.form.number);
-            }
 
             if (that.form.address) {
               query.set('address', that.form.address);
             }
-
-            // if (that.form.note) {
-            //   query.set('note', that.form.note);
-            // }
 
             if (that.agendaList.length > 0) {
               query.set('agenda', JSON.stringify(that.agendaList));
@@ -349,10 +450,8 @@ export default {
             query.set('notDelete', true);
             query.set('status', Number(status));
 
-            query.save().then(() => {
-              that.pulishLoading = false;
-              that.$message.success('添加成功！');
-              that.$router.push('/activity');
+            query.save().then((res) => {
+              that.addSkus(res.objectId || this.$route.query.id);
             }),(error) => {
               console.log(error);
               that.pulishLoading = false;
@@ -368,16 +467,24 @@ export default {
               query.set('desc', that.form.desc);
             }
 
-            if(that.form.mode) {
-              query.set('mode', that.modeList[that.form.mode - 1].value);
+            if(that.form.sponsor) {
+              query.set('sponsor', that.form.sponsor);
             }
 
             if(that.form.mode) {
+              query.set('mode', that.form.mode);
+            }
+
+            if(that.form.sort) {
               query.set('sort', that.sortList[that.form.sort - 1].value);
             }
 
             if(that.form.imgSrc) {
               query.set('imgSrc', that.form.imgSrc);
+            }
+
+            if(that.form.imgChoicenessSrc) {
+              query.set('imgChoicenessSrc', that.form.imgChoicenessSrc);
             }
             
             if(that.form.time && that.form.time[0]) {
@@ -388,25 +495,17 @@ export default {
               query.set('endTime', {"__type":"Date", "iso":that.form.time[1]});
             }
 
-            if(that.form.birdPrice) {
-              query.set('birdPrice', that.form.birdPrice );
-            }
+            if(that.form.actTime && that.form.actTime[0]) {
+              query.set('startActTime', {"__type":"Date", "iso":that.form.actTime[0]});
 
-            if(that.form.fee) {
-              query.set('fee', that.form.fee );
             }
-
-            if (that.form.number) {
-              query.set('number', that.form.number);
+            if(that.form.actTime && that.form.actTime[1]) {
+              query.set('endActTime', {"__type":"Date", "iso":that.form.actTime[1]});
             }
 
             if (that.form.address) {
               query.set('address', that.form.address);
             }
-
-            // if (that.form.note) {
-            //   query.set('note', that.form.note);
-            // }
 
             if (that.agendaList.length > 0) {
               query.set('agenda', JSON.stringify(that.agendaList));
@@ -419,15 +518,141 @@ export default {
             query.set('notDelete', true);
             query.set('status', Number(status));
             query.save().then(() => {
-              that.pulishLoading = false;
-              that.$message.success('编辑成功！');
-              that.$router.push('/activity');
+              that.editSkus();
             });
           }
         } else {
           return false;
         }
       });
+    },
+    addSkus(activityId) {
+      const that = this;
+      const queryArray = new Array();
+      // 构造含有50个对象的数组
+      for(var i = 0 ; i < this.attrs.length ; i++){
+        var queryObj = this.$Bmob.Query('skus');
+        const pointer = this.$Bmob.Pointer('activity');
+        const poiID = pointer.set(activityId);
+        queryObj.set('activityId', poiID);
+        queryObj.set('attrName', this.attrs[i].attrName);
+        queryObj.set('attrNum', this.attrs[i].attrNum);
+        queryObj.set('attrPrice', this.attrs[i].attrPrice);
+        queryArray.push(queryObj);
+      }
+
+
+      // 传入刚刚构造的数组
+      this.$Bmob.Query('skus').saveAll(queryArray).then(result => {
+        let arr = [];
+        for (let i = 0; i < result.length; i += 1) {
+          if (result[i].success) {
+            arr.push(result[i].success.objectId);
+          }
+        }
+
+        const relation = this.$Bmob.Relation('skus') // 需要关联的表
+        const relID = relation.add(arr) //关联表中需要关联的objectId, 返回一个Relation对象, add方法接受string和array的类型参数
+        const query = this.$Bmob.Query('activity')
+        query.get(activityId).then(res => {
+          res.set('skus',relID); // 将Relation对象保存到two字段中，即实现了一对多的关联
+          res.save().then((r) => {
+            console.log(r)
+          })
+        })
+        that.pulishLoading = false;
+        that.$message.success('添加成功！');
+        that.$router.back(-1);
+      }).catch(err => {
+        console.log(err);
+      });
+    },
+    editSkus() {
+      const that = this;
+      let attrs = this.attrs;
+      let removeAtts = this.removeAtts;
+      let ps = [];
+
+      for (let i = 0; i < attrs.length; i += 1) {
+        ps[i] = new Promise((resolve, reject) => {
+          if (attrs[i].objectId) {
+            const query = this.$Bmob.Query('skus');
+            query.get(attrs[i].objectId).then(respon => {
+              respon.set('attrName', attrs[i].attrName);
+              respon.set('attrNum', attrs[i].attrNum);
+              respon.set('attrPrice', attrs[i].attrPrice);
+              respon.save().then((res) => {
+                resolve(res);
+              })
+            }).catch(err => {
+              reject(err)
+            })
+          } else {
+            const query = this.$Bmob.Query('skus');
+            const pointer = this.$Bmob.Pointer('activity');
+            const poiID = pointer.set(this.$route.query.id);
+            query.set('activityId', poiID);
+            query.set('attrName', attrs[i].attrName);
+            query.set('attrNum', attrs[i].attrNum);
+            query.set('attrPrice', attrs[i].attrPrice);
+            query.save().then(res => {
+              resolve(res);
+            }).catch(err => {
+              reject(err)
+            })
+          }
+        });
+      }
+
+      for (let i = 0; i < removeAtts.length; i += 1) {
+        ps.push(
+          new Promise((resolve, reject) => {
+            const query = this.$Bmob.Query('skus');
+            query.get(removeAtts[i]).then(res => {
+              res.destroy().then(res => {
+                resolve(res);
+              }).catch(err => {
+                reject(err)
+              })
+            }).catch(err => {
+              reject(err)
+            })
+          })
+        )
+      }
+
+      Promise.all(ps).then((result) => {
+        const ids = [];
+				for (let i = 0; i < result.length; i += 1) {
+					if(result[i].objectId) {
+						ids.push(result[i].objectId);
+					}
+        }
+        const relation = that.$Bmob.Relation('skus') // 需要关联的表
+				const relID = relation.add(ids) //关联表中需要关联的objectId, 返回一个Relation对象, add方法接受string和array的类型参数
+				const query = that.$Bmob.Query('activity')
+				query.get(that.$route.query.id).then(respon => {
+					respon.set('skus',relID); // 将Relation对象保存到two字段中，即实现了一对多的关联
+					respon.save().then(() => {
+            that.pulishLoading = false;
+            that.$message.success('编辑成功！');
+						that.$router.back(-1);
+					})
+				})
+      }).catch((error) => {
+        console.log(error)
+      })
+    },
+    getSkus() {
+      const pointer = this.$Bmob.Pointer('activity')
+      const poiID = pointer.set(this.$route.query.id)
+
+      const query = this.$Bmob.Query('skus')
+      //userId 字段名称关联用户表 ，类型Pointer
+      query.equalTo("activityId","==", poiID);
+      query.find().then(res => {
+        this.attrs = res;
+      })
     },
     importClick() {
       this.imgLoading = false;
@@ -446,9 +671,33 @@ export default {
         file.save().then((file) => {
           this.imgLoading = false;
           this.form.imgSrc = file[0].url;
-          // that.form.img = file;
         }, () => {
           this.imgLoading = false;
+          // console.error(error);
+          // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
+        });
+      }
+    },
+
+    importChoicenessClick() {
+      this.imgChoicenessLoading = false;
+      this.$refs.choicenessInput.value = null;
+      this.$refs.choicenessInput.click();
+    },
+    uploadChoicenessFile(e) {
+      if (e.target.files) {
+        var localFile  = e.target.files[0];
+        if (e.target.files[0].size > 5*1024*100) {
+          this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb,上传文件不得超过500kb`);
+          return false;
+        }
+        this.imgChoicenessLoading = true;
+        var file = this.$Bmob.File(localFile.name, localFile);
+        file.save().then((file) => {
+          this.imgChoicenessLoading = false;
+          this.form.imgChoicenessSrc = file[0].url;
+        }, () => {
+          this.imgChoicenessLoading = false;
           // console.error(error);
           // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
         });
@@ -675,5 +924,20 @@ export default {
         opacity: 1;
       }
     }
+  }
+  .el-tag + .el-tag {
+    margin-left: 10px;
+  }
+  .button-new-tag {
+    margin-left: 10px;
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .input-new-tag {
+    width: 90px;
+    margin-left: 10px;
+    vertical-align: bottom;
   }
 </style>

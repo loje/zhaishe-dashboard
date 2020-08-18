@@ -52,6 +52,30 @@
         <el-form-item label="介绍" prop="info">
           <el-input type="textarea" v-model="dialogForm.info"></el-input>
         </el-form-item>
+        <el-form-item label="头衔" prop="mode">
+          <div
+            style="line-height: 40px;">
+          <el-tag
+            :key="tag"
+            v-for="tag in dialogForm.mode"
+            closable
+            :disable-transitions="false"
+            @close="handleClose(tag)">
+            {{tag}}
+          </el-tag>
+          <el-input
+            class="input-new-tag"
+            v-if="inputVisible"
+            v-model="inputValue"
+            ref="saveTagInput"
+            size="small"
+            @keyup.enter.native="handleInputConfirm"
+            @blur="handleInputConfirm"
+          >
+          </el-input>
+          <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 增加标签</el-button>
+          </div>
+        </el-form-item>
         <el-form-item label="照片" prop="img">
           <div style="line-height: 40px; color:#999;">(图片长宽4比5)</div>
           <div @click="importClick" class="el-upload el-upload--picture-card" v-loading="imgLoading">
@@ -84,17 +108,37 @@ export default {
         name: [{required: true, message: '请填写名字', trigger: 'blur'}],
         link: [{required: true, message: '请填写个人链接', trigger: 'blur'}],
         info: [{required: true, message: '请填写介绍', trigger: 'blur'}],
+        mode: [{required: true, message: '请输入头衔', trigger: 'blur'}],
       },
 
       imgLoading: false,
 
-      // isTops: 0,
+      inputVisible: false,
+      inputValue: ''
     }
   },
   activated() {
     this.getlist();
   },
   methods: {
+    handleClose(tag) {
+			this.dialogForm.mode.splice(this.dialogForm.mode.indexOf(tag), 1);
+    },
+    showInput() {
+			this.inputVisible = true;
+			this.$nextTick(() => {
+				this.$refs.saveTagInput.$refs.input.focus();
+			});
+		},
+
+		handleInputConfirm() {
+			let inputValue = this.inputValue;
+			if (inputValue && this.dialogForm.mode.indexOf(inputValue) === -1) {
+				this.dialogForm.mode.push(inputValue);
+			}
+			this.inputVisible = false;
+			this.inputValue = '';
+		},
     getlist() {
       this.loading = true;
       let designerQuery = this.$Bmob.Query('designer');
@@ -105,7 +149,6 @@ export default {
       designerQuery.find().then((res) => {
         this.loading = false;
         this.tableData = res;
-        // this.getIsTop();
       });
     },
     getinfo(id) {
@@ -116,6 +159,7 @@ export default {
           name: res.name,
           img: res.img,
           info: res.info,
+          mode: res.mode || [],
           link: res.link ? res.link : undefined,
         };
       });
@@ -194,6 +238,9 @@ export default {
             if(this.dialogForm.info) {
               query.set('info', this.dialogForm.info);
             }
+            if(this.dialogForm.mode) {
+              query.set('mode', this.dialogForm.mode);
+            }
             query.save().then(() => {
               this.dialogLoading = false;
               this.visible = false;
@@ -215,6 +262,9 @@ export default {
             }
             if(this.dialogForm.info) {
               query.set('info', this.dialogForm.info);
+            }
+            if(this.dialogForm.mode) {
+              query.set('mode', this.dialogForm.mode);
             }
             query.save().then(() => {
               this.dialogLoading = false;
@@ -243,13 +293,6 @@ export default {
         this.getlist();
       });
     },
-    // getIsTop() {
-    //   const query = this.$Bmob.Query('designer');
-    //   query.equalTo('isTop', '==', true);
-    //   query.count().then((count) => {
-    //     this.isTops = count;
-    //   });
-    // },
   },
 };
 </script>
@@ -304,5 +347,21 @@ export default {
     .title {
       font-size: 12px;
     }
+  }
+
+  .el-tag + .el-tag {
+    margin-left: 10px;
+  }
+  .button-new-tag {
+    margin-left: 10px;
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .input-new-tag {
+    width: 90px;
+    margin-left: 10px;
+    vertical-align: bottom;
   }
 </style>

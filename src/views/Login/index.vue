@@ -52,6 +52,7 @@ export default {
               mobilePhoneNumber: user.mobilePhoneNumber,
               mobilePhoneVerified: user.mobilePhoneVerified,
               username: user.username,
+              userid: user.objectId,
             };
             localStorage.setItem('userInfo', JSON.stringify(data));
             this.$store.dispatch('getUser', user);

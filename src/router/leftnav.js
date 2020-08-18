@@ -35,12 +35,12 @@ const leftRoutes = [
         component: () => import('@/views/Activity/Audit'),
         meta: { menu: false },
       },
-      {
-        path: '/activity/channel',
-        name: '渠道优惠',
-        component: () => import('@/views/Activity/ActChannel'),
-        meta: { menu: false },
-      },
+      // {
+      //   path: '/activity/channel',
+      //   name: '渠道优惠',
+      //   component: () => import('@/views/Activity/ActChannel'),
+      //   meta: { menu: false },
+      // },
       // {
       //   path: '/activity/channel',
       //   name: '渠道',
@@ -65,6 +65,20 @@ const leftRoutes = [
         meta: { menu: true, keepAlive: true },
       },
     ],
+  },
+  {
+    path: '/dynamic',
+    name: '动态管理',
+    meta: { menu: true, keepAlive: true },
+    component: () => import('@/components/Black'),
+    children: [
+      {
+        path: '/dynamic/index',
+        name: '动态列表',
+        component: () => import('@/views/Dynamic/index'),
+        meta: { menu: true, keepAlive: true },
+      }
+    ]
   },
   {
     path: '/product',
@@ -101,12 +115,12 @@ const leftRoutes = [
         component: () => import('@/views/Product/WechatOrder'),
         meta: { menu: true, keepAlive: true },
       },
-      {
-        path: '/product/recommend',
-        name: '用户推荐产品列表',
-        component: () => import('@/views/Product/Recommend'),
-        meta: { menu: true, keepAlive: true },
-      },
+      // {
+      //   path: '/product/recommend',
+      //   name: '用户推荐产品列表',
+      //   component: () => import('@/views/Product/Recommend'),
+      //   meta: { menu: true, keepAlive: true },
+      // },
     ],
   },
   {

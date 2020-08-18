@@ -11,7 +11,7 @@
         <div class="input-group">
           <span>购买用户：</span>
           <el-select v-model="userId" filterable clearable>
-            <el-option :value="item.objectId" :label="item.username" v-for="(item, $index) in userList" :key="$index"></el-option>
+            <el-option :value="item.objectId" :label="item.nickname || item.username" v-for="(item, $index) in userList" :key="$index"></el-option>
           </el-select>
         </div>
         <div class="input-group">
@@ -65,7 +65,7 @@
           prop="total_fee"
           min-width="110">
           <template slot-scope="scope">
-            {{(scope.row.payReslut ? scope.row.payReslut.total_fee / 100 : 0).toFixed(2)}}
+            {{(scope.row.payReslut ? scope.row.payReslut.total_fee / (scope.row.buyerCount || 1) / 100 : 0).toFixed(2)}}
           </template>
         </el-table-column>
         <el-table-column
@@ -87,7 +87,8 @@
             </div>
             <div class="media-body">
               <div class="media-title">
-                {{scope.row.product.title}}
+                {{scope.row.product.title}} 
+                <span v-if="scope.row.attrName">（{{scope.row.attrName}}）</span>
               </div>
             </div>
           </div>
@@ -115,7 +116,7 @@
               </div>
               <span slot="reference" style="white-space: nowrap;">
                 <div :style="{display: 'inline-block',  backgroundImage: `url(${scope.row.user.imgSrc})`, width: '18px', height: '18px', backgroundSize: 'cover', verticalAlign: 'middle', borderRadius: '50%'}" v-if="!scope.row.username && scope.row.user"></div>
-                <span style="display: inline-block;margin-left: 5px;">{{scope.row.username ? scope.row.username : (scope.row.user && scope.row.user.username ? scope.row.user.username : '暂无用户名')}}</span>
+                <span style="display: inline-block;margin-left: 5px;">{{scope.row.user.nickname || scope.row.user.username}}</span>
               </span>
             </el-popover>
           </template>
@@ -257,7 +258,7 @@ export default {
       },
 
       delivery: '',
-      pageSize: 50,
+      pageSize: 20,
       skip: 0,
       tableData: [],
       loading: false,
@@ -294,7 +295,7 @@ export default {
       const skip = this.pageSize * (this.current - 1);
       ppQuery.limit(this.pageSize);
       ppQuery.skip(skip);
-      ppQuery.order('-createdAt');
+      ppQuery.order('-updatedAt');
       ppQuery.equalTo("sort", "==", 'product');
       if (this.userId) {
         const pointer = this.$Bmob.Pointer('_User')
@@ -308,32 +309,23 @@ export default {
           ppQuery.equalTo("delivery", "==", true);
         }
       }
-      ppQuery.include('user', 'user');
+      ppQuery.include('user', 'product');
       ppQuery.find().then((res) => {
         this.loading = false;
         let list = res;
 
-        let productQuery = this.$Bmob.Query('product');
-        productQuery.find().then((prolist) => {
-          for (let i = 0; i < list.length; i += 1) {
-            const time_end = list[i].payReslut && list[i].payReslut.time_end ? list[i].payReslut.time_end : '';
-            const time = list[i].payReslut && list[i].payReslut.time_end ? `${time_end.substring(0, 4)}-${time_end.substring(4, 6)}-${time_end.substring(6, 8)} ${time_end.substring(8, 10)}:${time_end.substring(10, 12)}:${time_end.substring(12, 14)}` : '';
-            list[i] = {
-              ...list[i],
-              out_trade_no: list[i].payReslut && list[i].payReslut.out_trade_no ? list[i].payReslut.out_trade_no : '',
-              time_end: time,
-            };
+        for (let i = 0; i < list.length; i += 1) {
+          const time_end = list[i].payReslut && list[i].payReslut.time_end ? list[i].payReslut.time_end : '';
+          const time = list[i].payReslut && list[i].payReslut.time_end ? `${time_end.substring(0, 4)}-${time_end.substring(4, 6)}-${time_end.substring(6, 8)} ${time_end.substring(8, 10)}:${time_end.substring(10, 12)}:${time_end.substring(12, 14)}` : '';
+          list[i] = {
+            ...list[i],
+            out_trade_no: list[i].payReslut && list[i].payReslut.out_trade_no ? list[i].payReslut.out_trade_no : '',
+            time_end: list[i].payReslut.time_end ? time : list[i].updatedAt,
+          };
+        }
 
-            for (let j = 0; j < prolist.length; j += 1) {
-              if (list[i].product && list[i].product.objectId === prolist[j].objectId) {
-                list[i].productName = prolist[j].title;
-                list[i].product = prolist[j];
-              }
-            }
-          }
-          this.tableData = list;
-          this.getOrderCount();
-        });
+        this.tableData = list;
+        this.getOrderCount();
       });
 
     },
@@ -500,10 +492,6 @@ export default {
             orderquery.save().then(() => {
               that.getlist();
             });
-            // orderquery.get(item.objectId).then(() => {
-            //   orderquery.set("payReslut", result);
-            //   orderquery.save();
-            // });
             console.log(item.objectId);
           }
         })

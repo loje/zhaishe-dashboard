@@ -39,30 +39,22 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="原价格"
-          prop="price"
-          min-width="150"
-          align="left">
+          label="价格"
+          align="center"
+          min-width="150">
           <template slot-scope="scope">
-            ￥{{scope.row.price.toFixed(2)}}
+            <template v-if="scope.row.maxPrice && scope.row.minPrice">
+            <span v-if="scope.row.maxPrice === scope.row.minPrice">{{scope.row.minPrice}}元</span>
+            <span v-else>{{scope.row.minPrice}}~{{scope.row.maxPrice}}元</span>
+            </template>
+            <template v-else>尚未设置价格</template>
           </template>
         </el-table-column>
         <el-table-column
-          label="优惠价/团购价"
-          prop="groupPrice"
-          min-width="150"
-          align="left">
-          <template slot-scope="scope">
-            ￥{{scope.row.groupPrice.toFixed(2)}}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="库存(原价 | 团购)"
-          min-width="150"
-          align="center">
-          <template slot-scope="scope">
-            {{scope.row.inventory || 0}} | {{scope.row.groupInventory || 0}}
-          </template>
+          label="库存"
+          prop="num"
+          align="center"
+          min-width="150">
         </el-table-column>
         <el-table-column
           label="销量"
@@ -88,36 +80,6 @@
         </el-table-column>
       </el-table>
     </div>
-
-    <!-- <el-dialog :visible.sync="visible" :title="`产品${dialogTitle}`" width="25%" @close="close">
-      <el-form :model="form" label-position="right" label-width="100px" :rules="rules" class="form" ref="form" v-loading="loading">
-        <el-form-item label="产品标题" prop="title">
-          <el-input type="text" v-model="form.title"></el-input>
-        </el-form-item>
-        <el-form-item label="产品介绍" prop="desc">
-          <el-input type="textarea" v-model="form.desc" rows="3" maxlength="180" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="产品图片" prop="imgSrc">
-          <div style="line-height: 40px; color:#999;">(图片长宽1比1)</div>
-          <div @click="importClick" class="el-upload el-upload--picture-card" v-loading="imgLoading">
-            <el-image :src="form.imgSrc" v-if="form.imgSrc" fit="contain" class="img" style="width: 100%; height: 100%;" lazy></el-image>
-            <i class="el-icon-plus" v-else></i>
-            <input accept="application/pdf, image/gif, image/jpeg, image/jpg, image/png, image/svg" @change="uploadFile" class="el-upload__input" :multiple="false" name="file" ref="input" type="file">
-          </div>
-        </el-form-item>
-
-        <el-form-item label="原价" prop="price">
-          <el-input-number v-model="form.price" controls-position="right"></el-input-number>
-        </el-form-item>
-        <el-form-item label="团购价" prop="groupPrice">
-          <el-input-number v-model="form.groupPrice" controls-position="right"></el-input-number>
-        </el-form-item>
-        <el-form-item align="right">
-          <el-button @click="submitForm(-1)">下架暂存</el-button>
-          <el-button type="primary" @click="submitForm(0)">上架</el-button>
-        </el-form-item>
-      </el-form>
-    </el-dialog> -->
   </div>
 </template>
 
@@ -129,18 +91,7 @@ export default {
       tableData: [],
       loading: false,
 
-      visible: false,
-      dialogTitle: '',
-      dialogLoading: false,
-      imgLoading: false,
       isTops: 0,
-      form: {},
-      rules: {
-        title: [{required: true, message: '请输入', trigger: 'blur'}],
-        desc: [{required: true, message: '请输入', trigger: 'blur'}],
-        imgSrc: [{required: true, message: '请上传图片', trigger: 'blur'}],
-        price: [{required: true, message: '请填写原价', trigger: 'blur'}],
-      },
     }
   },
   activated() {
@@ -148,34 +99,76 @@ export default {
   },
   methods: {
     getlist() {
-      this.loading = true;
-      let dataList = [];
+      const proList = new Promise((resolve, reject) => {
+        this.loading = true;
+        let dataList = [];
 
-      var ppQuery = this.$Bmob.Query('product_person');
-      ppQuery.find().then((ppList) => {
-        let productQuery = this.$Bmob.Query('product');
-        if (this.searchText != '') {
-          productQuery.equalTo('title', '===', this.searchText);
-        }
-        productQuery.find().then((data) => {
-          this.loading = false;
-          for (let i = 0; i < data.length; i += 1) {
-            let buyers = 0;
-            for (let j = 0; j < ppList.length; j += 1) {
-              if (data[i].objectId === ppList[j].product.objectId) {
-                buyers += 1;
-              }
-            }
-            dataList.push({
-              ...data[i],
-              buyers,
-            });
+        var ppQuery = this.$Bmob.Query('product_person');
+        ppQuery.find().then((ppList) => {
+					let productQuery = this.$Bmob.Query('product');
+					productQuery.order('-updatedAt');
+          if (this.searchText != '') {
+            productQuery.equalTo('title', '===', this.searchText);
           }
-          this.tableData = dataList;
+          productQuery.find().then((data) => {
+            for (let i = 0; i < data.length; i += 1) {
+
+              // 获取销售人数
+              let buyers = 0;
+              for (let j = 0; j < ppList.length; j += 1) {
+                if (data[i].objectId === ppList[j].product.objectId) {
+                  buyers += 1;
+                }
+              }
+
+              dataList.push({
+                ...data[i],
+                buyers,
+              });
+            }
+            resolve(dataList);
+          }).catch((err) => {
+            reject(err);
+          });
         });
-      });
+      })
 
+      proList.then((respon) => {
+        const dataList = respon;
 
+				dataList.sort((a, b) => {
+					return b.status - a.status;
+				});
+        for (let i = 0; i < dataList.length; i += 1) {
+          const pointer = this.$Bmob.Pointer('product')
+          const poiID = pointer.set(dataList[i].objectId);
+
+          const skusQuery = this.$Bmob.Query('skus');
+          
+          skusQuery.equalTo('productId', '==', poiID);
+          skusQuery.find().then((res) => {
+            let ar = [];
+            let num = 0;
+            for (let x = 0; x < res.length; x += 1) {
+              if (res[x].attrNum) {
+                num = res[x].attrNum + num;
+              }
+              ar.push(res[x].attrPrice);
+            }
+
+            dataList[i].num = num;
+            if (ar.length > 0) {
+              dataList[i].maxPrice = ar.sort()[ar.length - 1];
+              dataList[i].minPrice = ar.sort()[0];
+            }
+
+						this.$set(this.tableData, i, dataList[i]);
+						if (this.tableData.length === dataList.length) {
+							this.loading = false;
+						}
+					});
+				}
+      })
     },
     setTop(id, boolean) {
       const query = this.$Bmob.Query('product');
@@ -207,12 +200,9 @@ export default {
 
       switch (type) {
         case '新建':
-          console.log(type);
           this.$router.push('/product/item');
           break;
         case '编辑':
-          console.log(type, id);
-          // this.getInfo(id);
           this.$router.push({
             path: '/product/item',
             query: {
@@ -225,49 +215,7 @@ export default {
           break;
       }
     },
-    // getInfo(id) {
-    //   this.dialogLoading = true;
-    //   var query = this.$Bmob.Query('product');
-    //   query.get(id).then((data) => {
-    //     this.dialogLoading = false;
-    //     this.form = {
-    //       objectId: data.objectId ? data.objectId : '',
-    //       title: data.title,
-    //       desc: data.desc,
-    //       imgSrc: data.imgSrc,
-    //       price: data.price,
-    //       system: data.system,
-    //       groupPrice: data.groupPrice,
-    //       status: data.status,
-    //       notDelete: data.notDelete,
-    //     }
-    //   });
-    // },
-    // importClick() {
-    //   this.imgLoading = false;
-    //   this.$refs.input.value = null;
-    //   this.$refs.input.click();
-    // },
-    // uploadFile(e) {
-    //   if (e.target.files) {
-    //     var localFile  = e.target.files[0];
-    //     if (e.target.files[0].size > 5*1024*100) {
-    //       this.$message.warning(`当前文件有${parseInt(e.target.files[0].size / 1024)}kb,上传文件不得超过500kb`);
-    //       return false;
-    //     }
-    //     this.imgLoading = true;
-    //     var file = this.$Bmob.File(localFile.name, localFile);
-    //     file.save().then((file) => {
-    //       this.imgLoading = false;
-    //       this.form.imgSrc = file[0].url;
-    //       // that.form.img = file;
-    //     }, () => {
-    //       this.imgLoading = false;
-    //       // console.error(error);
-    //       // 保存失败，可能是文件无法被读取，或者上传过程中出现问题
-    //     });
-    //   }
-    // },
+
     del(id) {
       this.$confirm('此操作将删除该产品, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -308,60 +256,6 @@ export default {
         });          
       });
     },
-    // submitForm(status) {
-    //   this.$refs.form.validate((valid) => {
-    //     if (valid) {
-    //       this.dialogLoading = true;
-    //       const query = this.$Bmob.Query('product');
-    //       if (this.form.objectId) {
-    //         query.set('id', this.form.objectId)
-    //       }
-
-    //       if(this.form.title) {
-    //         query.set('title', this.form.title);
-    //       }
-
-    //       if(this.form.desc) {
-    //         query.set('desc', this.form.desc);
-    //       }
-
-    //       if(this.form.imgSrc) {
-    //         query.set('imgSrc', this.form.imgSrc);
-    //       }
-          
-    //       if(this.form.system) {
-    //         query.set('system', this.form.system);
-    //       }
-
-    //       if(this.form.price) {
-    //         query.set('price', this.form.price );
-    //       }
-
-    //       if (this.form.groupPrice) {
-    //         query.set('groupPrice', this.form.groupPrice);
-    //       }
-
-    //       query.set('notDelete', true);
-    //       query.set('status', Number(status));
-    //       query.set('recommend', false);
-
-
-    //       query.save().then(() => {
-    //         this.dialogLoading = false;
-    //         this.visible = false;
-    //         this.$message.success('提交成功！');
-    //       }),(error) => {
-    //         console.log(error);
-    //         this.dialogLoading = false;
-    //         this.visible = false;
-    //       };
-    //     }
-    //   });
-    // },
-    // close() {
-    //   // this.$refs.form.resetFields();
-    //   this.form = {};
-    // },
   },
 };
 </script>
@@ -424,40 +318,6 @@ export default {
       text-align: right;
       background-color:#fff;
       box-sizing: border-box;
-    }
-
-    .form {
-      width: 100%;
-      max-width: 900px;
-
-      /deep/ .el-form-item__content{
-        line-height: normal;
-        /deep/.ql-editor{
-          height: 600px;
-        }
-      }
-    }
-  }
-
-  .el-select-dropdown__item {
-    display: flex;
-    height: 36px;
-    align-items: center;
-    .the-icon {
-      display: inline-flex;
-      align-items: center;
-      /deep/ .icon {
-        width: 18px;
-        height: 18px;
-        opacity: 0.5;
-      }
-    }
-    .the-title {
-      flex: 1;
-      padding-left: 10px;
-      font-size: 13px;
-      box-sizing: border-box;
-      color: #666;
     }
   }
 </style>
