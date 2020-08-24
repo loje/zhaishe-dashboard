@@ -541,6 +541,5 @@ export default {
 }
 .el-upload--picture-card i {
   line-height: 100px;
-  // font-size: 18px;
 }
 </style>

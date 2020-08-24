@@ -1,6 +1,15 @@
 <template>
   <div class="pulish-page" id="pulish">
     <el-form :model="form" label-position="right" label-width="150px" :rules="rules" class="form" ref="form" v-loading="pulishLoading">
+      <el-form-item label="仅供展示" prop="isShow">
+        <div style="line-height: 40px">
+        <el-switch
+          v-model="form.isShow"
+          active-text="开启"
+          inactive-text="关闭">
+        </el-switch>
+        </div>
+      </el-form-item>
       <el-form-item label="活动标题" prop="title">
         <el-input v-model="form.title" placeholder="请输入标题，最多10字"></el-input>
       </el-form-item>
@@ -335,7 +344,6 @@ export default {
       }
     },
     
-
     getInfo() {
       this.pulishLoading = true;
       var query = this.$Bmob.Query('activity');
@@ -365,6 +373,7 @@ export default {
           this.agendaList = JSON.parse(data.agenda);
         }
         this.form = {
+          isShow: data.isShow,
           title: data.title,
           desc: data.desc,
           sponsor: data.sponsor,
@@ -390,6 +399,10 @@ export default {
           that.pulishLoading = true;
           if (!that.$route.query.id) {
             const query = that.$Bmob.Query('activity');
+            if(that.form.isShow) {
+              query.set('isShow', that.form.isShow);
+            }
+
             if(that.form.title) {
               query.set('title', that.form.title);
             }
@@ -449,6 +462,9 @@ export default {
 
             query.set('notDelete', true);
             query.set('status', Number(status));
+            if (Number(status) === 0) {
+              query.set('isTop', false);
+            }
 
             query.save().then((res) => {
               that.addSkus(res.objectId || this.$route.query.id);
@@ -458,7 +474,14 @@ export default {
             };
           } else {
             const query = that.$Bmob.Query('activity');
-            query.set('id', that.$route.query.id)
+            query.set('id', that.$route.query.id);
+
+            if(that.form.isShow) {
+              query.set('isShow', that.form.isShow);
+            } else {
+              query.set('isShow', false);
+            }
+            
             if(that.form.title) {
               query.set('title', that.form.title);
             }
@@ -517,6 +540,9 @@ export default {
 
             query.set('notDelete', true);
             query.set('status', Number(status));
+            if (Number(status) === 0) {
+              query.set('isTop', false);
+            }
             query.save().then(() => {
               that.editSkus();
             });
