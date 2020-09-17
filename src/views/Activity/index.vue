@@ -9,8 +9,16 @@
       <div class="top-func">
         <el-button type="primary" icon="el-icon-plus" @click="$router.push('/activity/pulish')">新建活动</el-button>
 
+        <el-select v-model="selectSort" placeholder="请选择活动类型" clearable style="width: 150px">
+          <el-option v-for="(item, $index) in sortList" :key="$index" :label="item.label" :value="item.value"></el-option>
+        </el-select>
+
+				<el-select v-model="applyStatus" placeholder="请选择报名状态" clearable style="width: 150px">
+          <el-option v-for="(item, $index) in applyList" :key="$index" :label="item.label" :value="item.value"></el-option>
+        </el-select>
+
         <div class="input-group">
-          <el-input type="text" placeholder="请输入内容" v-model="searchText" clearable>
+          <el-input type="text" placeholder="请输入标题关键字" v-model="searchText" clearable>
             <el-button
               slot="append"
               icon="el-icon-search"
@@ -20,6 +28,7 @@
           </el-input>
         </div>
       </div>
+      
     </div>
     <div class="layer-table">
       <el-table
@@ -40,20 +49,24 @@
         </el-table-column>
         <el-table-column label="报名人数" prop="count" align="center" width="200">
           <template slot-scope="scope">
-            <template v-if="scope.row.num">
-              <el-progress
-                :percentage="scope.row.count / scope.row.num * 100"
-                :show-text="false"
-                :stroke-width="12"
-                style="display: inline-block; width: 80px;"
-              ></el-progress>
-              <span
-                style="margin-left:10px;font-size: 12px;"
-              >{{scope.row.count}} / {{scope.row.num}}</span>
-            </template>
-            <template v-else>
-              <span style="color:#999;">未设置可报名人数</span>
-            </template>
+            <div
+              v-loading="scope.row.loadData === true"
+              element-loading-spinner="el-icon-loading">
+              <template v-if="scope.row.num">
+                <el-progress
+                  :percentage="(scope.row.count > scope.row.num ? scope.row.num : scope.row.count) / scope.row.num * 100"
+                  :show-text="false"
+                  :stroke-width="12"
+                  style="display: inline-block; width: 80px;"
+                ></el-progress>
+                <span
+                  style="margin-left:10px;font-size: 12px;"
+                >{{scope.row.count}} / {{scope.row.num}}</span>
+              </template>
+              <template v-else>
+                <span style="color:#999;">未设置可报名人数</span>
+              </template>
+            </div>
           </template>
         </el-table-column>
 
@@ -158,6 +171,41 @@ export default {
       loading: false,
 
       isTops: 0,
+
+      selectSort: '',
+			sortList: [
+        {
+          label: '展览',
+          value: 1,
+        },
+        {
+          label: '知识',
+          value: 2,
+        },
+        {
+          label: '发现',
+          value: 3,
+        },
+        {
+          label: '其他',
+          value: 4,
+        },
+			],
+			applyStatus: '',
+			applyList: [
+				{
+          label: '未开始',
+          value: 1,
+        },
+        {
+          label: '可报名',
+          value: 2,
+        },
+        {
+          label: '已结束',
+          value: 3,
+        },
+			],
     };
   },
   activated() {
@@ -171,11 +219,6 @@ export default {
       if (row.status === 0) {
         return "disabled";
       }
-      // if (rowIndex === 1) {
-      //   return "warning-row";
-      // } else if (rowIndex === 3) {
-      //   return "success-row";
-      // }
       return "";
     },
     setTop(id, boolean) {
@@ -202,7 +245,8 @@ export default {
       }
     },
     dataSearch() {
-      this.getActivityList();
+			this.getActivityList();
+			this.getActivityCount();
     },
     getIsTop() {
       var query = this.$Bmob.Query("activity");
@@ -212,98 +256,137 @@ export default {
       });
     },
 
-    getActivityList() {
-      const activityList = new Promise((resolve, reject) => {
-        this.loading = true;
-        let dataList = [];
-        let apList = [];
+    async getActivityList() {
+      this.loading = true;
+      let dataList = [];
 
-        var apQuery = this.$Bmob.Query("activity_person");
-        apQuery.limit(1000);
-        apQuery.find().then((res) => {
-          apList = res;
+      let query = this.$Bmob.Query("activity");
+      const skip = this.pageSize * (this.current - 1);
+      query.order("-endTime");
+      query.equalTo("notDelete", "==", true);
+      if (this.selectSort !== "") {
+        query.equalTo("sort", "==", this.selectSort);
+			}
+			if (this.searchText !== "") {
+        query.equalTo("title", "==", { $regex: "" + this.searchText + ".*" });
+			}
+			if (this.applyStatus !== "") {
+				if (this.applyStatus === 1) {
+					query.equalTo("startTime", ">", {
+						"__type": "Date",
+						"iso": new Date()
+					});
+				} else if (this.applyStatus === 2) {
+					query.equalTo("startTime", "<=", {
+						"__type": "Date",
+						"iso": new Date()
+					});
+					query.equalTo("endTime", ">", {
+						"__type": "Date",
+						"iso": new Date()
+					});
+				} else if (this.applyStatus === 3) {
+					query.equalTo("endTime", "<", {
+						"__type": "Date",
+						"iso": new Date()
+					});
+				}
+			}
+      query.limit(this.pageSize);
+      query.skip(skip);
+      let data = await query.find();
+
+      this.loading = false;
+
+      for (let i = 0; i < data.length; i += 1) {
+        for (let key in data[i].startTime) {
+          if (key === "iso") {
+            data[i].startTime = data[i].startTime[key];
+          }
+        }
+        for (let key in data[i].endTime) {
+          if (key === "iso") {
+            data[i].endTime = data[i].endTime[key];
+          }
+        }
+
+        dataList.push({
+          id: data[i].objectId,
+          img: data[i].imgSrc,
+          title: data[i].title,
+          desc: data[i].desc,
+          count: 0,
+          num: 0,
+          startTime: this.$moment(data[i].startTime).format("YYYY-MM-DD HH:mm"),
+          endTime: this.$moment(data[i].endTime).format("YYYY-MM-DD HH:mm"),
+          status: data[i].status,
+          isTop: data[i].isTop,
+          loadData: true,
         });
+      }
 
-        var query = this.$Bmob.Query("activity");
-        const skip = this.pageSize * (this.current - 1);
-        query.order("-endTime");
-        query.equalTo("notDelete", "==", true);
-        if (this.searchText !== "") {
-          query.equalTo("title", "==", this.searchText);
+      this.tableData = dataList;
+
+      // 库存
+      for (let i = 0; i < dataList.length; i += 1) {
+        const pointer = this.$Bmob.Pointer("activity");
+        const poiID = pointer.set(dataList[i].id);
+
+        const skusQuery = this.$Bmob.Query("skus");
+
+        skusQuery.equalTo("activityId", "==", poiID);
+        let res = await skusQuery.find();
+        let num = 0;
+        for (let x = 0; x < res.length; x += 1) {
+          if (res[x].attrNum) {
+            num = res[x].attrNum + num;
+          }
         }
-        query.limit(this.pageSize);
-        query.skip(skip);
-        query
-          .find()
-          .then((data) => {
-            this.loading = false;
-            for (let i = 0; i < data.length; i += 1) {
-              let count = 0;
-              for (let j = 0; j < apList.length; j += 1) {
-                if (data[i].objectId === apList[j].activity.objectId) {
-                  count += 1;
-                }
-              }
-              for (let key in data[i].startTime) {
-                if (key === "iso") {
-                  data[i].startTime = data[i].startTime[key];
-                }
-              }
-              for (let key in data[i].endTime) {
-                if (key === "iso") {
-                  data[i].endTime = data[i].endTime[key];
-                }
-              }
+        this.$set(this.tableData[i], "num", num);
+      }
 
-              dataList.push({
-                id: data[i].objectId,
-                img: data[i].imgSrc,
-                title: data[i].title,
-                desc: data[i].desc,
-                count,
-                num: data[i].number || 1000,
-                startTime: this.$moment(data[i].startTime).format(
-                  "YYYY-MM-DD HH:mm"
-                ),
-                endTime: this.$moment(data[i].endTime).format(
-                  "YYYY-MM-DD HH:mm"
-                ),
-                status: data[i].status,
-                isTop: data[i].isTop,
-              });
-            }
-            resolve(dataList);
-          })
-          .catch((err) => {
-            reject(err);
-          });
-      });
+      // 销量
+      for (let i = 0; i < dataList.length; i += 1) {
+        const pointer = this.$Bmob.Pointer("activity");
+        const poiID = pointer.set(dataList[i].id);
 
-      activityList.then((respon) => {
-        const dataList = respon;
-        for (let i = 0; i < dataList.length; i += 1) {
-          const pointer = this.$Bmob.Pointer("activity");
-          const poiID = pointer.set(dataList[i].id);
-
-          const skusQuery = this.$Bmob.Query("skus");
-
-          skusQuery.equalTo("activityId", "==", poiID);
-          skusQuery.find().then((res) => {
-            let num = 0;
-            for (let x = 0; x < res.length; x += 1) {
-              if (res[x].attrNum) {
-                num = res[x].attrNum + num;
-              }
-            }
-            dataList[i].num = num;
-
-            this.tableData = dataList;
-          });
-        }
-      });
+        let apQuery = this.$Bmob.Query("activity_person");
+        apQuery.equalTo("activity", "==", poiID);
+        let apCount = await apQuery.count();
+        this.$set(this.tableData[i], "count", apCount);
+        this.$set(this.tableData[i], "loadData", false);
+      }
     },
     getActivityCount() {
-      var query = this.$Bmob.Query("activity");
+			var query = this.$Bmob.Query("activity");
+			if (this.selectSort !== "") {
+        query.equalTo("sort", "==", this.selectSort);
+			}
+			if (this.searchText !== "") {
+        query.equalTo("title", "==", { $regex: "" + this.searchText + ".*" });
+			}
+			if (this.applyStatus !== "") {
+				if (this.applyStatus === 1) {
+					query.equalTo("startTime", ">", {
+						"__type": "Date",
+						"iso": new Date()
+					});
+				} else if (this.applyStatus === 2) {
+					query.equalTo("startTime", "<=", {
+						"__type": "Date",
+						"iso": new Date()
+					});
+					query.equalTo("endTime", ">", {
+						"__type": "Date",
+						"iso": new Date()
+					});
+				} else if (this.applyStatus === 3) {
+					query.equalTo("endTime", "<", {
+						"__type": "Date",
+						"iso": new Date()
+					});
+				}
+			}
       query.equalTo("notDelete", "==", true);
       query.count().then((count) => {
         this.total = count;
@@ -416,6 +499,9 @@ export default {
       .add-btn {
         width: 120px;
       }
+			.el-select {
+				margin-left: 15px;
+			}
       .input-group {
         margin-left: 15px;
         display: inline-block;
@@ -454,9 +540,8 @@ export default {
 
 .el-table .disabled .el-table_1_column_1,
 .el-table .disabled .el-table_1_column_2,
-.el-table .disabled .el-table_1_column_3  {
+.el-table .disabled .el-table_1_column_3 {
   opacity: 0.5;
   text-decoration: line-through;
 }
-
 </style>

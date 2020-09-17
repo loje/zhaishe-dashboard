@@ -364,7 +364,7 @@ export default {
         if (this.searchText) {
           query.statTo(
             "where",
-            '{"order":{"$inQuery":{"where":{"' +
+            '{"activity":{"$inQuery":{"where":{"objectId":"' + this.$route.query.id + '"},"className":"activity"}}, "order":{"$inQuery":{"where":{"' +
               this.selectVal +
               '":"' +
               this.searchText +
@@ -389,11 +389,10 @@ export default {
         query.skip(skip);
         query.order("-createdAt");
         query.equalTo("activity", "==", poiID);
-
         if (this.searchText) {
           query.statTo(
             "where",
-            '{"order":{"$inQuery":{"where":{"' +
+            '{"activity":{"$inQuery":{"where":{"objectId":"' + this.$route.query.id + '"},"className":"activity"}}, "order":{"$inQuery":{"where":{"' +
               this.selectVal +
               '":"' +
               this.searchText +

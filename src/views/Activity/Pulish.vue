@@ -248,19 +248,19 @@ export default {
       sorts: [],
       sortList: [
         {
-          label: '展览演出',
+          label: '展览',
           value: 1,
         },
         {
-          label: '知识分享',
+          label: '知识',
           value: 2,
         },
         {
-          label: '休闲娱乐',
+          label: '发现',
           value: 3,
         },
         {
-          label: '生活趣味',
+          label: '其他',
           value: 4,
         },
       ],
