@@ -409,7 +409,7 @@ export default {
       const that = this;
 
       const appid = 'wx34c87ef5d4d802d9';
-      const mch_id = '1570704211';
+      const mch_id = '1601810899';
       const nonce_str = this.randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
       const stringA = `appid=${appid}&mch_id=${mch_id}&nonce_str=${nonce_str}&transaction_id=${item.transaction_id}`;
@@ -451,7 +451,7 @@ export default {
       this.dialogVisible = true;
 
       const appid = 'wx34c87ef5d4d802d9';
-      const mch_id = '1570704211';
+      const mch_id = '1601810899';
       const nonce_str = this.randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
       const stringA = `appid=${appid}&mch_id=${mch_id}&nonce_str=${nonce_str}&out_trade_no=${item.payReslut.out_trade_no}`;
@@ -507,7 +507,7 @@ export default {
       this.$refs.refundform.validate((valid) => {
         if (valid) {
           const appid = 'wx34c87ef5d4d802d9';
-          const mch_id = '1570704211';
+          const mch_id = '1601810899';
           const nonce_str = this.randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
           const stringA = `appid=${appid}&mch_id=${mch_id}&nonce_str=${nonce_str}&out_trade_no=${this.refundForm.out_trade_no}&refund_fee=${this.refundForm.refund_fee * 100}&total_fee=${this.refundForm.total_fee}`;

@@ -683,7 +683,7 @@ export default {
       const that = this;
 
       const appid = "wx34c87ef5d4d802d9";
-      const mch_id = "1570704211";
+      const mch_id = "1601810899";
       const nonce_str = this.randomString(
         32,
         "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -727,8 +727,8 @@ export default {
       const that = this;
       this.dialogVisible = true;
 
-      const appid = "wx34c87ef5d4d802d9";
-      const mch_id = "1570704211";
+      const appid = "wx6437f6f13c54a09e";
+      const mch_id = "1601810899";/*  */
       const nonce_str = this.randomString(
         32,
         "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
