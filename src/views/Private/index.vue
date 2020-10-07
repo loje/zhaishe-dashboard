@@ -40,10 +40,11 @@
         <el-table-column label="类型" prop="sort"></el-table-column>
         <el-table-column label="发布时间" prop="createdAt"></el-table-column>
         <el-table-column label="描述" prop="remark"></el-table-column>
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="200">
           <template slot-scope="scope">
             <el-button type="success" icon="el-icon-check" size="small" @click="edit('通过审核', scope.row)" v-if="!scope.row.audit || scope.row.audit === false">通过审核</el-button>
             <el-button type="info" icon="el-icon-close" size="small" @click="edit('驳回审核', scope.row)" v-else>驳回审核</el-button>
+            <el-button type="danger" icon="el-icon-delete" size="small" @click="del(scope.row.objectId)" >删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -176,7 +177,7 @@ export default {
       });
     },
     del(id) {
-      this.$confirm('此操作将删除该资源, 是否继续?', '提示', {
+      this.$confirm('此操作将删除该私单, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
