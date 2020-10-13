@@ -245,6 +245,8 @@ export default {
       }
     },
     dataSearch() {
+      this.current = 1;
+      this.skip = 0;
 			this.getActivityList();
 			this.getActivityCount();
     },
