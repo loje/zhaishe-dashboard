@@ -3,7 +3,12 @@
     <div class="page-top">
       <span class="top-title">
         <el-breadcrumb separator-class="el-icon-arrow-right">
-          <el-breadcrumb-item>动态列表</el-breadcrumb-item>
+          <el-breadcrumb-item>
+            动态列表
+            <el-tag type="info">昨日发布：{{yesterday}}</el-tag>
+            <el-tag type="info">上周发布：{{lastWeek}}</el-tag>
+            <el-tag type="info">上个月发布：{{lastMonth}}</el-tag>
+          </el-breadcrumb-item>
         </el-breadcrumb>
       </span>
       <div class="top-func">
@@ -147,9 +152,14 @@ export default {
       imgLoading: false,
 
       list: [],
+
+      yesterday: 0,
+      lastWeek: 0,
+      lastMonth: 0,
     };
   },
   mounted() {
+    this.getCount();
     this.getlist();
   },
   methods: {
@@ -351,6 +361,42 @@ export default {
         taglist: [],
         imglist: [],
       };
+    },
+  
+    getCount() {
+      // 昨天
+      let yesterdayStart = `${this.$moment().subtract('days', 1).format('YYYY/MM/DD')} 00:00:00`;
+      let yesterdayEnd = `${this.$moment().subtract('days', 1).format('YYYY/MM/DD')} 23:59:59`;
+      const yesterdayQuery = this.$Bmob.Query("dynamic_list");
+      yesterdayQuery.equalTo("notDelete", "==", true);
+      yesterdayQuery.equalTo("createdAt", "<=", new Date(yesterdayEnd));
+      yesterdayQuery.equalTo("createdAt", ">=", new Date(yesterdayStart));
+      yesterdayQuery.count().then((count) => {
+        this.yesterday = count;
+      });
+
+      // 上周
+      let weekOfday = parseInt(this.$moment().format('d'));
+      let lastWeekStart = `${this.$moment().subtract(weekOfday + 7, 'days').format('YYYY/MM/DD')} 00:00:00` // 周一日期
+      let lastWeekEnd = `${this.$moment().subtract(weekOfday + 1, 'days').format('YYYY/MM/DD')} 23:59:59` // 周日日期
+      const lastWeekQuery = this.$Bmob.Query("dynamic_list");
+      lastWeekQuery.equalTo("notDelete", "==", true);
+      lastWeekQuery.equalTo("createdAt", "<=", new Date(lastWeekEnd));
+      lastWeekQuery.equalTo("createdAt", ">=", new Date(lastWeekStart));
+      lastWeekQuery.count().then((count) => {
+        this.lastWeek = count;
+      });
+
+      // 上个月
+      let lastMonthStart = `${this.$moment().subtract('month', 1).format('YYYY/MM') + '-01'} 00:00:00`
+      let lastMonthEnd = `${this.$moment(lastMonthStart).subtract('month', -1).add('days', -1).format('YYYY/MM/DD')} 23:59:59`
+      const lastMonthQuery = this.$Bmob.Query("dynamic_list");
+      lastMonthQuery.equalTo("notDelete", "==", true);
+      lastMonthQuery.equalTo("createdAt", "<", new Date(lastMonthEnd));
+      lastMonthQuery.equalTo("createdAt", ">", new Date(lastMonthStart));
+      lastMonthQuery.count().then((count) => {
+        this.lastMonth = count;
+      });
     },
   },
 };

@@ -3,15 +3,16 @@
     <div class="page-top">
       <span class="top-title">
         <el-breadcrumb separator-class="el-icon-arrow-right">
-          <el-breadcrumb-item>会员列表</el-breadcrumb-item>
+          <el-breadcrumb-item>用户列表</el-breadcrumb-item>
         </el-breadcrumb>
       </span>
       <!-- <div class="top-func">
         <el-tooltip class="item" effect="dark" content="暂不可用" placement="top">
-          <el-button type="primary" icon="el-icon-plus" @click="create" >新建会员</el-button>
+          <el-button type="primary" icon="el-icon-plus" @click="create" >新建用户</el-button>
         </el-tooltip>
       </div> -->
     </div>
+
     <div class="layer-table">
       <el-table :data="tableData" style="width: 100%" v-loading="loading">
         <el-table-column label="序号" width="80">
@@ -43,7 +44,9 @@
                 item.wechatId
               }}</el-tag>
             </template>
-            <template v-if="scope.row.wechatId">({{scope.row.wechatId}})</template>
+            <template v-if="scope.row.wechatId"
+              >({{ scope.row.wechatId }})</template
+            >
           </template>
         </el-table-column>
         <el-table-column label="手机号" prop="mobilePhoneNumber">
@@ -68,8 +71,11 @@
         </el-table-column>
         <el-table-column label="注册时间" prop="createdAt" sortable>
         </el-table-column>
-        <el-table-column label="操作" width="300">
+        <el-table-column label="操作" width="420">
           <template slot-scope="scope">
+            <el-button type="info" @click="view(scope.row)" size="small"
+              >查看活动记录</el-button
+            >
             <el-button
               type="warning"
               @click="edit(scope.row.objectId)"
@@ -161,20 +167,20 @@
         <!-- <el-form-item label="微信" prop="wechatId">
           <el-input type="text" v-model="dialog.form.wechatId"></el-input>
         </el-form-item> -->
-        <el-form-item label="微信">
+        <!-- <el-form-item label="微信">
           <template v-for="(item, $index) in dialog.form.wechatList">
-            <el-tag :key="$index" style="margin-right: 5px">{{
-              item.wechatId
-            }}</el-tag>
+            <el-tag :key="$index" style="margin-right: 5px">({{
+              dialog.form.wechatId
+            }})</el-tag>
           </template>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="密码" prop="password">
           <el-input
             type="text"
             v-model="dialog.form.password"
-            :disabled="dialogTitle === '新建会员'"
+            :disabled="dialogTitle === '新建用户'"
             :placeholder="
-              dialogTitle === '新建会员' ? '默认为123456' : '请输入新密码'
+              dialogTitle === '新建用户' ? '默认为123456' : '请输入新密码'
             "
           ></el-input>
         </el-form-item>
@@ -183,6 +189,28 @@
           <el-button @click="dialogVisible = false">取消</el-button>
         </el-form-item>
       </el-form>
+    </el-dialog>
+
+    <el-dialog
+      :title="userView.nickname + '的活动记录'"
+      :visible.sync="dialogInfoVisible"
+      width="30%"
+      :before-close="handleInfoClose"
+    >
+      <el-timeline :reverse="true" v-if="activityList.length > 0">
+        <el-timeline-item
+          v-for="(item, $index) in activityList"
+          :key="$index"
+          :timestamp="item.createdAt"
+          >报名参加了《{{ item.activity.title }}》，购买了{{
+            item.buyerCount
+          }}张{{ item.attrName }}，并支付费用{{
+            item.payReslut.total_fee / 100
+          }}元。
+        </el-timeline-item>
+      </el-timeline>
+
+      <div v-else>没有活动参与记录</div>
     </el-dialog>
   </div>
 </template>
@@ -193,7 +221,7 @@ export default {
     return {
       loading: false,
 
-      pageSize: 10,
+      pageSize: 20,
       skip: 0,
       tableData: [],
       current: 1,
@@ -219,6 +247,10 @@ export default {
           // wechatId: [{ required: true, message: '请输入微信号', trigger: 'blur' }],
         },
       },
+
+      dialogInfoVisible: false,
+      userView: "",
+      activityList: [],
     };
   },
   mounted() {
@@ -226,13 +258,13 @@ export default {
     this.getCount();
   },
   methods: {
-    create() {
-      // this.dialogVisible = true;
-      // this.dialogTitle = '新建会员';
-    },
+    // create() {
+    //   // this.dialogVisible = true;
+    //   // this.dialogTitle = '新建用户';
+    // },
     async edit(id) {
       this.dialogVisible = true;
-      this.dialogTitle = "编辑会员";
+      this.dialogTitle = "编辑用户";
       let user = await this.$Bmob.User.get(id);
       let wechatQuery = this.$Bmob.Query("user_wechat");
 
@@ -244,8 +276,6 @@ export default {
         ...user,
         wechatList,
       };
-
-      console.log(this.dialog.form);
     },
     async getlist() {
       this.loading = true;
@@ -254,7 +284,7 @@ export default {
       userListQuery.order("-loginTime");
       userListQuery.limit(this.pageSize);
       userListQuery.skip(skip);
-      userListQuery.include('user_wechat');
+      userListQuery.include("user_wechat");
 
       let res = await userListQuery.find();
       this.loading = false;
@@ -409,6 +439,39 @@ export default {
         });
       });
     },
+    view(user) {
+      this.dialogInfoVisible = true;
+
+      this.userView = user;
+      const pointer = this.$Bmob.Pointer("_User");
+      const userID = pointer.set(user.objectId);
+
+      const query = this.$Bmob.Query("order_list");
+      query.equalTo("user", "==", userID);
+      query.include("activity");
+      query.find().then((list) => {
+        let arr = [];
+        for (let i = 0; i < list.length; i += 1) {
+          if (arr.length === 0) {
+            arr.push(list[i]);
+          } else {
+            if (list[i].createdAt !== arr[arr.length - 1].createdAt) {
+              arr.push(list[i]);
+            }
+          }
+
+        }
+
+        this.activityList = arr;
+
+        // this.activityList = list;
+
+      });
+    },
+
+    handleInfoClose() {
+      this.dialogInfoVisible = false;
+    },
   },
 };
 </script>
@@ -471,3 +534,4 @@ export default {
   background-color: #fff;
   box-sizing: border-box;
 }
+</style>

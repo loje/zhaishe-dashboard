@@ -191,19 +191,19 @@ const leftRoutes = [
   },
   {
     path: '/member',
-    name: '会员管理',
+    name: '用户管理',
     meta: { menu: true, keepAlive: true },
     component: () => import('@/components/Black'),
     children: [
       {
         path: '/member',
-        name: '会员列表',
+        name: '用户列表',
         component: () => import('@/views/Member/index'),
         meta: { menu: true },
       },
       {
         path: '/member/item',
-        name: '添加会员',
+        name: '添加用户',
         component: () => import('@/views/Member/Item'),
         meta: { menu: false },
       },

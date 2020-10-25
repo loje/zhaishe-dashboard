@@ -160,6 +160,19 @@
         <el-button type="primary" @click="submitForm('1')">发布</el-button>
       </el-form-item>
     </el-form>
+
+
+    <el-dialog
+      width="50%"
+      id="video_upload"
+      style="margin-top: 1px"
+      title="视频上传"
+      :visible.sync="videoUploadTag"
+      append-to-body>
+      <el-input v-model="videoLink" placeholder="请输入视频链接" clearable></el-input>
+      <el-button type="primary" size="small" style="margin: 20px 0px 0px 0px " @click="addVideoLink()">添加
+      </el-button>
+    </el-dialog>
   </div>
 </template>
 
@@ -175,7 +188,7 @@ const toolbarOptions = [
   [{'color': []}, {'background': []}],          // dropdown with defaults from theme
   [{'font': []}],
   [{'align': []}],
-  ['link', 'image'],
+  ['link', 'image', 'video'],
   ['clean']
 ]
 
@@ -188,8 +201,13 @@ import 'quill/dist/quill.bubble.css'
 
 export default {
   data() {
+    var self2 = this;
     return {
       content: null,
+      //显示插入视频链接弹框的标识
+      videoUploadTag: false,
+      //弹框插入的视频链接记录
+      videoLink:"",
       editorOption: {
         placeholder: '',
         theme: 'snow',  // or 'bubble'
@@ -206,6 +224,9 @@ export default {
                 } else {
                   this.quill.format('image', false);
                 }
+              },
+              'video': function() {
+                self2.videoUploadTag = true;
               }
             }
           }
@@ -344,6 +365,24 @@ export default {
       }
     },
     
+    addVideoLink() {
+      if (this.videoLink.length == 0) {
+        alert('请输入视频链接');
+      }
+      //当编辑器中没有输入文本时，这里获取到的 range 为 null
+      var range = this.$refs.myQuillEditor.quill.getSelection();
+      //视频插入在富文本中的位置
+      var index = 0;
+      if (range == null) {
+        index = 0;
+      } else {
+        index = range.index;
+      }
+      //隐藏弹框
+      this.videoUploadTag = false;
+      //将视频链接插入到当前的富文本当中
+      this.$refs.myQuillEditor.quill.insertEmbed(index, 'video', this.videoLink);
+    },
     getInfo() {
       this.pulishLoading = true;
       var query = this.$Bmob.Query('activity');
