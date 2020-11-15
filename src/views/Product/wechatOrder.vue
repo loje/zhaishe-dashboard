@@ -209,7 +209,7 @@ export default {
       const dd = new Date(this.billDate).getDate() < 10 ? '0' + new Date(this.billDate).getDate() : new Date(this.billDate).getDate();
 
       const appid = 'wx34c87ef5d4d802d9';
-      const mch_id = '1601810899';
+      const mch_id = '1570704211';
       const nonce_str = this.randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
       const bill_date = `${yy}${mm}${dd}`;
       const bill_type = 'ALL';

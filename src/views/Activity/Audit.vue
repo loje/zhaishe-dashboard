@@ -47,10 +47,24 @@
           </el-input>
         </div>
         <div class="the-func">
+          <span>微信状态(旧)：</span>
+          <el-select
+            size="small"
+            v-model="wechatOldStatus"
+            placeholder="请选择"
+            @change="wechatOldStatusChange"
+            clearable
+          >
+            <el-option :value="true" label="取消加微信"></el-option>
+            <el-option :value="false" label="确认加微信"></el-option>
+          </el-select>
+        </div>
+        <div class="the-func">
           <span>微信状态：</span>
           <el-select
             size="small"
             v-model="wechatStatus"
+            @change="wechatStatusChange"
             placeholder="请选择"
             clearable
           >
@@ -599,6 +613,7 @@ export default {
 
       selectVal: "objectId",
       wechatStatus: "",
+      wechatOldStatus: "",
       applicationDate: [],
       payStatus: "",
 
@@ -898,6 +913,16 @@ export default {
         });
       }
     },
+    wechatOldStatusChange(e) {
+      if (e !== '') {
+        this.wechatStatus = '';
+      }
+    },
+    wechatStatusChange(e) {
+      if (e !== '') {
+        this.wechatOldStatus = '';
+      }
+    },
     async getlist() {
       this.loading = true;
       if (this.$route.query.id) {
@@ -910,81 +935,47 @@ export default {
         query.skip(skip);
         query.order("-createdAt");
         query.equalTo("activity", "==", poiID);
-        if (this.searchText) {
-          if (
-            this.selectVal !== "out_trade_no" &&
-            this.selectVal !== "transaction_id"
-          ) {
-            query.statTo(
-              "where",
-              `{
-								"activity":{
-									"$inQuery":{
-										"where":{
-											"objectId":"${this.$route.query.id}"
-										},
-										"className":"activity"
-									}
-								},
-								"order":{
-									"$inQuery":{
-										"where":{
-											"${this.selectVal}":"${this.searchText}"
-										},
-										"className":"order_list"
-									}
-								}
-							}`
-            );
+
+        let activitykey = `"activity":{
+          "$inQuery":{
+            "where":{
+              "objectId":"${this.$route.query.id}"
+            },
+            "className":"activity"
           }
-        }
+        }`;
+        let transactionkey = this.selectVal !== "out_trade_no" &&
+            this.selectVal !== "transaction_id" && this.searchText ? `,"order":{
+          "$inQuery":{
+            "where":{
+              "${this.selectVal}":"${this.searchText}"
+            },
+            "className":"order_list"
+          }
+        }` : '';
 
-        if (this.wechatStatus) {
-          query.statTo(
-            "where",
-            `{
-							"activity":{
-								"$inQuery":{
-									"where":{
-										"objectId":"${this.$route.query.id}"
-									},
-									"className":"activity"
-								}
-							},
-							"userWechat":{
-								"$inQuery":{
-									"where":{
-										"status":"${this.wechatStatus}"
-									},
-									"className":"user_wechat"
-								}
-							}
-						}`
-          );
-        }
+        let wechatStatusKey = this.wechatStatus !== "" ? `,"userWechat":{
+          "$inQuery":{
+            "where":{
+              "status":"${this.wechatStatus}"
+            },
+            "className":"user_wechat"
+          }
+        }` : '';
 
-        if (this.payStatus) {
-          query.statTo(
-            "where",
-            `{
-							"activity":{
-								"$inQuery":{
-									"where":{
-										"objectId":"${this.$route.query.id}"
-									},
-									"className":"activity"
-								}
-							},
-							"order":{
-								"$inQuery":{
-									"where":{
-										"trade_state":"${this.payStatus}"
-									},
-									"className":"order_list"
-								}
-							}
-						}`
-          );
+        let wechatOldStatusKey = this.wechatOldStatus !== '' ? `,"isWechat": ${this.wechatOldStatus}` : '';
+
+        let payStatusKey = this.payStatus ? `,"order":{
+          "$inQuery":{
+            "where":{
+              "trade_state":"${this.payStatus}"
+            },
+            "className":"order_list"
+          }
+        }` : '';
+
+        if (transactionkey !== '' || wechatStatusKey !== '' || wechatOldStatusKey !== '' || payStatusKey !== '') {
+          query.statTo("where", `{${activitykey}${transactionkey}${wechatStatusKey}${wechatOldStatusKey}${payStatusKey}}`);
         }
 
         query.include("order", "user", "activity", "owner");
@@ -1271,7 +1262,7 @@ export default {
       const that = this;
 
       const appid = "wx34c87ef5d4d802d9";
-      const mch_id = "1601810899";
+      const mch_id = "1570704211";
       const nonce_str = this.randomString(
         32,
         "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -1299,6 +1290,7 @@ export default {
         },
       };
       this.$Bmob.functions(param.funcName, param.data).then((resultData) => {
+        // console.log(resultData);
         // xml转json格式
         xml2js.parseString(resultData, function (err, json) {
           if (err) {
@@ -1346,6 +1338,7 @@ export default {
             new Error("解析xml报错");
           } else {
             var result = that.formMessage(json.xml); // 转换成正常的json 数据
+            console.log(result.trade_state);
             if (result.trade_state === "SUCCESS") {
               that.form = result;
             }
@@ -1355,6 +1348,7 @@ export default {
             const orderquery = that.$Bmob.Query("order_list");
             orderquery.set("id", item.order.objectId);
             orderquery.set("payReslut", result);
+            orderquery.set("trade_state", item.order.payReslut.trade_state);
             orderquery.save().then(() => {
               that.getlist();
             });

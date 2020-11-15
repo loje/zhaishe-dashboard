@@ -71,10 +71,10 @@
         </el-table-column>
         <el-table-column label="注册时间" prop="createdAt" sortable>
         </el-table-column>
-        <el-table-column label="操作" width="420">
+        <el-table-column label="操作" width="450">
           <template slot-scope="scope">
             <el-button type="info" @click="view(scope.row)" size="small"
-              >查看活动记录</el-button
+              >查看活动记录({{scope.row.apCount}})</el-button
             >
             <el-button
               type="warning"
@@ -197,20 +197,22 @@
       width="30%"
       :before-close="handleInfoClose"
     >
-      <el-timeline :reverse="true" v-if="activityList.length > 0">
+      <el-timeline :reverse="false" v-if="activityList.length > 0">
         <el-timeline-item
           v-for="(item, $index) in activityList"
           :key="$index"
           :timestamp="item.createdAt"
           >报名参加了《{{ item.activity.title }}》，购买了{{
-            item.buyerCount
-          }}张{{ item.attrName }}，并支付费用{{
-            item.payReslut.total_fee / 100
+            item.order.buyerCount
+          }}张{{ item.order.attrName }}，并支付费用{{
+            (item.order.payReslut.total_fee || 0) / 100
           }}元。
         </el-timeline-item>
       </el-timeline>
 
       <div v-else>没有活动参与记录</div>
+
+      <el-button @click="addView">加载更多活动</el-button>
     </el-dialog>
   </div>
 </template>
@@ -251,6 +253,9 @@ export default {
       dialogInfoVisible: false,
       userView: "",
       activityList: [],
+
+      viewPageSize: 5,
+      viewCurrent: 1,
     };
   },
   mounted() {
@@ -328,6 +333,22 @@ export default {
         let wechatQuery = this.$Bmob.Query("user_wechat");
         wechatQuery.equalTo("user", "==", poiID);
         res[i].wechatList = (await wechatQuery.find()) || [];
+
+        let apQuery = this.$Bmob.Query("activity_person");
+        apQuery.equalTo("user", "==", poiID);
+        let list = (await apQuery.find()) || [];
+        let arr = [];
+        for (let i = 0; i < list.length; i += 1) {
+          if (arr.length === 0) {
+            arr.push(list[i]);
+          } else {
+            if (list[i].createdAt !== arr[arr.length - 1].createdAt) {
+              arr.push(list[i]);
+            }
+          }
+          // arr.push(list[i]);
+        }
+        res[i].apCount = arr.length;
 
         this.tableData.push(res[i]);
       }
@@ -440,33 +461,64 @@ export default {
       });
     },
     view(user) {
+      this.activityList = [];
+      this.viewCurrent = 1;
       this.dialogInfoVisible = true;
 
       this.userView = user;
+      this.getview(user);
+    },
+    getview(user) {
       const pointer = this.$Bmob.Pointer("_User");
       const userID = pointer.set(user.objectId);
 
-      const query = this.$Bmob.Query("order_list");
+      // const query = this.$Bmob.Query("order_list");
+      // query.equalTo("user", "==", userID);
+      // query.include("activity");
+      // query.find().then((list) => {
+      //   let arr = [];
+      //   for (let i = 0; i < list.length; i += 1) {
+      //     if (arr.length === 0) {
+      //       arr.push(list[i]);
+      //     } else {
+      //       if (list[i].createdAt !== arr[arr.length - 1].createdAt) {
+      //         arr.push(list[i]);
+      //       }
+      //     }
+      //   }
+
+      //   this.activityList = arr;
+      // });
+      const query = this.$Bmob.Query("activity_person");
+      const skip = this.viewPageSize * (this.viewCurrent - 1);
+      query.order('-createdAt');
       query.equalTo("user", "==", userID);
-      query.include("activity");
+      query.include("activity", "order");
+      query.limit(this.viewPageSize);
+      query.skip(skip);
       query.find().then((list) => {
         let arr = [];
         for (let i = 0; i < list.length; i += 1) {
-          if (arr.length === 0) {
-            arr.push(list[i]);
-          } else {
-            if (list[i].createdAt !== arr[arr.length - 1].createdAt) {
-              arr.push(list[i]);
-            }
-          }
-
+          // if (arr.length === 0) {
+          //   arr.push(list[i]);
+          // } else {
+          //   if (list[i].createdAt !== arr[arr.length - 1].createdAt) {
+          //     arr.push(list[i]);
+          //   }
+          // }
+          arr.push(list[i]);
         }
 
-        this.activityList = arr;
+        this.activityList = this.activityList.concat(arr);
 
-        // this.activityList = list;
-
-      });
+        if (list.length === 0 && this.viewCurrent > 1) {
+          this.viewCurrent = this.viewCurrent - 1;
+        }
+      })
+    },
+    addView() {
+      this.viewCurrent = this.viewCurrent + 1;
+      this.getview(this.userView);
     },
 
     handleInfoClose() {
