@@ -99,7 +99,7 @@ export default {
       .login-form {
         margin-top: 40px;
         width: 368px;
-        /deep/.el-form-item:last-child {
+        ::v-deep.el-form-item:last-child {
           margin-bottom: 0;
         }
       }

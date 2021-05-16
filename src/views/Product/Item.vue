@@ -507,9 +507,9 @@ export default {
       width: 100%;
       max-width: 900px;
 
-      /deep/ .el-form-item__content{
+      ::v-deep .el-form-item__content{
         line-height: normal;
-        /deep/.ql-editor{
+        ::v-deep.ql-editor{
           height: 600px;
         }
       }
@@ -523,7 +523,7 @@ export default {
     .the-icon {
       display: inline-flex;
       align-items: center;
-      /deep/ .icon {
+      ::v-deep .icon {
         width: 18px;
         height: 18px;
         opacity: 0.5;

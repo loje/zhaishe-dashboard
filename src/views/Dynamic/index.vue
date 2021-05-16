@@ -454,7 +454,7 @@ export default {
     width: 375px;
     border: none;
     border-radius: 0;
-    /deep/.el-card__header {
+    ::v-deep.el-card__header {
       padding: 15px;
     }
     .dynamic-header {

@@ -30,7 +30,7 @@
 					v-model="form.desc"
 					type="textarea"
 					rows="3"
-					placeholder="请输入"
+					placeholder="请输入活动描述（仅支持纯文本，不支持换行等富文本格式，换行会直接被转义为空格）"
 				></el-input>
 			</el-form-item>
 			<el-form-item label="活动主办方" prop="sponsor">
@@ -180,6 +180,7 @@
 							<el-input
 								size="small"
 								v-model="scope.row.attrName"
+								maxlength="100"
 								required
 							></el-input>
 						</template>
@@ -204,6 +205,14 @@
 								:min="0"
 								:precision="2"
 							></el-input-number>
+						</template>
+					</el-table-column>
+					<el-table-column label="规格备注" prop="attrTips">
+						<template slot-scope="scope">
+							<el-input
+								size="small"
+								v-model="scope.row.attrTips"
+							></el-input>
 						</template>
 					</el-table-column>
 					<el-table-column label="操作" align="right">
@@ -846,6 +855,11 @@ export default {
 				const poiID = pointer.set(activityId);
 				queryObj.set("activityId", poiID);
 				queryObj.set("attrName", this.attrs[i].attrName);
+				if (this.attrs[i].attrTips) {
+					queryObj.set("attrTips", this.attrs[i].attrTips);
+				} else {
+					queryObj.unset("attrTips");
+				}
 				queryObj.set("attrNum", this.attrs[i].attrNum);
 				queryObj.set("attrPrice", this.attrs[i].attrPrice);
 				queryArray.push(queryObj);
@@ -895,6 +909,11 @@ export default {
 							.then((respon) => {
 								respon.set("attrName", attrs[i].attrName);
 								respon.set("attrNum", attrs[i].attrNum);
+								if (attrs[i].attrTips) {
+									respon.set("attrTips", attrs[i].attrTips);
+								} else {
+									respon.unset("attrTips");
+								}
 								respon.set("attrPrice", attrs[i].attrPrice);
 								respon.save().then((res) => {
 									resolve(res);
@@ -910,6 +929,11 @@ export default {
 						query.set("activityId", poiID);
 						query.set("attrName", attrs[i].attrName);
 						query.set("attrNum", attrs[i].attrNum);
+						if (attrs[i].attrTips) {
+							query.set("attrTips", attrs[i].attrTips);
+						} else {
+							query.unset("attrTips");
+						}
 						query.set("attrPrice", attrs[i].attrPrice);
 						query
 							.save()
@@ -1148,12 +1172,12 @@ export default {
 	box-sizing: border-box;
 	.form {
 		width: 100%;
-		/deep/ .el-form-item {
-			max-width: 900px;
+		::v-deep .el-form-item {
+			max-width: 1000px;
 		}
-		/deep/ .el-form-item__content {
+		::v-deep .el-form-item__content {
 			line-height: normal;
-			/deep/.ql-editor {
+			::v-deep.ql-editor {
 				height: 600px;
 			}
 		}
